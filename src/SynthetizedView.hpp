@@ -29,7 +29,7 @@ copies, substantial portions or derivative works of the Software.
 #pragma once
 #include "opencv2/core.hpp"
 
-#include "config.hpp"
+#include "Config.hpp"
 #include "View.hpp"
 
 /**
@@ -46,7 +46,7 @@ public:
 	@param mask_depth Mask indicating empty values on the depth (for example in a Kinect depth map)
 	@param size View final size
 	*/
-	SynthetizedView::SynthetizedView(cv::Mat color, cv::Mat depth_inverse, cv::Mat depth_prolongation_mask, cv::Size size);
+	SynthetizedView(cv::Mat color, cv::Mat depth_inverse, cv::Mat depth_prolongation_mask, cv::Size size);
 	/**
 	\brief Constructor
 	@param parameters Camera parameters

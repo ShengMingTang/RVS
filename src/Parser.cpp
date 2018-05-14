@@ -50,7 +50,7 @@ int seek_string(std::string ParameterFile, int n, std::vector<std::string>& str,
 			return 1;
 		}
 	}
-	printf("%s: %s  not found in the parameter file.\n", key, err_msg);
+	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
 	file.close();
 	return 0;
 }
@@ -70,7 +70,7 @@ int seek_int(std::string ParameterFile, int& n, std::string key, std::string err
 			return 1;
 		}
 	}
-	printf("%s: %s  not found in the parameter file.\n", key, err_msg);
+	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
 	file.close();
 	return 0;
 }
@@ -89,7 +89,7 @@ int seek_float(std::string ParameterFile, float& f, std::string key, std::string
 			return 1;
 		}
 	}
-	printf("%s: %s  not found in the parameter file.\n", key, err_msg);
+	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
 	file.close();
 	return 0;
 }
@@ -97,7 +97,7 @@ int seek_float(std::string ParameterFile, float& f, std::string key, std::string
 bool seek_znear_zfar(std::string ParameterFile, float& z, std::string DepthFile, std::string key, std::string err_msg) {
 	std::ifstream file(ParameterFile);
 	if (file.is_open() == 0) {
-		printf("Can't open %s\n", ParameterFile);
+		printf("Can't open %s\n", ParameterFile.c_str());
 		return 0;
 	}
 	std::string id;
@@ -112,7 +112,7 @@ bool seek_znear_zfar(std::string ParameterFile, float& z, std::string DepthFile,
 			}
 		}
 	}
-	printf("%s was not found: using default values\n", err_msg);
+	printf("%s was not found: using default values\n", err_msg.c_str());
 	file.close();
 	return false;
 }
@@ -170,7 +170,7 @@ void read_cameras_paramaters(std::string filename, std::vector<std::string>& cam
 		return;
 	}
 	//read only specified cameras
-	for (int i = 0; i < camnames.size(); ++i) {
+	for (int i = 0; i < static_cast<int>(camnames.size()); ++i) {
 		cv::Mat r;
 		cv::Vec3f t;
 		cv::Mat cam_mat;
@@ -233,12 +233,12 @@ Parser::~Parser()
 void Parser::generate_output_filenames() {
 	if (config.outfilenames.size() != config.VirtualCameraNames.size()) { // ALL?
 		config.outfilenames = {};
-		for (int i = 0; i < config.VirtualCameraNames.size(); ++i) {
+		for (int i = 0; i < static_cast<int>(config.VirtualCameraNames.size()); ++i) {
 			config.outfilenames.push_back(config.folder_out + config.VirtualCameraNames[i] + "." + config.extension);
 		}
 	}
 	else {
-		for (int i = 0; i < config.outfilenames.size(); ++i) {
+		for (int i = 0; i < static_cast<int>(config.outfilenames.size()); ++i) {
 			config.outfilenames[i] = config.folder_out + config.outfilenames[i];
 		}
 	}
@@ -253,7 +253,7 @@ bool Parser::is_SVS_file(const std::string & filename) const
 {
 	int n = 0;
 	seek_int(filename, n, "SVSFile", "This is a VSRS file.");
-	return n;
+	return !!n;
 }
 
 void Parser::read_vsrs_config_file() {
@@ -375,19 +375,25 @@ void Parser::read_SVS_config_file() {
 	//seek working color space
 	std::vector<std::string> cs;
 	if (seek_string(filename_parameter_file, 1, cs, "ColorSpace", "Working Color Space") > 0)
+	{
 		if(cs[0] == "RGB") color_space = COLORSPACE_RGB;
 		else if (cs[0] == "YUV") color_space = COLORSPACE_YUV;
+	}
 	//view synthesis method
 	std::vector<std::string> vs;
 	if (seek_string(filename_parameter_file, 1, vs, "ViewSynthesisMethod", "View Synthesis Method") > 0)
+	{
 		if (vs[0] == "Triangles") vs_method = SYNTHESIS_TRIANGLE;
 		else if (vs[0] == "Squares") vs_method = SYNTHESIS_SQUARE;
 		else if (vs[0] == "VSRS") vs_method = SYNTHESIS_VSRS;
+	}
 	//seek blending method
 	std::vector<std::string> bl;
 	if (seek_string(filename_parameter_file, 1, bl, "BlendingMethod", "Blending Method") > 0)
+	{
 		if (bl[0] == "Simple") config.blending_method = BLENDING_SIMPLE;
 		else if (bl[0] == "MultiSpectral") config.blending_method = BLENDING_MULTISPEC;
+	}
 	//seek blending factors
 	if (seek_float(filename_parameter_file, config.blending_low_freq_factor, "BlendingLowFreqFactor", "Blending Low Freq Factor") == 0)
 		config.blending_low_freq_factor = 1.0f;
@@ -397,7 +403,7 @@ void Parser::read_SVS_config_file() {
 		config.blending_factor = 1.0f;
 	//seek sensor size (default: image width)
 	if (seek_float(filename_parameter_file, config.sensor_size, "SensorSize", "Sensor size") == 0)
-		config.sensor_size = w;
+		config.sensor_size = static_cast<float>(w);
 
 	
 	print_results(InputCameraParameterFile, config.texture_names, config.depth_names, VirtualCameraParameterFile, number_input_cameras, number_output_cameras);
@@ -410,7 +416,7 @@ void Parser::read_SVS_config_file() {
 void Parser::read_ZValues()
 {
 	if (config.zvalues != "")
-		for (int i = 0; i < config.InputCameraNames.size(); ++i) {
+		for (int i = 0; i < static_cast<int>(config.InputCameraNames.size()); ++i) {
 			float zf, zn;
 			if (!seek_znear_zfar(config.zvalues, zf, config.depth_names[i], "FarthestDepthValue", "zfar"))
 				zf = 2000.0f;
@@ -432,22 +438,22 @@ void Parser::print_results(
 	) const {
 	printf("results\n");
 	printf("Parameter file: %s\n", filename_parameter_file.c_str());
-	for (int i = 0; i < InputCameraParameterFile.size(); ++i)
+	for (int i = 0; i < static_cast<int>(InputCameraParameterFile.size()); ++i)
 		printf("%s\n", InputCameraParameterFile[i].c_str());
 	printf("%d\n", number_RGB_cameras);
-	for (int i = 0; i < texture_names.size(); ++i)
+	for (int i = 0; i < static_cast<int>(texture_names.size()); ++i)
 		printf("%s\n", texture_names[i].c_str());
-	for (int i = 0; i < depth_names.size(); ++i)
+	for (int i = 0; i < static_cast<int>(depth_names.size()); ++i)
 		printf("%s\n", depth_names[i].c_str());
-	for (int i = 0; i < config.InputCameraNames.size(); ++i)
+	for (int i = 0; i < static_cast<int>(config.InputCameraNames.size()); ++i)
 		printf("%s\n", config.InputCameraNames[i].c_str());
-	for (int i = 0; i < VirtualCameraParameterFile.size(); ++i)
+	for (int i = 0; i < static_cast<int>(VirtualCameraParameterFile.size()); ++i)
 		printf("%s\n", VirtualCameraParameterFile[i].c_str());
 	printf("%d\n", number_D_cameras);
-	for (int i = 0; i < config.VirtualCameraNames.size(); ++i)
+	for (int i = 0; i < static_cast<int>(config.VirtualCameraNames.size()); ++i)
 		printf("%s\n", config.VirtualCameraNames[i].c_str());
 	printf("%s\n", config.folder_out.c_str());
-	for (int i = 0; i < config.outfilenames.size(); ++i) {
+	for (int i = 0; i < static_cast<int>(config.outfilenames.size()); ++i) {
 		printf("%s\n", config.outfilenames[i].c_str());
 	}
 	printf("%d\n", config.size.width);

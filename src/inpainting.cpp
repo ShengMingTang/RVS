@@ -37,7 +37,7 @@ copies, substantial portions or derivative works of the Software.
 
 cv::Mat compute_mask(std::vector<cv::Mat> depths) {
 	cv::Mat mask = cv::Mat(depths[0].size(), CV_8U, cv::Scalar::all(255));
-	for (int i = 0; i < depths.size(); i++) {
+	for (int i = 0; i < static_cast<int>(depths.size()); i++) {
 		cv::Mat tmp = depths[i] == 0.f;
 		bitwise_and(tmp, mask, mask);
 	}

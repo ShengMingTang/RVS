@@ -42,7 +42,7 @@ void Timer_Finalize() {
 #else
 #include <omp.h>
 std::map <Timer::threadid, std::map<Timer::timername, Timer::timepoint >> Timer::chronos;
-void Timer::start(std::string timername, uint32_t opt_color) {
+void Timer::start(std::string timername, uint32_t /*opt_color*/) {
 	chronos[omp_get_thread_num()][timername] = std::chrono::system_clock::now();
 }
 
@@ -51,7 +51,7 @@ void Timer::end(std::string timername) {
 	auto it = chronos[tid].find(timername);
 	if (it != chronos[tid].end()) {
 		auto end_clk = std::chrono::system_clock::now();
-		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end_clk - chronos[tid][timername]).count();
+		long long time = std::chrono::duration_cast<std::chrono::milliseconds>(end_clk - chronos[tid][timername]).count();
 		printf("%d - %s: %lld ms.\n", tid, timername.c_str(), time);
 
 		chronos[tid].erase(it);

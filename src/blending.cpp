@@ -280,11 +280,11 @@ cv::Mat blend_img_by_max(const std::vector<cv::Mat>& imgs, const std::vector<cv:
 			bool best_depth_prolongated = true;
 			float max = -1;
 			//choose best pixel amoung the input images
-			for (int i = 0; i < imgs.size(); ++i) {
+			for (int i = 0; i < static_cast<int>(imgs.size()); ++i) {
 				bool d_prolongated = depth_prolongations[i].at<bool>(y, x);
 				bool valid_d = qualities[i].at<float>(y, x) > 0;
 				float a = qualities[i].at<float>(y, x);
-				if (valid_d && (best_depth_prolongated == d_prolongated && a > max) || (best_depth_prolongated && !d_prolongated)) {
+				if ((valid_d && (best_depth_prolongated == d_prolongated && a > max)) || (best_depth_prolongated && !d_prolongated)) {
 					max = a;
 					best_i = i;
 					best_depth_prolongated = d_prolongated;
@@ -317,7 +317,7 @@ cv::Mat blend_depth_by_max(const std::vector<cv::Mat>&  imgs, const std::vector<
 		for (int y = 0; y < res.rows; ++y) {
 			int best_i = -1;
 			float max = 0;
-			for (int i = 0; i < imgs.size(); ++i) {
+			for (int i = 0; i < static_cast<int>(imgs.size()); ++i) {
 				float a = depth_invs[i].at<float>(y, x);
 				if (a > max) {
 					max = a;
@@ -346,7 +346,7 @@ cv::Mat blend_img(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& 
 			cv::Vec3f inpainted_depth_col(0, 0, 0);
 			cv::Vec3f col(0, 0, 0);
 			float inpainted_depth_s = 0.0;
-			for (int i = 0; i < imgs.size(); ++i) {
+			for (int i = 0; i < static_cast<int>(imgs.size()); ++i) {
 				float a = qualities[i].at<float>(y, x);
 				bool valid_d = qualities[i].at<float>(y, x) > 0 && !depth_prolongations[i].at<bool>(y, x);
 				if (a > 0 && valid_d) {//priority to color computed from original depth
@@ -426,7 +426,7 @@ cv::Mat blend_depth(const std::vector<cv::Mat>&  imgs, const std::vector<cv::Mat
 	for (int x = 0; x < res.cols; ++x)
 		for (int y = 0; y < res.rows; ++y) {
 			float s = 0.0;
-			for (int i = 0; i < imgs.size(); ++i) {
+			for (int i = 0; i < static_cast<int>(imgs.size()); ++i) {
 				float d = depth_invs[i].at<float>(y, x);
 				if (d > 0) {
 					float a = powf(d, (float)blending_exp);

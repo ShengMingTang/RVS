@@ -46,11 +46,11 @@ cv::Mat translation_map(const cv::Mat& depth, const Translation & t, const cv::M
 	float startW = (image_bigger_ratio - 1.0f) / 2.0f*w;
 	float startH = (image_bigger_ratio - 1.0f) / 2.0f*h;
 	float fx = old_cam_mat.at<float>(0, 0)*rescale;
-	float fy = old_cam_mat.at<float>(1, 1)*rescale;
+//	float fy = old_cam_mat.at<float>(1, 1)*rescale; -- unused variable
 	float px = old_cam_mat.at<float>(0, 2)*rescale;
 	float py = h - old_cam_mat.at<float>(1, 2)*rescale;
 	float n_fx = new_cam_mat.at<float>(0, 0)*rescale;
-	float n_fy = new_cam_mat.at<float>(1, 1)*rescale;
+//	float n_fy = new_cam_mat.at<float>(1, 1)*rescale; -- unused variable
 	float n_px = new_cam_mat.at<float>(0, 2)*rescale;
 	float n_py = h - new_cam_mat.at<float>(1, 2)*rescale;
 
@@ -97,7 +97,7 @@ cv::Mat rotation_map(const cv::Mat & R, const cv::Mat& pos, const cv::Mat & new_
 	float startW = (image_bigger_ratio - 1.0f) / 2.0f*w;
 	float startH = (image_bigger_ratio - 1.0f) / 2.0f*h;
 	float n_fx = new_cam_mat.at<float>(0, 0)*rescale;
-	float n_fy = new_cam_mat.at<float>(1, 1)*rescale;
+//	float n_fy = new_cam_mat.at<float>(1, 1)*rescale; -- unused variable
 	float n_px = new_cam_mat.at<float>(0, 2)*rescale;
 	float n_py = h - new_cam_mat.at<float>(1, 2)*rescale;
 	cv::Mat Rt = R.t();
@@ -131,7 +131,7 @@ cv::Mat rotation_map(const cv::Mat & R, const cv::Mat& pos, const cv::Mat & new_
 cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, bool with_rotation) {
 	cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
 	if (!with_rotation)
-		s = cv::Size(s.width*image_bigger_ratio,s.height*image_bigger_ratio);
+		s = cv::Size(static_cast<int>(s.width*image_bigger_ratio), static_cast<int>(s.height*image_bigger_ratio));
 	float w = depth.cols*rescale;
 	float h = depth.rows*rescale;
 
@@ -215,8 +215,8 @@ float valid_tri(const cv::Mat & new_pos, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c, 
 }
 
 void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat& depth_prologation_mask, const cv::Mat & new_pos, cv::Mat& res, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c) {
-	float w = (float)img.cols;
-	float h = (float)img.rows;
+//	float w = (float)img.cols; -- unused variable
+//	float h = (float)img.rows; -- unused variable
 	cv::Vec2f A = new_pos.at<cv::Vec2f>((int)a[1], (int)a[0]);
 	cv::Vec2f B = new_pos.at<cv::Vec2f>((int)b[1], (int)b[0]);
 	cv::Vec2f C = new_pos.at<cv::Vec2f>((int)c[1], (int)c[0]);
@@ -283,7 +283,7 @@ void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat
 cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, bool with_rotation) {
 	cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
 	if (!with_rotation)
-		s = cv::Size(s.width*image_bigger_ratio, s.height*image_bigger_ratio);
+		s = cv::Size(static_cast<int>(s.width*image_bigger_ratio), static_cast<int>(s.height*image_bigger_ratio));
 	
 	depth_inv = cv::Mat::zeros(s, CV_32F);
 	new_depth_prologation_mask = cv::Mat::ones(s, depth_prologation_mask.type());
@@ -311,13 +311,13 @@ cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth
 /*rotates the camera
 -R rotation matrix
 -image_bigger_ratio, divide img.size, in case of a bigger image bein used (translateBigger)*/
-cv::Mat rotation(const cv::Mat&  img, cv::Mat old_cam_mat, cv::Mat new_cam_mat, float sensor, cv::Mat R) {
+cv::Mat rotation(const cv::Mat&  img, cv::Mat /*old_cam_mat*/, cv::Mat new_cam_mat, float sensor, cv::Mat R) {
 	cv::Size s = img.size() / (int)image_bigger_ratio;
 	cv::Mat res = cv::Mat::zeros(s, CV_32FC3);
 	float w = (float)s.width;
 	float h = (float)s.height;
 	float n_fx = new_cam_mat.at<float>(0, 0);
-	float n_fy = new_cam_mat.at<float>(1, 1);
+//	float n_fy = new_cam_mat.at<float>(1, 1); -- unused variable
 	float n_px = new_cam_mat.at<float>(0, 2); 
 	float n_py = h - new_cam_mat.at<float>(1, 2); 
 	float startW = (image_bigger_ratio - 1.0f) / 2.0f*w;
@@ -384,7 +384,7 @@ cv::Mat rotate_disp(const cv::Mat& d, cv::Mat new_cam_mat, cv::Mat R) {
 	cv::Size s = d.size();
 	float h = (float)s.height;
 	float n_fx = new_cam_mat.at<float>(0, 0);
-	float n_fy = new_cam_mat.at<float>(1, 1);
+//	float n_fy = new_cam_mat.at<float>(1, 1); -- unused variable
 	float n_px = new_cam_mat.at<float>(0, 2);
 	float n_py = h - new_cam_mat.at<float>(1, 2);
 	cv::Mat Rt = R.t(); cv::Mat t = Rt * cv::Mat(cv::Vec3f(-n_px, -n_py, n_fx));

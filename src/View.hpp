@@ -66,7 +66,7 @@ public:
 	/**
 	\brief Show the image
 	*/
-	void show() {cv::Mat resized; cv::resize(color, resized, cv::Size(1920.0,1080)); cv::imshow(filename_color, resized); cv::waitKey(0); };
+	void show() {cv::Mat resized; cv::resize(color, resized, cv::Size(1920, 1080)); cv::imshow(filename_color, resized); cv::waitKey(0); };
 	/**
 	\brief Load the View from the files filename_color and filename_depth
 	*/

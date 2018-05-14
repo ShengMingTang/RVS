@@ -58,24 +58,18 @@ struct Translation : cv::Vec3f{
 	}
 
 	inline Translation(const cv::Vec3f &t)
-	{
-		this->operator()(0) = t[0];
-		this->operator()(1) = t[1];
-		this->operator()(2) = t[2];
+	    : cv::Vec3f(t)
+	{		
 	}
 
 	inline Translation(const Translation & t)
+	    : cv::Vec3f(t[0], t[1], t[2])
 	{
-		this->operator()(0) = t[0];
-		this->operator()(1) = t[1];
-		this->operator()(2) = t[2];
 	}
 
 	inline Translation(const float x, const float y, const float z)
+	    : cv::Vec3f(x, y, z)
 	{
-		this->operator()(0) = x;
-		this->operator()(1) = y;
-		this->operator()(2) = z;
 	}
 
 	Translation operator+(const Translation &rhs)

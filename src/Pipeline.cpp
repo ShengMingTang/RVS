@@ -95,7 +95,7 @@ void Pipeline::compute_view(int idx) {
 		BV = new BlendedViewMultiSpec();
 		(dynamic_cast<BlendedViewMultiSpec*>(BV))->set_blending_exp(config.blending_low_freq_factor, config.blending_high_freq_factor);
 	}
-	for (int input_idx = 0; input_idx < input_images.size(); input_idx++) {
+	for (int input_idx = 0; input_idx < static_cast<int>(input_images.size()); input_idx++) {
 		//compute result from view reference idx
 		SynthetizedView* SV = nullptr;
 		if (vs_method == SYNTHESIS_TRIANGLE)
@@ -136,7 +136,7 @@ void Pipeline::compute_view(int idx) {
 
 void Pipeline::compute_views() {
 
-	for (int idx = 0; idx < config.params_virtual.size(); idx++) {
+	for (int idx = 0; idx < static_cast<int>(config.params_virtual.size()); idx++) {
 		std::cout << config.outfilenames[idx] << std::endl;
 		compute_view(idx);
 	}

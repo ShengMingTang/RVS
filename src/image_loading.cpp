@@ -35,6 +35,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 
 template<typename T>
