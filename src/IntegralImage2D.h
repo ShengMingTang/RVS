@@ -117,7 +117,7 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
         /** \brief Constructor for an Integral Image
           * \param[in] snd set to true if we want to compute a second order image
           */
-        IntegralImage2D(bool snd = false) : img_fin(), img_fst(), img_snd(), hgt(1), wdt(1), com_snd(snd) { }
+        IntegralImage2D(bool snd = false) : hgt(1), wdt(1), com_snd(snd) { }
 
         /** \brief Destructor */
         virtual ~IntegralImage2D() { }
