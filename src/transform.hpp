@@ -69,37 +69,10 @@ Translates camera in any 3D direction, the result is a bigger image, to keep mor
 cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, bool with_rotation);
 
 /**
-Rotates the camera with the following rotation matrix
-@param img View to rotate
-@param old_cam_mat Input view camera matrix
-@param new_cam_mat Output view camera matrix
-@param sensor Sensor size
-@param R Rotation matrix
-*/
-cv::Mat rotation(const cv::Mat& img, cv::Mat old_cam_mat, cv::Mat new_cam_mat, float sensor, cv::Mat R);
-
-/**
-	Rotates the camera with the following angles (order: XYZ)
-	@param img View to rotate
-	@param old_cam_mat Input view camera matrix
-	@param new_cam_mat Output view camera matrix
-	@param sensor Sensor size
-	@param thetaX X rotation
-	@param thetaY Y rotation
-	@param thetaZ Z rotation
-*/
-cv::Mat rotation(const cv::Mat& img, cv::Mat old_cam_mat, cv::Mat new_cam_mat, float sensor, float thetaX, float thetaY, float thetaZ);
-/**
-	@return Rotation matrix (order: XYZ)
-	@param thetaX X rotation
-	@param thetaY Y rotation
-	@param thetaZ Z rotation
-*/
-cv::Mat rotMat(float thetaX, float thetaY, float thetaZ);
-/**
 creates the new depth map regarding the translation
 */
 void translateZ_disp(cv::Mat& d, float z); 
+
 /**
 creates the new depth map regarding the rotation
 */

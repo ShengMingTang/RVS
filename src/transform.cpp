@@ -36,6 +36,7 @@ copies, substantial portions or derivative works of the Software.
 #include <algorithm>
 
 
+namespace {
 cv::Mat translation_map(const cv::Mat& depth, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, float offset) {
 	cv::Size s((int)(rescale*(float)depth.size().width*image_bigger_ratio), (int)(rescale*(float)depth.size().height*image_bigger_ratio));
 	float w = depth.cols*rescale;
@@ -124,6 +125,7 @@ cv::Mat rotation_map(const cv::Mat & R, const cv::Mat& pos, const cv::Mat & new_
 			}}
 	return new_pos;
 }
+} // namespace
 
 /*translate camera in camera coordinate system, in any 3 directions, the result is a bigger image, to keep more information for a future rotation.
 -depth_inv: image in which the inverse of the depth for the new image will be stored, can be used for blending
@@ -193,6 +195,7 @@ cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, 
 	return res;
 }
 
+namespace {
 float valid_tri(const cv::Mat & new_pos, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c, float den) {
 	cv::Vec2f A = new_pos.at<cv::Vec2f>((int)a[1], (int)a[0]);
 	cv::Vec2f B = new_pos.at<cv::Vec2f>((int)b[1], (int)b[0]);
@@ -279,7 +282,8 @@ void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat
 			}
 	return;
 }
-//cv::Mat translateBigger3(const cv::Mat & img, const cv::Mat & depth, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, const float sensor, cv::Mat& depth_inv, cv::Mat& triangle_shape) {
+} // namespace
+
 cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, bool with_rotation) {
 	cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
 	if (!with_rotation)
@@ -306,68 +310,6 @@ cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth
 			}
 		}
 	return res;
-}
-
-/*rotates the camera
--R rotation matrix
--image_bigger_ratio, divide img.size, in case of a bigger image bein used (translateBigger)*/
-cv::Mat rotation(const cv::Mat&  img, cv::Mat /*old_cam_mat*/, cv::Mat new_cam_mat, float sensor, cv::Mat R) {
-	cv::Size s = img.size() / (int)image_bigger_ratio;
-	cv::Mat res = cv::Mat::zeros(s, CV_32FC3);
-	float w = (float)s.width;
-	float h = (float)s.height;
-	float n_fx = new_cam_mat.at<float>(0, 0);
-//	float n_fy = new_cam_mat.at<float>(1, 1); -- unused variable
-	float n_px = new_cam_mat.at<float>(0, 2); 
-	float n_py = h - new_cam_mat.at<float>(1, 2); 
-	float startW = (image_bigger_ratio - 1.0f) / 2.0f*w;
-	float startH = (image_bigger_ratio - 1.0f) / 2.0f*h;
-	std::vector<cv::Vec3f> v = { cv::Vec3f(-n_px/w, -n_py / w, n_fx / sensor), cv::Vec3f(-n_px / w, h/w-n_py / w, n_fx / sensor), cv::Vec3f(1.0f-n_px/w, -n_py / w, n_fx / sensor), cv::Vec3f(1.0f-n_px/w, h/w-n_py/w, n_fx / sensor) };
-	std::vector<cv::Point2f> srcPts = { cv::Point2f(0, 0), cv::Point2f(0, h), cv::Point2f(w, 0), cv::Point2f(w, h) };	
-	std::vector<cv::Point2f> dstPts;
-	for (int k = 0; k < 4; k++) {
-		cv::Mat V = R*(cv::Mat)v[k];
-		V /= V.at<float>(2, 0)*sensor / n_fx;
-		float xi = (V.at<float>(0, 0))*w +n_px + startW;
-		float yi = (V.at<float>(1, 0))*w +n_py + startH;
-		dstPts.push_back(cv::Point2f(xi, yi));
-	}
-	cv::Mat H = findHomography(dstPts, srcPts);
-	cv::warpPerspective(img, res, H, s, cv::INTER_NEAREST);
-	
-	return res;
-}
-//Same as before, but the rotation is following x, y, then z axis
-cv::Mat rotation(const cv::Mat&  img, cv::Mat old_cam_mat, cv::Mat new_cam_mat, float sensor, float thetaX, float thetaY, float thetaZ) {
-	cv::Mat Rx = (cv::Mat_<float>(3, 3) << 1, 0, 0, 0, cos(thetaX), -sin(thetaX), 0, sin(thetaX), cos(thetaX));
-	cv::Mat Ry = (cv::Mat_<float>(3, 3) << cos(thetaY), 0, -sin(thetaY), 0, 1, 0, sin(thetaY), 0, cos(thetaY));
-	cv::Mat Rz = (cv::Mat_<float>(3, 3) << cos(thetaZ), sin(thetaZ), 0, -sin(thetaZ), cos(thetaZ), 0, 0, 0, 1);
-	cv::Mat R = Rz*Ry*Rx;
-	return rotation(img, old_cam_mat, new_cam_mat, sensor, R);
-}
-cv::Mat rotMat(float thetaX, float thetaY, float thetaZ) {
-	cv::Mat Rx = (cv::Mat_<float>(3, 3) << 1, 0, 0, 0, cos(thetaX), -sin(thetaX), 0, sin(thetaX), cos(thetaX));
-	cv::Mat Ry = (cv::Mat_<float>(3, 3) << cos(thetaY), 0, -sin(thetaY), 0, 1, 0, sin(thetaY), 0, cos(thetaY));
-	cv::Mat Rz = (cv::Mat_<float>(3, 3) << cos(thetaZ), sin(thetaZ), 0, -sin(thetaZ), cos(thetaZ), 0, 0, 0, 1);
-	return Rz*Ry*Rx;
-}
-cv::Vec3f euler(cv::Mat R) {
-	float sy = sqrt(R.at<float>(0, 0) * R.at<float>(0, 0) + R.at<float>(1, 0) * R.at<float>(1, 0));
-	bool singular = sy < 1e-6; // If
-	float x, y, z;
-	if (!singular)
-	{
-		x = atan2(R.at<float>(2, 1), R.at<float>(2, 2));
-		y = atan2(-R.at<float>(2, 0), sy);
-		z = atan2(R.at<float>(1, 0), R.at<float>(0, 0));
-	}
-	else
-	{
-		x = atan2(-R.at<float>(1, 2), R.at<float>(1, 1));
-		y = atan2(-R.at<float>(2, 0), sy);
-		z = 0;
-	}
-	return cv::Vec3f(x, y, z); //radians
 }
 
 void translateZ_disp(cv::Mat& d, float z) {

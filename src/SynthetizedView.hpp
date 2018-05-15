@@ -76,11 +76,6 @@ public:
 	cv::Mat& get_depth() { depth = 1.0f / depth_inverse;  return depth; };
 
 	
-private:
-	virtual void resize() = 0;
-	
-public:
-
 protected:
 	/**
 	\brief Disparity
@@ -114,21 +109,8 @@ public:
 private:
 	cv::Mat triangle_shape;
 	cv::Mat quality;
-	/**
-	 \brief Compute only translation
-	 * */
-	void translate(View& img);
-	/**
-	 \brief Compute only rotation
-	 * */
-	void rotate(View& img);
-	/**
-	\brief Compute both translation and rotation in the same time
-	 * */
-	void warp(View& img);
-	void resize();
-
 };
+
 /**
  * The algorithm to compute the view maps every pixel to its new positions. The pixels are considered as squares.
  * The quality of each pixel is given by the depth of the pixel
@@ -143,19 +125,6 @@ public:
 	cv::Mat& get_quality() { return depth_inverse; };
 	SynthetizedViewSquare* copy() const;
 private:
-	/**
-	 \brief Compute only translation
-	 * */
-	void translate(View& img);
-	/**
-	\brief Compute only rotation
-	 * */
-	void rotate(View& img);
-	/**
-	\brief Compute both translation and rotation in the same time
-	 * */
-	void warp(View& img);
-	void resize();
 	int rescale_method_RGB;
 	int rescale_method_Depth;
 };
