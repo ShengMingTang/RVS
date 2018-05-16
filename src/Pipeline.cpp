@@ -102,6 +102,8 @@ void Pipeline::compute_view(int idx) {
 			SV = new SynthetizedViewTriangle(config.params_virtual[idx], input_images[input_idx].get_size());
 		else if (vs_method == SYNTHESIS_SQUARE)
 			SV = new SynthetizedViewSquare(config.params_virtual[idx], input_images[input_idx].get_size());
+		else
+			throw std::logic_error("Unknown synthesis method");
 		SV->compute(input_images[input_idx]);
 		//blend with previous results
 		PROF_START("blending");
