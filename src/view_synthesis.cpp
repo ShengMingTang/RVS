@@ -52,25 +52,32 @@ float pi = 3.14159265359f;
 
 int main(int argc, char* argv[])
 {
-	PROF_BEGIN();
+	try
+	{
+		PROF_BEGIN();
 
-	PROF_START("parsing");
-
-
-	std::string filename = (argc > 1) ? argv[1] : "./config_files/parameter_file.txt";
-
-	Pipeline p(filename);
+		PROF_START("parsing");
 
 
-	PROF_END("parsing");
-	PROF_START("view synthesis");
+		std::string filename = (argc > 1) ? argv[1] : "./config_files/parameter_file.txt";
 
-	p.execute();
-	
-	PROF_END("view synthesis");
+		Pipeline p(filename);
 
-	PROF_FINALIZE();
-	return 0;
-	
+
+		PROF_END("parsing");
+		PROF_START("view synthesis");
+
+		p.execute();
+
+		PROF_END("view synthesis");
+
+		PROF_FINALIZE();
+		return 0;
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
 }
 

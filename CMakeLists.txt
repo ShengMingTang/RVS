@@ -119,10 +119,14 @@ source_group("Config" FILES ${PROJECT_CONFIG})
 
 add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_CONFIG})
 add_executable(${PROJECT_NAME} src/view_synthesis.cpp)
-add_executable(${PROJECT_NAME}Test src/test.cpp)
+add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
+add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
-target_link_libraries(${PROJECT_NAME}Test ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
+target_link_libraries(${PROJECT_NAME}UnitTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
+target_link_libraries(${PROJECT_NAME}IntegrationTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
 
 enable_testing()
-add_test(NAME Test${PROJECT_NAME} COMMAND ${PROJECT_NAME}Test)
+add_test(NAME UnitTest${PROJECT_NAME} COMMAND ${PROJECT_NAME}UnitTest WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME IntegrationTest${PROJECT_NAME} COMMAND ${PROJECT_NAME}IntegrationTest WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
