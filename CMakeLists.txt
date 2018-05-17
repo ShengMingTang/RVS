@@ -78,43 +78,51 @@ if(WITH_EASY_PROFILER)
 endif()
 
 
-include_directories(
-				    #vendors/.../include/
-					)
+set(PROJECT_SOURCES
+	src/BlendedView.cpp
+	src/Config.cpp
+	src/Parser.cpp
+	src/Pipeline.cpp
+	src/SynthetizedView.cpp
+	src/Timer.cpp
+	src/View.cpp
+	src/blending.cpp
+	src/image_loading.cpp
+	src/image_writing.cpp
+	src/inpainting.cpp
+	src/transform.cpp)
 
-file(GLOB VENDORS_SOURCES
-					#vendors/.../src/
-				    )
-file(GLOB_RECURSE PROJECT_SOURCES src/*.hpp
-                          src/*.h
-						  src/*.cpp) 
+set(PROJECT_HEADERS
+	src/BlendedView.hpp
+	src/Config.hpp
+	src/Parser.hpp
+	src/Pipeline.hpp
+	src/SynthetizedView.hpp
+	src/Timer.hpp
+	src/View.hpp
+	src/blending.hpp
+	src/helpers.hpp
+	src/image_loading.hpp
+	src/image_writing.hpp
+	src/inpainting.hpp
+	src/transform.hpp
+	src/IntegralImage2D.h)
 
-						  
-#file(GLOB PROJECT_CONFIGS CMakeLists.txt
-#                          Readme.md
-#                         .gitattributes
-#                         .gitignore
-#                         .gitmodules)
-						 
-						 	 
-source_group("Source" FILES ${PROJECT_SOURCES})
-source_group("Vendors" FILES ${VENDORS_SOURCES})
-#source_group("Configs" FILES ${PROJECT_CONFIGS})
+set(PROJECT_CONFIG
+	CMakeLists.txt
+	example
+	config_files/example_config_file.cfg)
+				 						 	 
+source_group("Source" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
+source_group("Headers" FILES ${PROJECT_HEADERS})
+source_group("Config" FILES ${PROJECT_CONFIG})
 
-add_definitions(
-                -DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
-                               ${VENDORS_SOURCES}
-                               ${PROJECT_CONFIGS})
-target_link_libraries(${PROJECT_NAME}
-					  ${OpenCV_LIBS}
-					  ${CUDA_LIB}
-					  ${EASYPROFILER_LIB}
-                      )
-					  
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME})
+add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_CONFIG})
+add_executable(${PROJECT_NAME} src/view_synthesis.cpp)
+add_executable(${PROJECT_NAME}Test src/test.cpp)
 
-	
-file(COPY config_files DESTINATION ${CMAKE_BINARY_DIR}/)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
+target_link_libraries(${PROJECT_NAME}Test ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
 
+enable_testing()
+add_test(NAME Test${PROJECT_NAME} COMMAND ${PROJECT_NAME}Test)
