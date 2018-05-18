@@ -58,7 +58,7 @@ void SynthetizedViewTriangle::compute(View& img)
 	cv::Mat rotation_camera_coord = parameter.rotation.t()*img.get_parameters().rotation;
 
     //apply translation and rotation 
-	color = translateBigger_trianglesMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth, triangle_shape,true);
+	color = translateBigger_trianglesMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth, triangle_shape);
 
     //depth in the new coordinate system: translation+rotation
 	translateZ_disp(depth_inverse, -real_transl_camera_coord[2]);
@@ -83,7 +83,7 @@ void SynthetizedViewSquare::compute(View& img)
 	cv::Mat rotation_camera_coord = parameter.rotation.t()*img.get_parameters().rotation;
 
     //apply translation and rotation 
-	color = translateBigger_squaresMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth, true);
+	color = translateBigger_squaresMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth);
 
     //depth in the new coordinate system: translation+rotation
 	translateZ_disp(depth_inverse, -real_transl_camera_coord[2]);
