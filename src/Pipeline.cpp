@@ -43,6 +43,10 @@ copies, substantial portions or derivative works of the Software.
 Pipeline::Pipeline(std::string filename)
 {
 	this->filename = filename;
+
+#ifndef NDEBUG
+	cv::setBreakOnError(true);
+#endif
 }
 
 Pipeline::~Pipeline()

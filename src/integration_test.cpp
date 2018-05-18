@@ -50,12 +50,8 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 	p.execute();
 }
 
-/*
-Crashes:
-
 FUNC(ULB_Unicorn_Squares_Simple)
 {
 	Pipeline p("./config_files/Unicorn_Squares_Simple.cfg");
 	p.execute();
 }
-*/

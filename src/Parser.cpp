@@ -31,13 +31,21 @@ copies, substantial portions or derivative works of the Software.
 #include <fstream>
 
 
-
-int seek_string(std::string ParameterFile, int n, std::vector<std::string>& str, std::string key, std::string err_msg) {
-	std::ifstream file(ParameterFile);
-	if (file.is_open() == 0) {
-		printf("Can't open %s\n", ParameterFile.c_str());
-		abort();
+namespace
+{
+	void check_is_open(std::ifstream& stream, char const *kind, std::string const& ParameterFile)
+	{
+		if (stream.is_open() == 0) {
+			std::ostringstream text;
+			text << "Failed to open " << kind << " file \"" << ParameterFile << "\".";
+			throw std::runtime_error(text.str());
+		}
 	}
+}
+
+bool seek_string(std::string ParameterFile, int n, std::vector<std::string>& str, std::string key, std::string err_msg) {
+	std::ifstream file(ParameterFile);
+	check_is_open(file, "parameter", ParameterFile);
 	std::string id;
 	while (!file.eof() && file >> id) {
 		if (id == key) {
@@ -46,84 +54,62 @@ int seek_string(std::string ParameterFile, int n, std::vector<std::string>& str,
 				file >> c;
 				str.push_back(c);
 			}
-			file.close();
-			return 1;
+			return true;
 		}
 	}
 	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
-	file.close();
-	return 0;
+	return false;
 }
 
-int seek_int(std::string ParameterFile, int& n, std::string key, std::string err_msg) {
+bool seek_int(std::string ParameterFile, int& n, std::string key, std::string err_msg) {
 	std::ifstream file(ParameterFile);
-
-	if (file.is_open() == 0) {
-		printf("Can't open %s\n", ParameterFile.c_str());
-		abort();
-	}
+	check_is_open(file, "parameter", ParameterFile);
 	std::string id;
 	while (!file.eof() && file >> id) {
 		if (id == key) {
 			file >> n;
-			file.close();
-			return 1;
+			return true;
 		}
 	}
 	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
-	file.close();
-	return 0;
+	return false;
 }
-int seek_float(std::string ParameterFile, float& f, std::string key, std::string err_msg) {
-	std::ifstream file(ParameterFile);
 
-	if (file.is_open() == 0) {
-		printf("Can't open %s\n", ParameterFile.c_str());
-		abort();
-	}
+bool seek_float(std::string ParameterFile, float& f, std::string key, std::string err_msg) {
+	std::ifstream file(ParameterFile);
+	check_is_open(file, "parameter", ParameterFile);
 	std::string id;
 	while (!file.eof() && file >> id) {
 		if (id == key) {
 			file >> f;
-			file.close();
-			return 1;
+			return true;
 		}
 	}
 	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
-	file.close();
-	return 0;
+	return false;
 }
 
 bool seek_znear_zfar(std::string ParameterFile, float& z, std::string DepthFile, std::string key, std::string err_msg) {
 	std::ifstream file(ParameterFile);
-	if (file.is_open() == 0) {
-		printf("Can't open %s\n", ParameterFile.c_str());
-		return 0;
-	}
+	check_is_open(file, "parameter", ParameterFile);
 	std::string id;
 	while (!file.eof() && file >> id) {
 		if (id.find(DepthFile) != std::string::npos) {
 			while (!file.eof() && file >> id) {
 				if (id == key) {
 					file >> z;
-					file.close();
 					return true;
 				}
 			}
 		}
 	}
 	printf("%s was not found: using default values\n", err_msg.c_str());
-	file.close();
 	return false;
 }
 
-int find_cam(std::string CameraParameterFile, cv::Mat & r, cv::Vec3f & t, cv::Mat & camMat, std::string cameraId) {
+bool find_cam(std::string CameraParameterFile, cv::Mat & r, cv::Vec3f & t, cv::Mat & camMat, std::string cameraId) {
 	std::ifstream file(CameraParameterFile);
-
-	if (file.is_open() == 0) {
-		printf("Can't open %s\n", CameraParameterFile.c_str());
-		abort();
-	}
+	check_is_open(file, "camera parameter", CameraParameterFile);
 	std::string id;
 	while (!file.eof() && file >> id) {
 		if (id == cameraId) {
@@ -134,13 +120,11 @@ int find_cam(std::string CameraParameterFile, cv::Mat & r, cv::Vec3f & t, cv::Ma
 			camMat = (cv::Mat_<float>(3, 3) << f11, f12, f13, f21, f22, f23, f31, f32, f33);
 			r = (cv::Mat_<float>(3, 3) << r11, r12, r13, r21, r22, r23, r31, r32, r33);
 			t = cv::Vec3f(tx, ty, tz);
-			file.close();
-			return 1;
+			return true;
 		}
 	}
 	printf("Camera %s not found\n", cameraId.c_str());
-	file.close();
-	return 0;
+	return false;
 }
 
 //read cameras names, positions and rotation
@@ -150,10 +134,7 @@ void read_cameras_paramaters(std::string filename, std::vector<std::string>& cam
 	{
 		camnames = {};
 		std::ifstream file(filename);
-		if (file.is_open() == 0) {
-			printf("Can't open %s\n", filename.c_str());
-			abort();
-		}
+		check_is_open(file, "camera parameters", filename);
 		std::string id;
 		while (!file.eof() && file >> id) {
 			float f11, f12, f13, f21, f22, f23, f31, f32, f33, k1, k2;
@@ -166,7 +147,6 @@ void read_cameras_paramaters(std::string filename, std::vector<std::string>& cam
 			camnames.push_back(id);
 			params.push_back(Parameters(r, t, cam_mat, sensor_size));
 		}
-		file.close();
 		return;
 	}
 	//read only specified cameras
@@ -242,11 +222,6 @@ void Parser::generate_output_filenames() {
 			config.outfilenames[i] = config.folder_out + config.outfilenames[i];
 		}
 	}
-	//for (int i = 0; i < config.VirtualCameraNames.size(); ++i) {
-	//	if (config.outfilenames[i].find("yuv") != std::string::npos)
-	//		config.outfilenames[i] = config.outfilenames[i].substr(0, config.outfilenames[i].size() - 3) + config.extension;
-	//}
-
 }
 
 bool Parser::is_SVS_file(const std::string & filename) const
@@ -366,7 +341,7 @@ void Parser::read_SVS_config_file() {
 	if (seek_string(filename_parameter_file, 1, exts, "Extension", ""))
 		config.extension = exts[0];
 	//seek image_bigger_ratio (useful for translation computation). default =2
-	if (seek_float(filename_parameter_file, image_bigger_ratio, "TranslationRatio", "Translation ratio") == 0)
+	if (!seek_float(filename_parameter_file, image_bigger_ratio, "TranslationRatio", "Translation ratio"))
 		image_bigger_ratio = 4.0;
 	//seek Rescale factor for super resolution
 	if (seek_float(filename_parameter_file, rescale, "Precision", "Precision") == 0)
@@ -374,14 +349,14 @@ void Parser::read_SVS_config_file() {
 
 	//seek working color space
 	std::vector<std::string> cs;
-	if (seek_string(filename_parameter_file, 1, cs, "ColorSpace", "Working Color Space") > 0)
+	if (seek_string(filename_parameter_file, 1, cs, "ColorSpace", "Working Color Space"))
 	{
 		if(cs[0] == "RGB") color_space = COLORSPACE_RGB;
 		else if (cs[0] == "YUV") color_space = COLORSPACE_YUV;
 	}
 	//view synthesis method
 	std::vector<std::string> vs;
-	if (seek_string(filename_parameter_file, 1, vs, "ViewSynthesisMethod", "View Synthesis Method") > 0)
+	if (seek_string(filename_parameter_file, 1, vs, "ViewSynthesisMethod", "View Synthesis Method"))
 	{
 		if (vs[0] == "Triangles") vs_method = SYNTHESIS_TRIANGLE;
 		else if (vs[0] == "Squares") vs_method = SYNTHESIS_SQUARE;
@@ -389,7 +364,7 @@ void Parser::read_SVS_config_file() {
 	}
 	//seek blending method
 	std::vector<std::string> bl;
-	if (seek_string(filename_parameter_file, 1, bl, "BlendingMethod", "Blending Method") > 0)
+	if (seek_string(filename_parameter_file, 1, bl, "BlendingMethod", "Blending Method"))
 	{
 		if (bl[0] == "Simple") config.blending_method = BLENDING_SIMPLE;
 		else if (bl[0] == "MultiSpectral") config.blending_method = BLENDING_MULTISPEC;

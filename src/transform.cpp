@@ -172,8 +172,8 @@ cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, 
 			for (float frac_x = 0; frac_x < rescale; frac_x +=1.0)
 				for (float frac_y = 0; frac_y < rescale; frac_y += 1.0){
 					cv::Vec3f col = img_big.at<cv::Vec3f>((int)(rescale*(float)y+frac_y),(int) (rescale*(float)x+frac_x));
-					for (int xint = MAX((int)(Xm+frac_x*stepX),0); xint <= MIN((int)(Xm + (frac_x+1.0)*stepX), image_bigger_ratio*w); xint++)
-						for (int yint = MAX((int)(Ym + frac_y*stepY),0); yint <= MIN((int)(Ym + (frac_y + 1.0)*stepY), image_bigger_ratio*h); yint++) {
+					for (int xint = MAX((int)(Xm+frac_x*stepX),0); xint <= MIN((int)(Xm + (frac_x+1.0)*stepX), s.width - 1); xint++)
+						for (int yint = MAX((int)(Ym + frac_y*stepY),0); yint <= MIN((int)(Ym + (frac_y + 1.0)*stepY), s.height - 1); yint++) {
 							int X = xint;
 							int Y = yint;
 							//if (X > 0 && X < image_bigger_ratio*w && Y>0 && Y < image_bigger_ratio*h) {

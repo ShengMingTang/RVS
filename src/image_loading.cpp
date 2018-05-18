@@ -91,9 +91,9 @@ cv::Mat_<cv::Vec3b> import_ycbcr420(std::ifstream& yuv_stream, int width, int he
 	read_raw(yuv_stream, cr_channel.data, width*height / 4);
 	cv::resize(cr_channel, cr_channel, sz, 0, 0, cv::INTER_CUBIC);
 
-	cv::Mat_<cv::Vec3b> ycrcb;
-	std::vector<cv::Mat> src{ y_channel, cr_channel, cb_channel };
-	cv::merge(src, ycrcb);
+	cv::Mat_<cv::Vec3b> ycrcb(sz);
+	cv::Mat src[] = { y_channel, cr_channel, cb_channel };
+	cv::merge(src, 3, ycrcb); // BK: Somehow solves problem with VC14 RelWithDebug build
 
 	cv::Mat_<cv::Vec3b> bgr;
 	cv::cvtColor(ycrcb, bgr, CV_YCrCb2BGR);
@@ -182,10 +182,18 @@ cv::Mat read_color_yuv(std::string filename, cv::Size s) {
 	cv::Mat img;
 
 	std::ifstream yuv_stream(filename, std::ios_base::binary);
-	img = import_ycbcr420(yuv_stream, width, height);
+	if (!yuv_stream.is_open()) {
+		std::ostringstream text;
+		text << "Failed to open YUV stream \"" << filename << "\"";
+		throw std::runtime_error(text.str());
+	}
 
-	if (img.empty())
-		std::cout << filename << " not found" << std::endl;
+	img = import_ycbcr420(yuv_stream, width, height);
+	if (img.empty()) {
+		std::ostringstream text;
+		text << "Failed to read YUV stream \"" << filename << "\"";
+		throw std::runtime_error(text.str());
+	}
 
 	if (color_space == COLORSPACE_RGB)
 		cv::cvtColor(img, img, CV_YCrCb2BGR);
