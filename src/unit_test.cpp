@@ -29,3 +29,31 @@ copies, substantial portions or derivative works of the Software.
 
 #define YAFFUT_MAIN
 #include "yaffut.hpp"
+
+#include "EquirectangularProjection.hpp"
+
+#include "opencv2/opencv.hpp"
+
+#include <iostream>
+
+using namespace std;
+
+
+
+FUNC( TestERP_WithConstantRadius)
+{
+    const double eps = 1e-7;
+    
+    MeshEquirectangular erp;
+
+    cv::Size size(30,30);
+    cv::Mat1f radiusMap = cv::Mat1f::ones(size);
+
+    auto vertices = erp.CalculateVertices(radiusMap);
+
+    const double radiusExpected = 1.0;
+
+    for( auto v : vertices )
+        ALMOST( radiusExpected,  cv::norm(v) , eps );
+
+}

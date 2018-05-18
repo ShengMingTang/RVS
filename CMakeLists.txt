@@ -90,7 +90,8 @@ set(PROJECT_SOURCES
 	src/image_loading.cpp
 	src/image_writing.cpp
 	src/inpainting.cpp
-	src/transform.cpp)
+	src/transform.cpp
+	src/EquirectangularProjection.cpp)
 
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
@@ -106,7 +107,8 @@ set(PROJECT_HEADERS
 	src/image_writing.hpp
 	src/inpainting.hpp
 	src/transform.hpp
-	src/IntegralImage2D.h)
+	src/IntegralImage2D.h
+	src/EquirectangularProjection.hpp)
 
 set(PROJECT_CONFIG
 	CMakeLists.txt
@@ -119,7 +121,7 @@ source_group("Config" FILES ${PROJECT_CONFIG})
 
 add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_CONFIG})
 add_executable(${PROJECT_NAME} src/view_synthesis.cpp)
-add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
+add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp src/unit_test_spikes.cpp)
 add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
