@@ -111,7 +111,9 @@ set(PROJECT_HEADERS
 set(PROJECT_CONFIG
 	CMakeLists.txt
 	example
-	config_files/example_config_file.cfg)
+	config_files/example_config_file.cfg
+	config_files/Unicorn_Squares_Simple.cfg
+	config_files/Unicorn_Triangles_MultiSpectral.cfg)
 				 						 	 
 source_group("Source" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
 source_group("Headers" FILES ${PROJECT_HEADERS})

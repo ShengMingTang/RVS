@@ -36,6 +36,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include <iostream>
 #include <vector>
+#include <memory>
 
 
 
@@ -86,22 +87,24 @@ void Pipeline::unload_images()
 
 void Pipeline::compute_view(int idx) {
 	//std::cout << filename << std::endl;
-	BlendedView* BV = nullptr;
+	std::unique_ptr<BlendedView> BV;
 	if (config.blending_method == BLENDING_SIMPLE) {
-		BV = new BlendedViewSimple();
-		(dynamic_cast<BlendedViewSimple*>(BV))->set_blending_exp(config.blending_factor);
+		auto simple = new BlendedViewSimple;
+		BV.reset(simple);
+		simple->set_blending_exp(config.blending_factor);
 	}
 	else if (config.blending_method == BLENDING_MULTISPEC) {
-		BV = new BlendedViewMultiSpec();
-		(dynamic_cast<BlendedViewMultiSpec*>(BV))->set_blending_exp(config.blending_low_freq_factor, config.blending_high_freq_factor);
+		auto multispec = new BlendedViewMultiSpec;
+		BV.reset(multispec);
+		multispec->set_blending_exp(config.blending_low_freq_factor, config.blending_high_freq_factor);
 	}
 	for (int input_idx = 0; input_idx < static_cast<int>(input_images.size()); input_idx++) {
 		//compute result from view reference idx
-		SynthetizedView* SV = nullptr;
+		std::unique_ptr<SynthetizedView> SV;
 		if (vs_method == SYNTHESIS_TRIANGLE)
-			SV = new SynthetizedViewTriangle(config.params_virtual[idx], input_images[input_idx].get_size());
+			SV.reset(new SynthetizedViewTriangle(config.params_virtual[idx], input_images[input_idx].get_size()));
 		else if (vs_method == SYNTHESIS_SQUARE)
-			SV = new SynthetizedViewSquare(config.params_virtual[idx], input_images[input_idx].get_size());
+			SV.reset(new SynthetizedViewSquare(config.params_virtual[idx], input_images[input_idx].get_size()));
 		else
 			throw std::logic_error("Unknown synthesis method");
 		SV->compute(input_images[input_idx]);

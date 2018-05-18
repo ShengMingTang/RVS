@@ -37,3 +37,25 @@ FUNC(ULB_Unicorn_Example)
 	Pipeline p("./config_files/example_config_file.cfg");
 	p.execute();
 }
+
+FUNC(ULB_Unicorn_Triangles_Simple)
+{
+	Pipeline p("./config_files/Unicorn_Triangles_Simple.cfg");
+	p.execute();
+}
+
+FUNC(ULB_Unicorn_Triangles_MultiSpectral)
+{
+	Pipeline p("./config_files/Unicorn_Triangles_MultiSpectral.cfg");
+	p.execute();
+}
+
+/*
+Crashes:
+
+FUNC(ULB_Unicorn_Squares_Simple)
+{
+	Pipeline p("./config_files/Unicorn_Squares_Simple.cfg");
+	p.execute();
+}
+*/

@@ -14,6 +14,7 @@
 #endif
 
 #include <cmath>
+#include <cstring>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -306,8 +307,13 @@ struct Test<Case, void>
   static Registrator<Case, void> s_Registrator;
   Test()
   {
-    Registrator<Case, void>* forceInstance = &s_Registrator;
-    forceInstance = 0;
+    forceInstance();
+  }
+  
+private:
+  Registrator<Case, void> *forceInstance()
+  {
+    return &s_Registrator;
   }
 };
 template <typename Case>
@@ -508,7 +514,7 @@ mainRedirect (int argc, const char* argv[])
 int main(int argc, const char* argv[])
 {
   return yaffut::main (argc, argv);
-};
+}
 #endif /* YAFFUT_MAIN */
 
 #endif
