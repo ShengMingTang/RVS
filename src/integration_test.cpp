@@ -130,6 +130,7 @@ FUNC(ULB_Unicorn_Triangles_Simple)
 		"030003250438_from_030003070370_030003430506_Triangles_Simple.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
 		cv::Size(1920, 1080), 8, 21.13, 25.99); // VC14 + OpenCV 3.1.0: 21.1814, 26.0475
+										   // GCC 4.9.2 + OpenCV 3.4.1: 21.1814, 26.0474 <--
 }
 
 FUNC(ULB_Unicorn_Triangles_MultiSpectral)
@@ -140,6 +141,7 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 		"030003250438_from_030003070370_030003430506_Triangles_MultiSpectral.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
 		cv::Size(1920, 1080), 8, 21.12, 25.97); // VC14 + OpenCV 3.1.0: 21.1701, 26.0268
+										   // GCC 4.9.2 + OpenCV 3.4.1: 21.1701, 26.0268
 }
 
 FUNC(ULB_Unicorn_Squares_Simple)
@@ -150,6 +152,7 @@ FUNC(ULB_Unicorn_Squares_Simple)
 		"030003250438_from_030003070370_030003430506_Squares_Simple.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
 		cv::Size(1920, 1080), 8, 20.94, 25.00); // VC14 + OpenCV 3.1.0: 20.9853, 25.05
+										   // GCC 4.9.2 + OpenCV 3.4.1: 20.9853, 25.05
 }
 
 int main(int argc, const char* argv[])
