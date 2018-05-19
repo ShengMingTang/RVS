@@ -46,18 +46,15 @@ void write_raw(std::ofstream& stream, const T* in, std::size_t length) {
  * Export image in YUV 420
  * */
 void export_ycbcr420(std::ofstream& yuv_stream, const cv::Mat& ycrcb) {
-	cv::Size sz = ycrcb.size();
-	cv::Size sub_sz(sz.width / 2, sz.height / 2);
-	
-	cv::Mat y_channel(sz, CV_8UC1), cb_channel(sz, CV_8UC1), cr_channel(sz, CV_8UC1);
-	std::vector<cv::Mat> dst{ y_channel, cr_channel, cb_channel };
-	cv::split(ycrcb, dst);
-	cv::resize(cb_channel, cb_channel, sub_sz, 0, 0, cv::INTER_CUBIC);
-	cv::resize(cr_channel, cr_channel, sub_sz, 0, 0, cv::INTER_CUBIC);
+	cv::Mat dst[3];
+	cv::split(ycrcb, dst); // BK: Rewrite after issue with RelWithDebInfo build on VC14 with OpenCV 3.1.0
 
-	write_raw(yuv_stream, y_channel.data, y_channel.cols*y_channel.rows);
-	write_raw(yuv_stream, cb_channel.data, cb_channel.cols*cb_channel.rows);
-	write_raw(yuv_stream, cr_channel.data, cr_channel.cols*cr_channel.rows);
+	cv::resize(dst[1], dst[1], cv::Size(), 0.5, 0.5, cv::INTER_CUBIC);
+	cv::resize(dst[2], dst[2], cv::Size(), 0.5, 0.5, cv::INTER_CUBIC);
+
+	write_raw(yuv_stream, dst[0].data, dst[0].size().area());
+	write_raw(yuv_stream, dst[2].data, dst[2].size().area());
+	write_raw(yuv_stream, dst[1].data, dst[1].size().area());
 }
 
 /**
