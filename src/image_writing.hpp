@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Support for n-bit raw texture and depth streams.
+
+Author  : Bart Kroon
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include "opencv2/core.hpp"
 
 /**
@@ -34,8 +47,8 @@ copies, substantial portions or derivative works of the Software.
 */
 
 /**
-Writes a color image (CV_8UC3) in RGB or YUV fileformat
+Writes a color image in RGB or YUV fileformat
 @param filename name of the image file
 @param img image to write
 */
-void write_color(std::string filename, const cv::Mat& img);
+void write_color(std::string filename, const cv::Mat3f image, int bit_depth);

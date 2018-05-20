@@ -50,7 +50,7 @@ public:
 	@param parameters Camera parameters
 	@param size Image size
 	*/
-	View(std::string file_color, std::string file_depth, Parameters parameters, cv::Size size);
+	View(std::string file_color, std::string file_depth, Parameters parameters, cv::Size size, int bit_depth_color, int bit_depth_depth);
 	/**
 	\brief Constructor
 	@param color Color image
@@ -58,52 +58,37 @@ public:
 	@param mask_depth Mask indicating empty values on the depth (for example in a Kinect depth map)
 	@param size Image size
 	*/
-	View(cv::Mat color, cv::Mat depth, cv::Mat mask_depth, cv::Size size);
-	/**
-	\brief Write the image in the file filename_color
-	*/
-	void write();
-	/**
-	\brief Show the image
-	*/
-	void show() {cv::Mat resized; cv::resize(color, resized, cv::Size(1920, 1080)); cv::imshow(filename_color, resized); cv::waitKey(0); };
+	View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1b mask_depth, cv::Size size);
 	/**
 	\brief Load the View from the files filename_color and filename_depth
 	*/
 	void load();
 	/**
-	\brief Unload the View (free the images)
-	*/
-	void unload();
-	/**
 	\brief Preprocess the 0 values of the depth map
 	*/
-	void preprocess_depth();
-	virtual cv::Mat& get_color() { return color; };
-	virtual cv::Mat& get_depth() { return depth; };
-	cv::Mat& get_mask_depth() { return mask_depth; };
-	cv::Size get_size() { return size; }
-	Parameters& get_parameters() { return parameter; };
+	virtual cv::Mat3f get_color() const { return color; };
+	virtual cv::Mat1f get_depth() const { return depth; };
+	cv::Mat1b get_mask_depth() const { return mask_depth; };
+	cv::Size get_size() const { return size; }
+	Parameters const& get_parameters() const { return parameter; };
 	void set_z(float z_n, float z_f) { this->z_near = z_n, this->z_far = z_f; };
-	void set_color(cv::Mat color_img) { this->color = color_img; };
+	void set_color(cv::Mat3f color_img) { this->color = color_img; };
 	
 protected:
-
-	void convert_to_float();
-	void convert_to_char();
-	cv::Mat color;
-	cv::Mat depth;
+	cv::Mat3f color;
+	cv::Mat1f depth;
 	/**
 	\brief Indicates true where the depth is missing in the file 
 	(for example in the case of a depth acquired with Kinect). 
 	*/
-	cv::Mat mask_depth;
+	cv::Mat1b mask_depth;
 	std::string filename_color;
 	std::string filename_depth;
-	bool is_loaded = false;
 	float z_near = 500.0f;
 	float z_far = 2000.0f;
 	cv::Size size;
+	int bit_depth_color;
+	int bit_depth_depth;
 	Parameters parameter;
 };
 

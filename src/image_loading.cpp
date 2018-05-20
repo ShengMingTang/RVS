@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Support for n-bit raw texture and depth streams.
+
+Author  : Bart Kroon
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include "image_loading.hpp"
 #include "Config.hpp"
 
@@ -37,195 +50,135 @@ copies, substantial portions or derivative works of the Software.
 #include <iostream>
 #include <stdexcept>
 
-
-template<typename T>
-void read_raw(std::ifstream& stream, T* out, std::size_t length) {
-	stream.read(reinterpret_cast<std::ifstream::char_type*>(out), length);
-}
-
-/**
- * import grey yuv image
- */
-cv::Mat import_raw_mono(const std::string& yuv_filename, int width, int height, int bit_depth) {
-	int type;
-	switch (bit_depth) {
-	case 8: type = CV_8U; break;
-	case 16: type = CV_16U; break;
-	default: throw std::invalid_argument("invalid raw image bit depth");
+namespace 
+{
+	void read_raw(std::ifstream& stream, cv::Mat image)
+	{
+		CV_Assert(stream.good() && !image.empty() && image.isContinuous());
+		stream.read(reinterpret_cast<char*>(image.data), image.size().area() * image.elemSize());
 	}
-	cv::Mat mat(height, width, type);
-	int length = width * height * bit_depth / 8;
-	std::ifstream yuv_stream(yuv_filename, std::ios_base::binary);
-	read_raw(yuv_stream, mat.data, length);
-	//imshow("depth",mat);
-	//std::cout << mat.at<float>(0, 0) << std::endl;
-	//cv::waitKey(0);
-	return mat;
-}
-/**
- * import Yuv rgb interleaved
- * */
-cv::Mat_<cv::Vec3b> import_rgb_interleaved(std::ifstream& yuv_stream, int width, int height) {
-	cv::Size sz(width, height);
-	cv::Mat_<uchar> rgb(sz);
-	read_raw(yuv_stream, rgb.data, 3 * width*height);
-	cv::Mat_<uchar> bgr;
-	cv::cvtColor(rgb, bgr, CV_RGB2BGR);
-	return bgr;
-}
-/**
- * import Yuv with scaling factor 420
- * */
-cv::Mat_<cv::Vec3b> import_ycbcr420(std::ifstream& yuv_stream, int width, int height) {
-	cv::Size sz(width, height);
-	cv::Size sub_sz(width / 2, height / 2);
 
-	cv::Mat_<uchar> y_channel(sz);
-	read_raw(yuv_stream, y_channel.data, width*height);
+	/**
+	 * reads a color image in yuv 420 format
+	 * @return the corresponding color image, normalized to [0, 1]
+	 * */
+	cv::Mat3f read_color_YUV(std::string filename, cv::Size size, int bit_depth) {
+		auto type = CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1);
+		cv::Mat y_channel(size, type);
+		cv::Mat cb_channel(size / 2, type);
+		cv::Mat cr_channel(size / 2, type);
 
-	cv::Mat_<uchar> cb_channel(sub_sz);
-	read_raw(yuv_stream, cb_channel.data, width*height / 4);
-	cv::resize(cb_channel, cb_channel, sz, 0, 0, cv::INTER_CUBIC);
+		std::ifstream stream(filename, std::ios::binary);
+		read_raw(stream, y_channel);
+		read_raw(stream, cb_channel);
+		read_raw(stream, cr_channel);
 
-	cv::Mat_<uchar> cr_channel(sub_sz);
-	read_raw(yuv_stream, cr_channel.data, width*height / 4);
-	cv::resize(cr_channel, cr_channel, sz, 0, 0, cv::INTER_CUBIC);
+		cv::resize(cb_channel, cb_channel, size, 0, 0, cv::INTER_CUBIC);
+		cv::resize(cr_channel, cr_channel, size, 0, 0, cv::INTER_CUBIC);
 
-	cv::Mat_<cv::Vec3b> ycrcb(sz);
-	cv::Mat src[] = { y_channel, cr_channel, cb_channel };
-	cv::merge(src, 3, ycrcb); // BK: Somehow solves problem with VC14 RelWithDebug build
+		cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 3));
+		cv::Mat src[] = { y_channel, cr_channel, cb_channel };
+		cv::merge(src, 3, image);
+		
+		image.convertTo(image, CV_32F, 1. / max_level(bit_depth));
+		
+		if (color_space == COLORSPACE_RGB)
+			cv::cvtColor(image, image, CV_YCrCb2BGR);
 
-	cv::Mat_<cv::Vec3b> bgr;
-	cv::cvtColor(ycrcb, bgr, CV_YCrCb2BGR);
-
-	return ycrcb;
-}
-/**
- * import Yuv rgb planar
- * */
-cv::Mat_<cv::Vec3b> import_rgb_planar(std::ifstream& yuv_stream, int width, int height) {
-	cv::Size sz(width, height);
-
-	cv::Mat_<uchar> r_channel(sz);
-	read_raw(yuv_stream, r_channel.data, width*height);
-
-	cv::Mat_<uchar> g_channel(sz);
-	read_raw(yuv_stream, g_channel.data, width*height);
-
-	cv::Mat_<uchar> b_channel(sz);
-	read_raw(yuv_stream, b_channel.data, width*height);
-
-	cv::Mat_<cv::Vec3b> bgr(sz);
-	int from_to[] = { 0, 0, 0, 1, 0, 2 };
-	std::vector<cv::Mat> dst{ bgr };
-	std::vector<cv::Mat> src{ b_channel, g_channel, r_channel };
-	cv::mixChannels(src, dst, from_to, 3);
-
-	return bgr;
-}
-
-
-/**
- * reads a disparity map (VSRS format) 
- * @return the corresponding depth map
- * */
-cv::Mat read_depth_yuv(std::string filename, cv::Size s, float z_near, float z_far) {
-	const int width = s.width;
-	const int height = s.height;
-	cv::Mat img;
-
-	const float alpha = -255.0f*z_near / (z_far - z_near);
-	const float beta = 255.0f*z_near*z_far / (z_far - z_near);
-
-	cv::Mat img2 = import_raw_mono(filename, width, height, 16);
-
-	img2.convertTo(img2, CV_32F);
-	img = beta / (img2 / 255.0 - alpha);
-
-	for (int x = 0; x < img.cols; ++x)
-		for (int y = 0; y < img.rows; ++y)
-			if (img2.at<float>(y, x) == 0.0)
-				img.at<float>(y, x) = 0.0;
-	img.convertTo(img, CV_32F);
-	return img;
-}
-
-/**
- * read a depth map (in any format supported by opencv)
- * @return the corresponding CV_8U depth map
- * */
-cv::Mat read_depth_RGB(std::string filename, cv::Size s) {
-	cv::Mat img = cv::imread(filename, cv::IMREAD_ANYDEPTH);
-	if (img.empty()) {
-		std::cout << "Depth file " << filename << " could not be read." << std::endl;
-		return img;
+		return image;
 	}
-	if (img.size() != s)
-		std::cout << "Depth file " << filename << " has not the expected size." << std::endl;
-	img.convertTo(img, CV_32F);
-	return img;
+
+	/**
+	* reads a disparity map (VSRS format)
+	* @return the corresponding depth map
+	* */
+	cv::Mat1f read_depth_YUV(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, cv::Mat1b& mask_depth) {
+		cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1));
+		std::ifstream stream(filename, std::ios_base::binary);
+		read_raw(stream, image);
+
+		mask_depth = image == 0;
+
+		image.convertTo(image, CV_32F, 1. / max_level(bit_depth));
+
+		cv::Mat1f depth = (z_far * z_near) / (z_near + image * (z_far - z_near));
+		depth.setTo(0.f, mask_depth);
+		return depth;
+	}
+
+	/**
+	 * reads a color image in any format supported by opencv
+	 * @return the corresponding color image, normalized to [0, 1]
+	 * */
+	cv::Mat3f read_color_RGB(std::string filename, cv::Size size, int bit_depth) {
+		cv::Mat image = cv::imread(filename, cv::IMREAD_UNCHANGED);
+
+		if (image.empty())
+			throw std::runtime_error("Failed to read color file");		
+		if (image.size() != size)
+			throw std::runtime_error("Color file does not have the expected size");
+		if (image.depth() != cvdepth_from_bit_depth(bit_depth))
+			throw std::runtime_error("Color file has wrong bit depth");
+		if (image.channels() != 3)
+			throw std::runtime_error("Color file has wrong number of channels");
+
+		image.convertTo(image, CV_32F, 1. / max_level(bit_depth));
+
+		if (color_space == COLORSPACE_YUV)
+			cv::cvtColor(image, image, CV_BGR2YCrCb);
+
+		return image;
+	}
+
+	/**
+	* read a depth map (in any format supported by opencv)
+	* @return the corresponding depth map, normalized to [0, 1]
+	* */
+	cv::Mat read_depth_RGB(std::string filename, cv::Size size, int bit_depth, cv::Mat1b& mask_depth) {
+		cv::Mat image = cv::imread(filename, cv::IMREAD_UNCHANGED);
+
+		if (image.empty())
+			throw std::runtime_error("Failed to read depth file");
+		if (image.size() != size)
+			throw std::runtime_error("Depth file does not have the expected size");
+		if (image.depth() != cvdepth_from_bit_depth(bit_depth))
+			throw std::runtime_error("Depth file has the wrong bit depth");
+		if (image.channels() != 1)
+			throw std::runtime_error("Depth file has the wrong number of channels");
+		
+		// BK: The original SVS appears not to scale cv::imread depth output.
+		image.convertTo(image, CV_32F);
+
+		mask_depth = cv::Mat1b(image.size(), 255u);
+
+		return image;
+	}
 }
-cv::Mat read_depth(std::string filename, cv::Size s, float z_near, float z_far) {
+
+int cvdepth_from_bit_depth(int bit_depth)
+{
+	if (bit_depth >= 1 && bit_depth <= 8)
+		return CV_8U;
+	else if (bit_depth >= 9 && bit_depth <= 16)
+		return CV_16U;
+	else throw std::invalid_argument("invalid raw image bit depth");
+}
+
+unsigned max_level(int bit_depth)
+{
+	return (1u << bit_depth) - 1u;
+}
+
+cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth) {
 	if (filename.find(".yuv") != std::string::npos)
-		return read_depth_yuv(filename, s, z_near, z_far);
-	return read_depth_RGB(filename, s);
+		return read_color_YUV(filename, size, bit_depth);
+
+	return read_color_RGB(filename, size, bit_depth);
 }
 
+cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, cv::Mat1b& mask_depth) {
+	if (filename.find(".yuv") != std::string::npos)
+		return read_depth_YUV(filename, size, bit_depth, z_near, z_far, mask_depth);
 
-/**
- * reads a color image in yuv 420  format
- * @return the corresponding color image in CV_8UC3
- * */
-cv::Mat read_color_yuv(std::string filename, cv::Size s) {
-	const int width = s.width;
-	const int height = s.height;
-	cv::Mat img;
-
-	std::ifstream yuv_stream(filename, std::ios_base::binary);
-	if (!yuv_stream.is_open()) {
-		std::ostringstream text;
-		text << "Failed to open YUV stream \"" << filename << "\"";
-		throw std::runtime_error(text.str());
-	}
-
-	img = import_ycbcr420(yuv_stream, width, height);
-	if (img.empty()) {
-		std::ostringstream text;
-		text << "Failed to read YUV stream \"" << filename << "\"";
-		throw std::runtime_error(text.str());
-	}
-
-	if (color_space == COLORSPACE_RGB)
-		cv::cvtColor(img, img, CV_YCrCb2BGR);
-	
-	return img;
-}
-/**
- * reads a color image in any format supported by opencv 
- * @return the corresponding color image in CV_8UC3
- * */
-cv::Mat read_color_RGB(std::string filename, cv::Size s) {
-	cv::Mat img = cv::imread(filename, CV_LOAD_IMAGE_COLOR);
-
-	if (img.empty()) {
-		std::cout << "Color file " << filename << " could not be read." << std::endl;
-		return img;
-	}
-	if (img.size() != s)
-		std::cout << "Color file " << filename << " has not the expected size." << std::endl;
-
-	if (color_space == COLORSPACE_YUV)
-		cv::cvtColor(img, img, CV_BGR2YCrCb);
-
-	return img;
-}
-cv::Mat read_color(std::string filename, cv::Size s) {
-	cv::Mat img;
-	if (filename.find(".yuv") != std::string::npos) {
-		img = read_color_yuv(filename, s);
-	}
-	else {
-		img = read_color_RGB(filename, s);
-	}
-	return img;
+	return read_depth_RGB(filename, size, bit_depth, mask_depth);
 }

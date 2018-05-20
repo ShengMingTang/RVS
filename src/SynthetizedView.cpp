@@ -32,7 +32,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include <iostream>
 
-SynthetizedView::SynthetizedView(cv::Mat color, cv::Mat depth_inverse, cv::Mat mask_depth, cv::Size size)
+SynthetizedView::SynthetizedView(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b mask_depth, cv::Size size)
 {
 	this->color = color;
 	this->depth_inverse = depth_inverse;
@@ -44,8 +44,8 @@ SynthetizedView::~SynthetizedView()
 {
 }
 
-SynthetizedViewTriangle::SynthetizedViewTriangle(cv::Mat color, cv::Mat depth_inverse, cv::Mat depth_prolongation_mask, cv::Mat triangle_shape, cv::Size size):
-	SynthetizedView(color, depth_inverse, depth_prolongation_mask, size)
+SynthetizedViewTriangle::SynthetizedViewTriangle(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b depth_prolongation_mask, cv::Mat1f triangle_shape, cv::Size size)
+	: SynthetizedView(color, depth_inverse, depth_prolongation_mask, size)
 {
 	this->triangle_shape = triangle_shape;
 }

@@ -27,6 +27,12 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ - */
 
+// NOTE: Integration tests require the following files to be downloaded and unpacked
+//       (or symlinked) in the root of the source tree:
+//
+//   *  Plane_B'_Kinect.zip from ULB and on the MPEG content server
+//   *  Plane_B'_Kinect-10bit.tar.gz from Philips to be uploaded
+
 #include "yaffut.hpp"
 
 #include "Pipeline.hpp"
@@ -154,6 +160,20 @@ FUNC(ULB_Unicorn_Squares_Simple)
 		cv::Size(1920, 1080), 8, 20.94, 25.00); // VC14 + OpenCV 3.1.0: 20.9853, 25.05
 										   // GCC 4.9.2 + OpenCV 3.4.1: 20.9853, 25.05
 }
+
+FUNC(ULB_Unicorn_10b)
+{
+	Pipeline p("./config_files/Unicorn_10b.cfg");
+	p.execute();
+	testing::compareWithReferenceView<std::uint16_t>(
+		"030003250438_from_030003070370_030003430506-10b.yuv",
+		"10bit/Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438-10b.yuv",
+		cv::Size(1920, 1080), 10, 21.26, 26.16); // VC14 + OpenCV 3.1.0: 21.3168, 26.2117
+}
+
+// Need test cases to cover:
+//   Load/write PNG
+//   YUV and RGB
 
 int main(int argc, const char* argv[])
 {

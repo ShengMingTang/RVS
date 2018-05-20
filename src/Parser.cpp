@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Support for n-bit raw texture and depth streams.
+
+Author  : Bart Kroon
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include "Parser.hpp"
 #include <iostream>
 #include <fstream>
@@ -340,6 +353,9 @@ void Parser::read_SVS_config_file() {
 	std::vector<std::string> exts;
 	if (seek_string(filename_parameter_file, 1, exts, "Extension", ""))
 		config.extension = exts[0];
+	// seek bitdepth (default = 8 for texture and 16 for depth)
+	seek_int(filename_parameter_file, config.bit_depth_color, "BitDepthColor", "Element bit depth of raw texture streams");
+	seek_int(filename_parameter_file, config.bit_depth_depth, "BitDepthDepth", "Element bit depth of raw depth streams");
 	//seek image_bigger_ratio (useful for translation computation). default =2
 	if (!seek_float(filename_parameter_file, image_bigger_ratio, "TranslationRatio", "Translation ratio"))
 		image_bigger_ratio = 4.0;
@@ -433,4 +449,5 @@ void Parser::print_results(
 	}
 	printf("%d\n", config.size.width);
 	printf("%d\n", config.size.height);
+	printf("%db color, %db depth\n", config.bit_depth_color, config.bit_depth_depth);
 }

@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Support for n-bit raw texture and depth streams.
+
+Author  : Bart Kroon
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include "Pipeline.hpp"
 #include "Parser.hpp"
 #include "Timer.hpp"
@@ -64,7 +77,6 @@ void Pipeline::execute()
 
 void Pipeline::load_image(int idx) {
 	input_images[idx].load();
-	input_images[idx].preprocess_depth();
 }
 
 void Pipeline::load_images() {
@@ -75,19 +87,6 @@ void Pipeline::load_images() {
 	}
 	PROF_END("loading");
 }
-
-void Pipeline::unload_image(int i)
-{
-	input_images[i].unload();
-}
-
-void Pipeline::unload_images()
-{
-	for (size_t idx = 0; idx < input_images.size(); ++idx) {
-		unload_image((int)idx);
-	}
-}
-
 
 void Pipeline::compute_view(int idx) {
 	//std::cout << filename << std::endl;
@@ -127,19 +126,9 @@ void Pipeline::compute_view(int idx) {
 
 	PROF_END("inpainting");
 
-	cv::Size s = BV->get_size();
-	resize(result, result, s);
+	resize(result, result, BV->get_size());
 
-	if (!save) {
-		cv::imshow("img1", result);
-		cv::waitKey(0);
-	}
-	else {
-		result = result * 255.0f;
-		result.convertTo(result, CV_8UC3);
-		write_color(config.outfilenames[idx], result);
-	}
-
+	write_color(config.outfilenames[idx], result, config.bit_depth_color);
 }
 
 
@@ -166,7 +155,8 @@ void Pipeline::create_images()
 
 void Pipeline::create_image(int idx)
 {
-	View image = View(config.texture_names[idx], config.depth_names[idx], config.params_real[idx], config.size);
+	View image = View(config.texture_names[idx], config.depth_names[idx], config.params_real[idx],
+		config.size, config.bit_depth_color, config.bit_depth_depth);
 	if (config.znear.size() > 0)
 		image.set_z(config.znear[idx], config.zfar[idx]);
 
