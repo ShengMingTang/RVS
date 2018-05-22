@@ -90,7 +90,8 @@ set(PROJECT_SOURCES
 	src/image_loading.cpp
 	src/image_writing.cpp
 	src/inpainting.cpp
-	src/transform.cpp)
+	src/transform.cpp
+	src/EquirectangularProjection.cpp)
 
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
@@ -106,7 +107,8 @@ set(PROJECT_HEADERS
 	src/image_writing.hpp
 	src/inpainting.hpp
 	src/transform.hpp
-	src/IntegralImage2D.h)
+	src/IntegralImage2D.h
+	src/EquirectangularProjection.hpp)
 
 set(CONFIGURATION_FILES
 	config_files/example_config_file.cfg
