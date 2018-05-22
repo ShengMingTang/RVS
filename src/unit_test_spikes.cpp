@@ -63,15 +63,17 @@ FUNC(Spike_ReadImageAndDepth)
 {
     const std::string nameImg   = "./Plane_B'/Plane_B'_Texture/Kinect_z0300y0307x0370.yuv";
     const std::string nameDepth = "./Plane_B'/Plane_B'_Depth/Kinect_z0300y0307x0370.yuv";
+    const int bit_depth_color = 8;
+    const int bit_depth_depth = 16;
 
     cv::Size size = cv::Size(1920,1080);
     color_space = COLORSPACE_RGB;
-    cv::Mat im = read_color(nameImg, size);
-
+    cv::Mat im = read_color(nameImg, size, bit_depth_color);
+    cv::Mat1b mask_depth = cv::Mat1b::ones(size) * 255;
 
     float z_near  = 500;
     float z_far   = 2000;
-    cv::Mat depth = read_depth(nameDepth, size, z_near, z_far );
+    cv::Mat depth = read_depth(nameDepth, size, bit_depth_depth, z_near, z_far, mask_depth );
 
     depth.convertTo( depth, -1, 1.0 / 2000);
 
@@ -84,6 +86,10 @@ FUNC(Spike_ReadImageAndDepth)
 
 FUNC(Spike_ViewSynthSingle)
 {
+    const int bit_depth_color = 8;
+    const int bit_depth_depth = 16;
+
+    
     cout << endl;
 
     Parser parser("./config_files/example_config_file.cfg");
@@ -109,11 +115,11 @@ FUNC(Spike_ViewSynthSingle)
         cout << nameDepth << endl;
         //cout << params.camera_matrix << endl;
 
-        View image = View(nameImg, nameDepth, params, config.size);
+        View image = View(nameImg, nameDepth, params, config.size, bit_depth_color, bit_depth_depth);
         //if (config.znear.size() > 0) image.set_z(config.znear[idx], config.zfar[idx]);
 
         image.load();
-        image.preprocess_depth();
+        //image.preprocess_depth();
 
         SynthetizedViewTriangle renderer( config.params_virtual[0], image.get_size() );
 
@@ -132,4 +138,6 @@ FUNC(Spike_ViewSynthSingle)
     cv::waitKey(0);
 
 }
+
+
 
