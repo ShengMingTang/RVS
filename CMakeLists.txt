@@ -91,7 +91,9 @@ set(PROJECT_SOURCES
 	src/image_writing.cpp
 	src/inpainting.cpp
 	src/transform.cpp
-	src/EquirectangularProjection.cpp)
+	src/EquirectangularProjection.cpp
+	src/PerspectiveUnprojector.cpp
+	src/PerspectiveProjector.cpp)
 
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
@@ -108,7 +110,11 @@ set(PROJECT_HEADERS
 	src/inpainting.hpp
 	src/transform.hpp
 	src/IntegralImage2D.h
-	src/EquirectangularProjection.hpp)
+	src/EquirectangularProjection.hpp
+	src/Unprojector.hpp
+	src/Projector.hpp
+	src/PerspectiveUnprojector.hpp
+	src/PerspectiveProjector.hpp)
 
 set(CONFIGURATION_FILES
 	config_files/example_config_file.cfg
