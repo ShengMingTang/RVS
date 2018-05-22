@@ -54,7 +54,7 @@ public:
 	/**
 	@return an image indicating the pixels without any value (disoclusion/empty values on every image)
 	*/
-	virtual cv::Mat get_inpaint_mask() = 0;
+	virtual cv::Mat1b get_inpaint_mask() const = 0;
 	/**
 	@return the final size the image has to be written
 	*/
@@ -84,7 +84,7 @@ public:
 	Set the value of a in the formula \f$ color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)} \f$ if a<0 
 	*/
 	void set_blending_exp(float exp) { blending_exp = exp; };
-	cv::Mat get_inpaint_mask() { return to_inpaint; };
+	cv::Mat1b get_inpaint_mask() const { return to_inpaint; };
 private:
 	/** The value of a in the formula \f$color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)}\f$ if a<0 */
 	float blending_exp;
@@ -112,8 +112,8 @@ public:
 	\brief Set the value of a for low frequency and highfrequency images in the formula \f$color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)}\f$ if a<0
 	*/
 	void set_blending_exp(float exp_low_freq, float exp_high_freq) { low_freq.set_blending_exp(exp_low_freq); high_freq.set_blending_exp(exp_high_freq); };
-	cv::Mat& get_color() { color = low_freq.get_color() + high_freq.get_color();  return color; };
-	cv::Mat get_inpaint_mask() { return low_freq.get_inpaint_mask(); };
+	cv::Mat3f get_color() const { return low_freq.get_color() + high_freq.get_color();  };
+	cv::Mat1b get_inpaint_mask() const { return low_freq.get_inpaint_mask(); };
 private:
 	BlendedViewSimple low_freq;
 	BlendedViewSimple high_freq;

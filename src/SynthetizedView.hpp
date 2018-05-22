@@ -46,7 +46,7 @@ public:
 	@param mask_depth Mask indicating empty values on the depth (for example in a Kinect depth map)
 	@param size View final size
 	*/
-	SynthetizedView(cv::Mat color, cv::Mat depth_inverse, cv::Mat depth_prolongation_mask, cv::Size size);
+	SynthetizedView(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b depth_prolongation_mask, cv::Size size);
 	/**
 	\brief Constructor
 	@param parameters Camera parameters
@@ -70,17 +70,17 @@ public:
 	@return An image of the same size than the view, indicating the quality of each pixel. 
 	Pixel of higher quality will be prioritized during blending.
 	*/
-	virtual cv::Mat& get_quality() = 0;
+	virtual cv::Mat1f get_quality() const = 0;
 
-	cv::Mat& get_depth_inverse() { return depth_inverse; };
-	cv::Mat& get_depth() { depth = 1.0f / depth_inverse;  return depth; };
+	cv::Mat1f get_depth_inverse() { return depth_inverse; };
+	cv::Mat1f get_depth() { return 1.f / depth_inverse; };
 
 	
 protected:
 	/**
 	\brief Disparity
 	*/
-	cv::Mat depth_inverse; 
+	cv::Mat1f depth_inverse; 
 };
 
 /**
@@ -97,18 +97,18 @@ public:
 	@param triangle_shape Quality map of each of the triangles
 	@param size View final size
 	*/
-	SynthetizedViewTriangle(cv::Mat color, cv::Mat depth_inverse, cv::Mat mask_depth, cv::Mat triangle_shape, cv::Size size);
+	SynthetizedViewTriangle(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b mask_depth, cv::Mat1f triangle_shape, cv::Size size);
 	using SynthetizedView::SynthetizedView;
 	/**
 	Compute the view by dividing the input view in triangles of 3 adjacent pixels, to avoid non disocclusion holes and get a first inpainting
 	*/
 	void compute(View& img);
 	SynthetizedViewTriangle* copy() const;
-	cv::Mat& get_triangle_shape() { return triangle_shape; };
-	cv::Mat& get_quality() {quality = depth_inverse.mul(triangle_shape); return quality; };
+	cv::Mat1f get_triangle_shape() const { return triangle_shape; };
+	cv::Mat1f get_quality() const { return depth_inverse.mul(triangle_shape); };
+
 private:
-	cv::Mat triangle_shape;
-	cv::Mat quality;
+	cv::Mat1f triangle_shape;
 };
 
 /**
@@ -122,8 +122,9 @@ public:
 	Compute the view by warping every pixel: every pixel is considered as a rectangle
 	*/
 	void compute(View& img);
-	cv::Mat& get_quality() { return depth_inverse; };
+	cv::Mat1f get_quality() const { return depth_inverse; };
 	SynthetizedViewSquare* copy() const;
+
 private:
 	int rescale_method_RGB;
 	int rescale_method_Depth;

@@ -90,8 +90,7 @@ set(PROJECT_SOURCES
 	src/image_loading.cpp
 	src/image_writing.cpp
 	src/inpainting.cpp
-	src/transform.cpp
-	src/EquirectangularProjection.cpp)
+	src/transform.cpp)
 
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
@@ -107,22 +106,23 @@ set(PROJECT_HEADERS
 	src/image_writing.hpp
 	src/inpainting.hpp
 	src/transform.hpp
-	src/IntegralImage2D.h
-	src/EquirectangularProjection.hpp)
+	src/IntegralImage2D.h)
 
-set(PROJECT_CONFIG
-	CMakeLists.txt
-	example
-	config_files/example_config_file.cfg)
+set(CONFIGURATION_FILES
+	config_files/example_config_file.cfg
+	config_files/Unicorn_Squares_Simple.cfg
+	config_files/Unicorn_Triangles_Simple.cfg
+	config_files/Unicorn_Triangles_MultiSpectral.cfg
+	config_files/Unicorn_10b.cfg)
 				 						 	 
 source_group("Source" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
 source_group("Headers" FILES ${PROJECT_HEADERS})
-source_group("Config" FILES ${PROJECT_CONFIG})
+source_group("Configurations" FILES ${CONFIGURATION_FILES})
 
-add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_CONFIG})
-add_executable(${PROJECT_NAME} src/view_synthesis.cpp)
-add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp src/unit_test_spikes.cpp)
-add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp)
+add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+add_executable(${PROJECT_NAME} src/view_synthesis.cpp example)
+add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
+add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp ${CONFIGURATION_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
 target_link_libraries(${PROJECT_NAME}UnitTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})

@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Support for n-bit raw texture and depth streams.
+
+Author  : Bart Kroon
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #pragma once
 
 #include "helpers.hpp"
@@ -113,6 +126,12 @@ public:
 
 	/** What is the extension of the files to use if not specified in configuration file */
 	std::string extension = "png";
+
+	/** The element bit depth of raw input and output texture streams */
+	int bit_depth_color = 8;
+
+	/** The element bit depth of raw input and output depth streams */
+	int bit_depth_depth = 16;
 
 	/** Do we use inpainting (TODO)*/
 	int inpainting = 0;

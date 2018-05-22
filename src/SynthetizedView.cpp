@@ -32,7 +32,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include <iostream>
 
-SynthetizedView::SynthetizedView(cv::Mat color, cv::Mat depth_inverse, cv::Mat mask_depth, cv::Size size)
+SynthetizedView::SynthetizedView(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b mask_depth, cv::Size size)
 {
 	this->color = color;
 	this->depth_inverse = depth_inverse;
@@ -44,8 +44,8 @@ SynthetizedView::~SynthetizedView()
 {
 }
 
-SynthetizedViewTriangle::SynthetizedViewTriangle(cv::Mat color, cv::Mat depth_inverse, cv::Mat depth_prolongation_mask, cv::Mat triangle_shape, cv::Size size):
-	SynthetizedView(color, depth_inverse, depth_prolongation_mask, size)
+SynthetizedViewTriangle::SynthetizedViewTriangle(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b depth_prolongation_mask, cv::Mat1f triangle_shape, cv::Size size)
+	: SynthetizedView(color, depth_inverse, depth_prolongation_mask, size)
 {
 	this->triangle_shape = triangle_shape;
 }
@@ -58,7 +58,7 @@ void SynthetizedViewTriangle::compute(View& img)
 	cv::Mat rotation_camera_coord = parameter.rotation.t()*img.get_parameters().rotation;
 
     //apply translation and rotation 
-	color = translateBigger_trianglesMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth, triangle_shape,true);
+	color = translateBigger_trianglesMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth, triangle_shape);
 
     //depth in the new coordinate system: translation+rotation
 	translateZ_disp(depth_inverse, -real_transl_camera_coord[2]);
@@ -83,7 +83,7 @@ void SynthetizedViewSquare::compute(View& img)
 	cv::Mat rotation_camera_coord = parameter.rotation.t()*img.get_parameters().rotation;
 
     //apply translation and rotation 
-	color = translateBigger_squaresMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth, true);
+	color = translateBigger_squaresMethod(img.get_color(), img.get_depth(), img.get_mask_depth(), rotation_camera_coord, real_transl_camera_coord, img.get_parameters().camera_matrix, parameter.camera_matrix, rescale*parameter.sensor, depth_inverse, mask_depth);
 
     //depth in the new coordinate system: translation+rotation
 	translateZ_disp(depth_inverse, -real_transl_camera_coord[2]);

@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This header file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Support for n-bit raw texture and depth streams.
+
+Author  : Bart Kroon
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include <string>
 #include "opencv2/core.hpp"
 
@@ -34,18 +47,23 @@ copies, substantial portions or derivative works of the Software.
 \brief The file containing the image loading functions
 */
 
+int cvdepth_from_bit_depth(int bit_depth);
+unsigned max_level(int bit_depth);
+
 /**
 Reads a color image (RGB or YUV). Returns a CV_8UC3 image 
 @param filename name of the image file
-@param s size of the loaded file
+@param size size of the loaded file
+@param bit_depth bit depth of raw stream
 */
-cv::Mat read_color(std::string filename, cv::Size s);
+cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth);
 
 /**
 Reads a depth image: a exr depth file or a YUV disparity file. Returns a float image
 @param filename name of the image file
-@param s size of the loaded file (for YUV)
-@param z_near to convert YUV disparity to depth 
+@param size size of the loaded file (for YUV)
+@param bit_depth bit depth of raw stream
+@param z_near to convert YUV disparity to depth
 @param n_far to convert YUV disparity to depth 
 */
-cv::Mat read_depth(std::string filename, cv::Size s, float z_near, float z_far);
+cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, cv::Mat1b& mask_depth);

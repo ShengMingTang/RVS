@@ -48,9 +48,8 @@ Translates camera in any 3D direction, the result is a bigger image, to keep mor
 @param new_cam_mat Output view camera matrix
 @param sensor Sensor size
 @param new_depth_prologation_mask Output depth mask
-@param with_rotation Also applies a rotation
 */
-cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, bool with_rotation);
+cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask);
 
 /**
 Translates camera in any 3D direction, the result is a bigger image, to keep more information for a future rotation.
@@ -64,9 +63,8 @@ Translates camera in any 3D direction, the result is a bigger image, to keep mor
 @param sensor Sensor size
 @param new_depth_prologation_mask Output depth mask
 @param triangle_shape Quality of the warped triangles (elongated and big = low quality)
-@param with_rotation Also applies a rotation
 */
-cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, bool with_rotation);
+cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape);
 
 /**
 creates the new depth map regarding the translation

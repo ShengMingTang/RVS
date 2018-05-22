@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Support for n-bit raw texture and depth streams.
+
+Author  : Bart Kroon
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include "View.hpp"
 #include "Parser.hpp"
 #include "inpainting.hpp"
@@ -33,15 +46,17 @@ copies, substantial portions or derivative works of the Software.
 
 #include <iostream>
 
-View::View(std::string file_color, std::string file_depth, Parameters parameters, cv::Size size)
+View::View(std::string file_color, std::string file_depth, Parameters parameters, cv::Size size, int bit_depth_color, int bit_depth_depth)
 {
 	this->filename_color = file_color;
 	this->filename_depth = file_depth;
 	this->parameter = parameters;
 	this->size = size;
+	this->bit_depth_color = bit_depth_color;
+	this->bit_depth_depth = bit_depth_depth;
 }
 
-View::View(cv::Mat color, cv::Mat depth, cv::Mat mask_depth, cv::Size size)
+View::View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1b mask_depth, cv::Size size)
 {
 	this->color = color;
 	this->depth = depth;
@@ -49,50 +64,8 @@ View::View(cv::Mat color, cv::Mat depth, cv::Mat mask_depth, cv::Size size)
 	this->size = size;
 }
 
-void View::write()
-{
-	if (color.depth() == CV_32F) {
-		cv::Mat col = 255.0f*color;
-		cv::imwrite(filename_color, col);
-	}
-	else
-		cv::imwrite(filename_color, color);
-
-}
-
 void View::load()
 {
-	is_loaded = true;
-	//load color image
-	color = read_color(filename_color, size);  
-	convert_to_float();
-	// Load depth images
-	depth = read_depth(filename_depth, size, z_near, z_far);
-}
-
-void View::unload()
-{
-	is_loaded = false;
-	color.release();
-	depth.release();
-	mask_depth.release();
-
-}
-
-void View::preprocess_depth()
-{
-	depth.convertTo(depth, CV_32F);
-	mask_depth = (depth == 0.0f);
-}
-
-void View::convert_to_float()
-{
-	color.convertTo(color, CV_32FC3);
-	color /= 255.0;
-}
-
-void View::convert_to_char()
-{
-	color *= 255.0;
-	color.convertTo(color, CV_8UC3);
+	color = read_color(filename_color, size, bit_depth_color);  
+	depth = read_depth(filename_depth, size, bit_depth_depth, z_near, z_far, mask_depth);
 }

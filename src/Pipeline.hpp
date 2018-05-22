@@ -70,12 +70,6 @@ private:
 	*/
 	void load_images();
 
-	void unload_image(int i);
-	/**
-	\brief Unload all the input views
-	*/
-	void unload_images();
-
 	/**
 	\brief Compute all the virtual views
 	*/
@@ -87,9 +81,5 @@ private:
 
 	Config config;
 	std::vector<View> input_images;
-	bool save = true;
-	
-
-
 };
 

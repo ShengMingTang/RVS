@@ -130,10 +130,9 @@ cv::Mat rotation_map(const cv::Mat & R, const cv::Mat& pos, const cv::Mat & new_
 /*translate camera in camera coordinate system, in any 3 directions, the result is a bigger image, to keep more information for a future rotation.
 -depth_inv: image in which the inverse of the depth for the new image will be stored, can be used for blending
 -image_bigger_ratio: multiplies size of img, to get a bigger image. The resulting image is centered*/
-cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, bool with_rotation) {
+cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask) {
 	cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
-	if (!with_rotation)
-		s = cv::Size(static_cast<int>(s.width*image_bigger_ratio), static_cast<int>(s.height*image_bigger_ratio));
+
 	float w = depth.cols*rescale;
 	float h = depth.rows*rescale;
 
@@ -144,10 +143,8 @@ cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, 
 	//compute new position
 	cv::Mat new_pos_m = translation_map(depth, t, old_cam_mat, new_cam_mat, sensor, 0.0f);
 	cv::Mat new_pos_M = translation_map(depth, t, old_cam_mat, new_cam_mat, sensor, 0.99f);
-	if (with_rotation) {
-		new_pos_m = rotation_map(R, new_pos_m, new_cam_mat, sensor);
-		new_pos_M = rotation_map(R, new_pos_M, new_cam_mat, sensor);
-	}
+	new_pos_m = rotation_map(R, new_pos_m, new_cam_mat, sensor);
+	new_pos_M = rotation_map(R, new_pos_M, new_cam_mat, sensor);
 	cv::Mat img_big;
 	cv::resize(img, img_big, cv::Size((int)(rescale*(float)img.cols), (int)(rescale*(float)img.rows)),0,0,CV_INTER_CUBIC);
 
@@ -172,8 +169,8 @@ cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, 
 			for (float frac_x = 0; frac_x < rescale; frac_x +=1.0)
 				for (float frac_y = 0; frac_y < rescale; frac_y += 1.0){
 					cv::Vec3f col = img_big.at<cv::Vec3f>((int)(rescale*(float)y+frac_y),(int) (rescale*(float)x+frac_x));
-					for (int xint = MAX((int)(Xm+frac_x*stepX),0); xint <= MIN((int)(Xm + (frac_x+1.0)*stepX), image_bigger_ratio*w); xint++)
-						for (int yint = MAX((int)(Ym + frac_y*stepY),0); yint <= MIN((int)(Ym + (frac_y + 1.0)*stepY), image_bigger_ratio*h); yint++) {
+					for (int xint = MAX((int)(Xm+frac_x*stepX),0); xint <= MIN((int)(Xm + (frac_x+1.0)*stepX), s.width - 1); xint++)
+						for (int yint = MAX((int)(Ym + frac_y*stepY),0); yint <= MIN((int)(Ym + (frac_y + 1.0)*stepY), s.height - 1); yint++) {
 							int X = xint;
 							int Y = yint;
 							//if (X > 0 && X < image_bigger_ratio*w && Y>0 && Y < image_bigger_ratio*h) {
@@ -284,10 +281,8 @@ void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat
 }
 } // namespace
 
-cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, bool with_rotation) {
+cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape) {
 	cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
-	if (!with_rotation)
-		s = cv::Size(static_cast<int>(s.width*image_bigger_ratio), static_cast<int>(s.height*image_bigger_ratio));
 	
 	depth_inv = cv::Mat::zeros(s, CV_32F);
 	new_depth_prologation_mask = cv::Mat::ones(s, depth_prologation_mask.type());
@@ -296,8 +291,7 @@ cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth
 
 	//compute new position
 	cv::Mat new_pos = translation_map(depth, t, old_cam_mat, new_cam_mat, sensor, 0.5);
-	if (with_rotation)
-		new_pos = rotation_map(R, new_pos, new_cam_mat, sensor);
+	new_pos = rotation_map(R, new_pos, new_cam_mat, sensor);
 	
 	//compute triangulation
 	for (int x = 0; x < img.cols - 1; ++x)

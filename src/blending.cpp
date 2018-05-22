@@ -271,7 +271,7 @@ void calcBlurringBilateral(cv::Mat img, cv::Mat &blr, cv::Mat /*msk*/, int bil_r
 cv::Mat blend_img_by_max(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& qualities, const std::vector<cv::Mat>& depth_prolongations, cv::Vec3f empty_color, cv::Mat& quality, cv::Mat& depth_prolongation_mask, cv::Mat& inpaint_mask) {
 	cv::Mat res = cv::Mat::zeros(imgs[0].size(), CV_32FC3);
 	cv::Mat quality_res = cv::Mat::zeros(imgs[0].size(), CV_32F);
-	cv::Mat depth_prolongation_mask_res = cv::Mat::zeros(imgs[0].size(), CV_32F);
+	cv::Mat depth_prolongation_mask_res = cv::Mat::zeros(imgs[0].size(), depth_prolongation_mask.type());
 	cv::Mat inpaint_mask_res = (quality_res < -1.0);
 	res.setTo(empty_color);
 	for (int x = 0; x < res.cols; ++x)
@@ -335,7 +335,7 @@ cv::Mat blend_img(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& 
 		return blend_img_by_max(imgs, qualities, depth_prolongations, empty_color, quality, depth_prolongation_mask, inpaint_mask);
 	cv::Mat res = cv::Mat::zeros(imgs[0].size(), CV_32FC3);
 	cv::Mat quality_res = cv::Mat::zeros(imgs[0].size(), CV_32F);
-	cv::Mat depth_prolongation_mask_res = cv::Mat::zeros(imgs[0].size(), CV_32F);
+	cv::Mat depth_prolongation_mask_res = cv::Mat::zeros(imgs[0].size(), depth_prolongation_mask.type());
 	cv::Mat inpaint_mask_res = (quality_res < -1.0);
 	for (int x = 0; x < res.cols; ++x)
 		for (int y = 0; y < res.rows; ++y) {
