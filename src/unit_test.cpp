@@ -39,17 +39,48 @@ copies, substantial portions or derivative works of the Software.
 using namespace std;
 
 
+double DistanceOnUnitCircle( float a, float b)
+{
+    return cv::norm( cv::Vec2f( std::sin(a), std::cos(a) ) - cv::Vec2f(std::sin(b), std::cos(b) ) );
+}
 
-FUNC( TestERP_WithConstantRadius)
+
+FUNC( TestERP_CoordinateTransform )
+{
+    const double eps = 1e-7;
+    const int N = 10;
+    
+    // exclude poles
+    for( int i =1; i< N; ++i )      
+        for(int j = 0; j<N; ++j )
+        {
+            float inorm = float(i) / N - 0.5f;
+            float jnorm = float(j) / N - 0.5f;
+            
+            float theta = static_cast<float>( -inorm * CV_PI  );    
+            float phi   = static_cast<float>( -jnorm * CV_2PI );    
+
+            auto sphericalExpected = cv::Vec2f(phi, theta);
+
+            auto xyzNorm           = erp::CalcEuclidanCoordinates( sphericalExpected );
+            auto sphericalActual   = erp::CalcSphereCoordinates( xyzNorm);
+
+            CHECK( DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] ) < eps );
+            CHECK( DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] ) < eps );
+        }
+
+}
+
+FUNC( TestERP_BackProject)
 {
     const double eps = 1e-7;
     
-    MeshEquirectangular erp;
+    erp::MeshEquirectangular erpMesh;
 
     cv::Size size(30,30);
     cv::Mat1f radiusMap = cv::Mat1f::ones(size);
 
-    auto vertices = erp.CalculateVertices(radiusMap);
+    auto vertices = erpMesh.CalculateVertices(radiusMap);
 
     const double radiusExpected = 1.0;
 
@@ -57,3 +88,29 @@ FUNC( TestERP_WithConstantRadius)
         ALMOST( radiusExpected,  cv::norm(v) , eps );
 
 }
+
+
+
+//FUNC( TestERP_Reproject)
+//{
+//    const double eps = 1e-7;
+//
+//    MeshEquirectangular erp;
+//
+//    cv::Size size(30,30);
+//    cv::Mat1f radiusMap = cv::Mat1f::ones(size);
+//
+//    auto vertices = erp.CalculateVertices(radiusMap);
+//
+//    const double radiusExpected = 1.0;
+//
+//    for( auto v : vertices )
+//    {
+//        
+//    
+//    }
+//
+//
+//
+//
+//}

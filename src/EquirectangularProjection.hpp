@@ -31,14 +31,24 @@ copies, substantial portions or derivative works of the Software.
 
 #include "opencv2/core/core.hpp"
 
+namespace erp
+{
+
+cv::Vec3f CalcEuclidanCoordinates( const cv::Vec2f& phiTheta );
+
+cv::Vec2f CalcSphereCoordinates( const cv::Vec3f& xyz_norm );
+
 
 struct MeshEquirectangular
 {
-    cv::Mat3f vertices;
-    cv::Mat3f polarAngles;
+    cv::Mat3f verticesXYZ;
+    cv::Mat3f verticesXYZNormalized;
+    cv::Mat2f phiTheta;
 
     cv::Mat3f CalculateVertices( cv::Mat1f radiusMap);
-    void CalculatePolarAngles(cv::Size size);
+    void      CalcNormalizedEuclidianCoordinates(cv::Size size);
 
     cv::Vec<bool, 2>      wrap = cv::Vec<bool, 2>(true, false);;
 };
+
+} // namespace

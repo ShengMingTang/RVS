@@ -30,81 +30,77 @@ copies, substantial portions or derivative works of the Software.
 #include "EquirectangularProjection.hpp"
 
 
-namespace
+
+cv::Vec3f erp::CalcEuclidanCoordinates( const cv::Vec2f& phiTheta )
 {
-    // Coordinates and indices are designed to sample into the disparity map
-    // size == 4, wrap T: { 1/8, 3/8, 5/8, 7/8, 9/8 }      (size + 1), sample points { 1/8, 3/8, 5/8, 7/8, 1/8 }     , pixel indices { 0, 1, 2, 3, 0 }
-    //          , wrap F: {  0 , 1/8, 3/8, 5/8, 7/8,  1  } (size + 2), sample points { 1/8, 1/8, 3/8, 5/8, 7/8, 7/8 }, pixel indices { 0, 0, 1, 2, 3, 3 }
+    const float& phi   = phiTheta[0];
+    const float& theta = phiTheta[1];
 
-    float gridPoint(int index, int size, bool wrap)
-    {
-        if (wrap) {
-            return float((0.5 + index)/size);
-        }
-        else {
-            return std::max(0.f, std::min(1.f, float((-0.5 + index)/size)));
-        }
-    }
+    return cv::Vec3f(  std::cos(phi) * std::cos(theta),
+                       std::sin(phi)*std::cos(theta),
+                       std::sin(theta) );
+}
 
-    int gridIndex(int index, int size, bool wrap)
-    {
-        if (wrap) {
-            return index == size ? 0 : index;
-        }
-        else {
-            return std::max(0, std::min(size - 1, index - 1));
-        }
+cv::Vec2f erp::CalcSphereCoordinates( const cv::Vec3f& xyz_norm )
+{
+    const float& x = xyz_norm[0];
+    const float& y = xyz_norm[1];
+    const float& z = xyz_norm[2];
 
-    }
+    float phi   = std::atan2(y,x);
+    float theta = std::asin( z );
+
+    return cv::Vec2f(phi, theta);
 }
 
 
-void MeshEquirectangular::CalculatePolarAngles(cv::Size size)
+
+void erp::MeshEquirectangular::CalcNormalizedEuclidianCoordinates(cv::Size size)
 {
-    if( polarAngles.size() == size )
+    if( verticesXYZNormalized.size() == size )
         return;
 
-    polarAngles.create(size);
-    for (int i = 0; i != polarAngles.rows; ++i)
+    phiTheta.create(size);
+
+    int H = size.height;
+    int W = size.width;
+
+    verticesXYZNormalized.create(size);
+    for (int i = 0; i < H; ++i)
     {
-        float v = gridPoint(i, size.height, wrap[1]);
-        auto theta = float(CV_PI - CV_PI*v);
+        float vPos  = 0.5f + i;
+        float theta = CV_PI * ( 0.5f - vPos / H );
 
-        for (int j = 0; j != polarAngles.cols; ++j)
+        for (int j = 0; j < W; ++j)
         {
-            float u = gridPoint(j, size.width, wrap[0]);
-            auto phi = float(CV_2PI*u);
+            float hPos = 0.5f + j;
+            float phi  = CV_2PI * ( 0.5 - hPos / W );
 
-            polarAngles(i, j) = cv::Vec3f( std::sin(theta)*std::sin(phi),
-                -std::cos(theta),
-                -std::sin(theta)*std::cos(phi));
+            phiTheta(i,j) = cv::Vec2f(phi, theta);
+            
+            verticesXYZNormalized(i, j) = erp::CalcEuclidanCoordinates( phiTheta(i,j) );
         }
     }
+
+
 }
 
 
 
 
-cv::Mat3f MeshEquirectangular::CalculateVertices( cv::Mat1f radiusMap)
+cv::Mat3f erp::MeshEquirectangular::CalculateVertices( cv::Mat1f radiusMap)
 {
     cv::Size size = radiusMap.size();
 
-    CalculatePolarAngles(size);
+    CalcNormalizedEuclidianCoordinates(size);
 
-    vertices.create(size);
+    verticesXYZ.create(size);
 
-    for (int i = 0; i < size.height; ++i)
-    {
-        int n = gridIndex(i, size.height, wrap[1]);
+    for( int i=0; i < verticesXYZ.rows; ++i )
+        for( int j =0; j < verticesXYZ.cols; ++j )
+            verticesXYZ(i,j) = radiusMap(i,j) * verticesXYZNormalized(i,j);
 
-        for (int j = 0; j < size.width; ++j)
-        {
-            int m = gridIndex(j, size.width, wrap[0]);
-            auto radius = radiusMap(n, m);
-            vertices(i,j) = radius * polarAngles(i, j);
-        }
-    }
 
-    return vertices;
+    return verticesXYZ;
 }
 

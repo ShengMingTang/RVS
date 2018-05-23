@@ -29,6 +29,8 @@ copies, substantial portions or derivative works of the Software.
 
 #include "yaffut.hpp"
 
+#include "EquirectangularProjection.hpp"
+
 #include "Pipeline.hpp"
 #include "image_loading.hpp"
 
@@ -88,7 +90,6 @@ FUNC(Spike_ViewSynthSingle)
 {
     const int bit_depth_color = 8;
     const int bit_depth_depth = 16;
-
     
     cout << endl;
 
@@ -96,14 +97,10 @@ FUNC(Spike_ViewSynthSingle)
 
     auto config = parser.get_config();
 
-    //config.params_virtual[0]
-
     std::vector<View> input_images;
-
 
     int numInputs = int( config.params_real.size() );
     cout << "numInputs " << numInputs << endl;
-
 
     for( int idx = 0; idx <numInputs; ++idx)
     {
@@ -119,7 +116,6 @@ FUNC(Spike_ViewSynthSingle)
         //if (config.znear.size() > 0) image.set_z(config.znear[idx], config.zfar[idx]);
 
         image.load();
-        //image.preprocess_depth();
 
         SynthetizedViewTriangle renderer( config.params_virtual[0], image.get_size() );
 
@@ -136,8 +132,89 @@ FUNC(Spike_ViewSynthSingle)
     }
 
     cv::waitKey(0);
+}
+
+cv::Mat imreadThrow( const std::string& filename, int flags = cv::IMREAD_COLOR )
+{
+    auto im = cv::imread(filename, flags );
+    if( im.empty() )
+        throw std::runtime_error( "Can't read " + filename );
+    return im;
+}
+
+template< class T, int cn>
+auto  SelectChannel(const cv::Mat_<cv::Vec<T,cn>>& imN, int ch) -> cv::Mat_<cv::Vec<T,1>>
+{
+    cv::Mat_<cv::Vec<T,1>> im1( imN.size() ) ;
+    auto vnIt = imN.begin();
+    for (auto& v : im1)
+    {
+        const auto& vn = *vnIt;
+        v = vn[ch];
+        vnIt++;
+    }
+    return im1;
+}
+
+template <class T>
+inline const T& Clip(const T& val, const T& minVal, const T& maxVal)
+{
+    return std::min(maxVal, std::max(minVal, val));
+}
+
+uchar RadiusTo8u(float radius, float minimumCodingDistance , float maximumCodingDistance)
+{
+
+    float radiusBounded = Clip( radius, minimumCodingDistance, maximumCodingDistance);
+    auto disparity = minimumCodingDistance / radiusBounded;
+    uchar depth = cv::saturate_cast<uchar>(255.0 * disparity);
+
+    return depth;
+}
+
+cv::Mat1b EncodeRadiusTo8u( cv::Mat1f imRadius, float minimumCodingDistance = 0.25f, float maximumCodingDistance = 40.f )
+{
+    cv::Mat1b depthEnc( imRadius.size() );
+
+    auto radius = imRadius.begin();
+    for( auto& depth : depthEnc )
+        depth = ::RadiusTo8u(*radius++, minimumCodingDistance, maximumCodingDistance );
+
+    return depthEnc;
+}
+
+FUNC( Spike_RoadImageAndDepthErp )
+{
+    const std::string nameImg   = "./classroom/img0001.png";
+    const std::string nameDepth = "./classroom/depth0001.exr";
+
+    cv::Mat3b im             = ::imreadThrow( nameImg );
+
+    cv::Mat3f imRadius3f     = ::imreadThrow( nameDepth, cv::IMREAD_UNCHANGED);
+    cv::Mat1f imRadius       = ::SelectChannel( imRadius3f, 0 );
+
+    auto depth               = ::EncodeRadiusTo8u( imRadius );
+    cv::imshow( "img",   ScaleDown(im, 0.5)    );
+    cv::imshow( "depth", ScaleDown(depth, 0.5) );
+    cv::waitKey(0);
+
+
+    erp::MeshEquirectangular erpMesh;
+    auto vertices = erpMesh.CalculateVertices(imRadius);
+
+    //vertices = vertices + cv::Vec3f(0.01f, 0.0f, 0.0f );
+
+    // find new coordinates
+
+
+
 
 }
+
+
+
+
+
 
 
 
