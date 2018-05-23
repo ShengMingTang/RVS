@@ -55,7 +55,8 @@ cv::Vec2f erp::CalcSphereCoordinates( const cv::Vec3f& xyz_norm )
 
 
 
-void erp::MeshEquirectangular::CalcNormalizedEuclidianCoordinates(cv::Size size)
+
+void erp::BackProjector::CalcNormalizedEuclidianCoordinates(cv::Size size)
 {
     if( verticesXYZNormalized.size() == size )
         return;
@@ -69,12 +70,12 @@ void erp::MeshEquirectangular::CalcNormalizedEuclidianCoordinates(cv::Size size)
     for (int i = 0; i < H; ++i)
     {
         float vPos  = 0.5f + i;
-        float theta = CV_PI * ( 0.5f - vPos / H );
+        float theta = erp::CalcTheta(vPos, H );
 
         for (int j = 0; j < W; ++j)
         {
             float hPos = 0.5f + j;
-            float phi  = CV_2PI * ( 0.5 - hPos / W );
+            float phi  = erp::CalcPhi( hPos, W);
 
             phiTheta(i,j) = cv::Vec2f(phi, theta);
             
@@ -88,7 +89,7 @@ void erp::MeshEquirectangular::CalcNormalizedEuclidianCoordinates(cv::Size size)
 
 
 
-cv::Mat3f erp::MeshEquirectangular::CalculateVertices( cv::Mat1f radiusMap)
+cv::Mat3f erp::BackProjector::CalculateVertices( cv::Mat1f radiusMap)
 {
     cv::Size size = radiusMap.size();
 
@@ -102,5 +103,33 @@ cv::Mat3f erp::MeshEquirectangular::CalculateVertices( cv::Mat1f radiusMap)
 
 
     return verticesXYZ;
+}
+
+
+
+cv::Mat2f erp::Projector::ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ )
+{
+    auto size = vecticesXYZ.size();
+
+    imUV.create(size);
+    imRadius.create(size);
+    imPhiTheta.create(size);
+
+    for(int i = 0; i < size.height; ++i )
+        for( int j=0; j < size.width; ++j )
+        {
+            cv::Vec3f xyz      = vecticesXYZ(i,j);
+            float radius       = static_cast<float>( cv::norm(xyz) );
+            imRadius(i,j)      = radius;
+
+            cv::Vec3f xyzNorm  = xyz / radius;
+            cv::Vec2f phiTheta = erp::CalcSphereCoordinates(xyzNorm);
+            imPhiTheta(i,j)    = phiTheta;
+
+            imUV(i,j)[0] = erp::CalcHorizontalImageCoordinate(phiTheta[0], size.width );
+            imUV(i,j)[1] = erp::CalcVerticalImageCoordinate(phiTheta[1], size.height  );
+        }
+
+    return imUV;
 }
 

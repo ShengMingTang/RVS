@@ -34,12 +34,37 @@ copies, substantial portions or derivative works of the Software.
 namespace erp
 {
 
+inline float CalcPhi( float hPos, int imageWidth )
+{
+    float phi = static_cast<float>( CV_2PI * ( 0.5 - hPos / imageWidth ) );
+    return phi;
+}
+
+inline float CalcTheta( float vPos, int imageHeight )
+{
+    float theta = static_cast<float>( CV_PI * ( 0.5f - vPos / imageHeight ) );
+    return theta;
+}
+
+inline float CalcHorizontalImageCoordinate( float phi, int imageWidth )
+{
+    float hPos = static_cast<float>( imageWidth * ( 0.5 * phi / CV_2PI) );
+    return hPos;
+}
+
+inline float CalcVerticalImageCoordinate( float theta, int imageHeight )
+{
+    float vPos = static_cast<float>( imageHeight * ( 0.5 * theta / CV_PI) );
+    return vPos;
+}
+
+
 cv::Vec3f CalcEuclidanCoordinates( const cv::Vec2f& phiTheta );
 
 cv::Vec2f CalcSphereCoordinates( const cv::Vec3f& xyz_norm );
 
 
-struct MeshEquirectangular
+struct BackProjector
 {
     cv::Mat3f verticesXYZ;
     cv::Mat3f verticesXYZNormalized;
@@ -50,5 +75,21 @@ struct MeshEquirectangular
 
     cv::Vec<bool, 2>      wrap = cv::Vec<bool, 2>(true, false);;
 };
+
+
+struct Projector
+{
+    cv::Mat2f imUV;
+    cv::Mat1f imRadius;
+    cv::Mat2f imPhiTheta;
+
+    cv::Mat2f ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ );
+
+
+
+};
+    
+
+
 
 } // namespace

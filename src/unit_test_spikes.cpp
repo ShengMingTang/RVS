@@ -183,7 +183,55 @@ cv::Mat1b EncodeRadiusTo8u( cv::Mat1f imRadius, float minimumCodingDistance = 0.
     return depthEnc;
 }
 
-FUNC( Spike_RoadImageAndDepthErp )
+
+#include "transform.hpp"
+
+void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat& depth_prologation_mask, const cv::Mat & new_pos, cv::Mat& res, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c);
+
+struct ErpViewSynth
+{
+
+    cv::Mat new_pos;
+
+cv::Mat translateBigger_trianglesMethod_Erp(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape) 
+{
+    cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
+
+    depth_inv = cv::Mat::zeros(s, CV_32F);
+    new_depth_prologation_mask = cv::Mat::ones(s, depth_prologation_mask.type());
+    triangle_shape = cv::Mat::zeros(s, CV_32F);
+    cv::Mat res = cv::Mat::zeros(s, CV_32FC3);
+
+    sensor;
+    new_cam_mat;
+    old_cam_mat;
+    t;
+    R;
+
+
+
+    //compute new position
+    //cv::Mat new_pos; //= translation_map(depth, t, old_cam_mat, new_cam_mat, sensor, 0.5);
+    //new_pos = rotation_map(R, new_pos, new_cam_mat, sensor);
+
+    //compute triangulation
+    for (int x = 0; x < img.cols - 1; ++x)
+        for (int y = 0; y < img.rows - 1; ++y) {
+            if (depth.at<float>(y, x + 1) > 0.0 && depth.at<float>(y + 1, x) > 0.0 && new_pos.at<cv::Vec2f>(y, x + 1)[0] > 0.0 && new_pos.at<cv::Vec2f>(y + 1, x)[0] > 0.0) {
+                if (depth.at<float>(y, x) > 0.0 && new_pos.at<cv::Vec2f>(y, x)[0] > 0.0)
+                    colorize_triangle(img, depth, depth_prologation_mask, new_pos, res, depth_inv, new_depth_prologation_mask, triangle_shape, cv::Vec2f((float)x, (float)y), cv::Vec2f((float)x + 1.0f, (float)y), cv::Vec2f((float)x, (float)y + 1.0f));
+                if (depth.at<float>(y + 1, x + 1) > 0.0 && new_pos.at<cv::Vec2f>(y + 1, x + 1)[0] > 0.0)
+                    colorize_triangle(img, depth, depth_prologation_mask, new_pos, res, depth_inv, new_depth_prologation_mask, triangle_shape, cv::Vec2f((float)x + 1.0f, (float)y + 1.0f), cv::Vec2f((float)x, (float)y + 1.0f), cv::Vec2f((float)x + 1.0f, (float)y));
+            }
+        }
+    return res;
+}
+
+
+};
+
+
+FUNC( Spike_ReadImageAndDepthErp )
 {
     const std::string nameImg   = "./classroom/img0001.png";
     const std::string nameDepth = "./classroom/depth0001.exr";
@@ -198,11 +246,21 @@ FUNC( Spike_RoadImageAndDepthErp )
     cv::imshow( "depth", ScaleDown(depth, 0.5) );
     cv::waitKey(0);
 
+    erp::BackProjector backProjector;
+    auto verticesXyz = backProjector.CalculateVertices(imRadius);
 
-    erp::MeshEquirectangular erpMesh;
-    auto vertices = erpMesh.CalculateVertices(imRadius);
+    const auto translation = cv::Vec3f(0.1f, 0.f, 0.f );
+    //cv::Mat3f imXYZt = imXYZ + translation;
 
-    //vertices = vertices + cv::Vec3f(0.01f, 0.0f, 0.0f );
+    cv::Mat3b verticesXyzNew = verticesXyz + translation;
+
+    erp::Projector projector;
+    cv::Mat2f imUVnew = projector.ProjectToImageCoordinatesUV( verticesXyzNew );
+    cv::Mat1f imRadiusNew = projector.imRadius;
+
+    //ErpViewSynth viewSynth;
+    
+
 
     // find new coordinates
 

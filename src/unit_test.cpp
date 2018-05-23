@@ -47,26 +47,35 @@ double DistanceOnUnitCircle( float a, float b)
 
 FUNC( TestERP_CoordinateTransform )
 {
-    const double eps = 1e-7;
+    const double eps = 1e-6;
     const int N = 10;
     
     // exclude poles
     for( int i =1; i< N; ++i )      
         for(int j = 0; j<N; ++j )
         {
-            float inorm = float(i) / N - 0.5f;
-            float jnorm = float(j) / N - 0.5f;
-            
-            float theta = static_cast<float>( -inorm * CV_PI  );    
-            float phi   = static_cast<float>( -jnorm * CV_2PI );    
+            float vPos = i + 0.5f;
+            float hPos = j + 0.5f;
+
+            float theta = erp::CalcTheta( vPos, N);
+            float phi   = erp::CalcPhi( hPos, N);
 
             auto sphericalExpected = cv::Vec2f(phi, theta);
 
             auto xyzNorm           = erp::CalcEuclidanCoordinates( sphericalExpected );
             auto sphericalActual   = erp::CalcSphereCoordinates( xyzNorm);
 
-            CHECK( DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] ) < eps );
-            CHECK( DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] ) < eps );
+            auto err0 = DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] );
+            auto err1 = DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] );
+
+            if( err0 > eps || err1 > eps )
+            {
+                cout << i << " " << j << endl;
+                cout << sphericalExpected << endl;
+                cout << sphericalActual << endl;
+                cout << endl;
+                CHECK(false);
+            }
         }
 
 }
@@ -75,7 +84,7 @@ FUNC( TestERP_BackProject)
 {
     const double eps = 1e-7;
     
-    erp::MeshEquirectangular erpMesh;
+    erp::BackProjector erpMesh;
 
     cv::Size size(30,30);
     cv::Mat1f radiusMap = cv::Mat1f::ones(size);
@@ -91,26 +100,34 @@ FUNC( TestERP_BackProject)
 
 
 
-//FUNC( TestERP_Reproject)
-//{
-//    const double eps = 1e-7;
-//
-//    MeshEquirectangular erp;
-//
-//    cv::Size size(30,30);
-//    cv::Mat1f radiusMap = cv::Mat1f::ones(size);
-//
-//    auto vertices = erp.CalculateVertices(radiusMap);
-//
-//    const double radiusExpected = 1.0;
-//
-//    for( auto v : vertices )
-//    {
-//        
-//    
-//    }
-//
-//
-//
-//
-//}
+FUNC( TestERP_Project_Sanity)
+{
+    double eps = 1e-7;
+
+    erp::BackProjector backProjector;
+
+    cv::Size size(5, 5);
+    cv::Mat1f imRadius = cv::Mat1f::ones(size);
+
+    auto imXYZ = backProjector.CalculateVertices(imRadius);
+
+    //const auto translation = cv::Vec3f(0.1f, 0.f, 0.f );
+    //cv::Mat3f imXYZt = imXYZ + translation;
+
+    float radiusExpected = 2.f;
+    cv::Mat3f imXYZnew = imXYZ * radiusExpected;
+
+    erp::Projector projector;
+    cv::Mat2f imUV = projector.ProjectToImageCoordinatesUV( imXYZnew);
+
+    eps *= size.area();
+    double errorRadius = cv::sum( cv::abs( projector.imRadius  - radiusExpected ) ).val[0];
+    ALMOST( 0.0, errorRadius, eps );
+
+    auto errorPhiTheta = cv::sum( cv::abs( backProjector.phiTheta - projector.imPhiTheta ) );
+    ALMOST( 0.0, errorPhiTheta[0], eps );
+    ALMOST( 0.0, errorPhiTheta[1], eps );
+
+}
+
+
