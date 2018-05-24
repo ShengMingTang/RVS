@@ -41,7 +41,7 @@ Contact : bart.kroon@philips.com
 
 #pragma once
 
-#include "helpers.hpp"
+#include "Parameters.hpp"
 
 #include <string>
 #include <vector>
@@ -70,8 +70,6 @@ enum InpaintingMethod {
 };
 
 
-/**between translation and rotation: keep pixels outside the translated image*/
-extern float image_bigger_ratio;
 /**Precision*/
 extern float rescale;
 const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);

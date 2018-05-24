@@ -40,7 +40,7 @@ Contact : bart.kroon@philips.com
 ------------------------------------------------------------------------------ -*/
 
 #pragma once
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 
 #include "Config.hpp"
 #include "View.hpp"
@@ -116,7 +116,7 @@ public:
 	
 protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
-	virtual void rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth) = 0;
+	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size) = 0;
 
 	// The quality map is a side-effect of rasterize
 	cv::Mat1f quality;
@@ -139,18 +139,18 @@ public:
 
 protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
-	virtual void rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth);
+	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size);
 };
 
 /**
- * The algorithm to compute the view maps every pixel to its new positions. The pixels are considered as squares.
- * The quality of each pixel is given by the depth of the pixel
- * */
+* The algorithm to compute the view maps every pixel to its new positions. The pixels are considered as squares.
+* The quality of each pixel is given by the depth of the pixel
+* */
 class SynthetizedViewSquare :public SynthetizedView {
 public:
 	SynthetizedViewSquare();
 
 protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
-	virtual void rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth);
+	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size);
 };

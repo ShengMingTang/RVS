@@ -40,9 +40,9 @@ Contact : bart.kroon@philips.com
 ------------------------------------------------------------------------------ -*/
 
 #pragma once
-#include "helpers.hpp"
+#include "Parameters.hpp"
 
-#include <opencv2/core/core.hpp>
+#include <opencv2/core.hpp>
 
 class Unprojector
 {

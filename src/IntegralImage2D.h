@@ -30,7 +30,7 @@ copies, substantial portions or derivative works of the Software.
 #define INTEGRALIMAGE2D_H
 
 #include <vector>
-#include "opencv2/core/core.hpp"
+#include <opencv2/core.hpp>
 
 #ifndef isNan
   #define isNan(a)(!(a == a))

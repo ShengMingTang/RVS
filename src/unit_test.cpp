@@ -32,7 +32,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include "EquirectangularProjection.hpp"
 
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 
 #include <iostream>
 

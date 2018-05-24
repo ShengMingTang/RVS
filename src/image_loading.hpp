@@ -40,7 +40,7 @@ Contact : bart.kroon@philips.com
 ------------------------------------------------------------------------------ -*/
 
 #include <string>
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 
 /**
 @file image_loading.hpp

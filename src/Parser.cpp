@@ -356,9 +356,6 @@ void Parser::read_SVS_config_file() {
 	// seek bitdepth (default = 8 for texture and 16 for depth)
 	seek_int(filename_parameter_file, config.bit_depth_color, "BitDepthColor", "Element bit depth of raw texture streams");
 	seek_int(filename_parameter_file, config.bit_depth_depth, "BitDepthDepth", "Element bit depth of raw depth streams");
-	//seek image_bigger_ratio (useful for translation computation). default =2
-	if (!seek_float(filename_parameter_file, image_bigger_ratio, "TranslationRatio", "Translation ratio"))
-		image_bigger_ratio = 4.0;
 	//seek Rescale factor for super resolution
 	if (seek_float(filename_parameter_file, rescale, "Precision", "Precision") == 0)
 		rescale = 4.0f;

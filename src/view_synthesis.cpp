@@ -27,28 +27,12 @@ copies, substantial portions or derivative works of the Software.
 ------------------------------------------------------------------------------ -*/
 
 
-#include "helpers.hpp"
-#include "blending.hpp"
-#include "inpainting.hpp"
-#include "transform.hpp"
-#include "Parser.hpp"
-#include "SynthetizedView.hpp"
-#include "BlendedView.hpp"
 #include "Timer.hpp"
-#include "image_writing.hpp"
 #include "Pipeline.hpp"
 
-#include "opencv2/imgproc.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/core.hpp"
-
 #include <iostream>
+#include <stdexcept>
 #include <string>
-
-using namespace cv;
-float pi = 3.14159265359f;
-
-
 
 int main(int argc, char* argv[])
 {
@@ -58,11 +42,9 @@ int main(int argc, char* argv[])
 
 		PROF_START("parsing");
 
-
 		std::string filename = (argc > 1) ? argv[1] : "./config_files/parameter_file.txt";
 
 		Pipeline p(filename);
-
 
 		PROF_END("parsing");
 		PROF_START("view synthesis");

@@ -32,7 +32,7 @@ copies, substantial portions or derivative works of the Software.
 #include "Unprojector.hpp"
 #include "Config.hpp"
 
-#include "opencv2/core/core.hpp"
+#include <opencv2/core.hpp>
 
 namespace erp
 {

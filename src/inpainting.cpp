@@ -29,9 +29,8 @@ copies, substantial portions or derivative works of the Software.
 #include "inpainting.hpp"
 #include "Config.hpp"
 
-
-#include "opencv2/imgproc.hpp"
-#include "opencv2/photo.hpp"
+#include <opencv2/imgproc.hpp>
+#include <opencv2/photo.hpp>
 
 #include <iostream>
 
