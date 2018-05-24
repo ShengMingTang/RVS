@@ -28,14 +28,13 @@ copies, substantial portions or derivative works of the Software.
 ------------------------------------------------------------------------------ - */
 
 #include "yaffut.hpp"
-
 #include "EquirectangularProjection.hpp"
-
 #include "Pipeline.hpp"
 #include "image_loading.hpp"
-
 #include "Parser.hpp"
 #include "SynthetizedView.hpp"
+#include "transform.hpp"
+
 
 #include "opencv2/opencv.hpp"
 
@@ -75,7 +74,7 @@ FUNC(Spike_ReadImageAndDepth)
 
     float z_near  = 500;
     float z_far   = 2000;
-    cv::Mat depth = read_depth(nameDepth, size, bit_depth_depth, z_near, z_far, mask_depth );
+    cv::Mat depth = read_depth(nameDepth, size, bit_depth_depth, z_near, z_far );
 
     depth.convertTo( depth, -1, 1.0 / 2000);
 
@@ -85,7 +84,7 @@ FUNC(Spike_ReadImageAndDepth)
 
 }
 
-
+#if 0
 FUNC(Spike_ViewSynthSingle)
 {
     const int bit_depth_color = 8;
@@ -133,6 +132,9 @@ FUNC(Spike_ViewSynthSingle)
 
     cv::waitKey(0);
 }
+
+#endif
+
 
 cv::Mat imreadThrow( const std::string& filename, int flags = cv::IMREAD_COLOR )
 {
@@ -184,54 +186,6 @@ cv::Mat1b EncodeRadiusTo8u( cv::Mat1f imRadius, float minimumCodingDistance = 0.
 }
 
 
-#include "transform.hpp"
-
-void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat& depth_prologation_mask, const cv::Mat & new_pos, cv::Mat& res, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c);
-
-struct ErpViewSynth
-{
-
-    cv::Mat new_pos;
-
-cv::Mat translateBigger_trianglesMethod_Erp(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape) 
-{
-    cout << endl;
-    cout << "rescale " << rescale << endl;
-    
-    cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
-
-    depth_inv = cv::Mat::zeros(s, CV_32F);
-    new_depth_prologation_mask = cv::Mat::ones(s, depth_prologation_mask.type());
-    triangle_shape = cv::Mat::zeros(s, CV_32F);
-    cv::Mat res = cv::Mat::zeros(s, CV_32FC3);
-
-    sensor;
-    new_cam_mat;
-    old_cam_mat;
-    t;
-    R;
-
-    //compute new position
-    //cv::Mat new_pos; //= translation_map(depth, t, old_cam_mat, new_cam_mat, sensor, 0.5);
-    //new_pos = rotation_map(R, new_pos, new_cam_mat, sensor);
-
-    //compute triangulation
-    for (int x = 0; x < img.cols - 1; ++x)
-        for (int y = 0; y < img.rows - 1; ++y) 
-        {
-            if (depth.at<float>(y, x + 1) > 0.0 && depth.at<float>(y + 1, x) > 0.0 && new_pos.at<cv::Vec2f>(y, x + 1)[0] > 0.0 && new_pos.at<cv::Vec2f>(y + 1, x)[0] > 0.0) 
-            {
-                if (depth.at<float>(y, x) > 0.0 && new_pos.at<cv::Vec2f>(y, x)[0] > 0.0)
-                    colorize_triangle(img, depth, depth_prologation_mask, new_pos, res, depth_inv, new_depth_prologation_mask, triangle_shape, cv::Vec2f((float)x, (float)y), cv::Vec2f((float)x + 1.0f, (float)y), cv::Vec2f((float)x, (float)y + 1.0f));
-                if (depth.at<float>(y + 1, x + 1) > 0.0 && new_pos.at<cv::Vec2f>(y + 1, x + 1)[0] > 0.0)
-                    colorize_triangle(img, depth, depth_prologation_mask, new_pos, res, depth_inv, new_depth_prologation_mask, triangle_shape, cv::Vec2f((float)x + 1.0f, (float)y + 1.0f), cv::Vec2f((float)x, (float)y + 1.0f), cv::Vec2f((float)x + 1.0f, (float)y));
-            }
-        }
-    return res;
-}
-
-
-};
 
 struct ErpReader
 {
@@ -277,35 +231,25 @@ FUNC( Spike_ErpViewSynthesis )
     cv::waitKey(100);
 
 
-    erp::Unprojector backProjector;
-    auto verticesXyz = backProjector.unproject(erpz1.imRadius);
+    erp::Unprojector unprojector;
+    unprojector.create(size);
+    auto verticesXyz = unprojector.unproject(erpz1.imRadius);
 
     const auto translation = cv::Vec3f(0.f, 0.05f, 0.f );
     cv::Mat3f verticesXyzNew = verticesXyz + translation;
 
     rescale = 1.f;
+    cv::Size sizeOut = size;
 
     erp::Projector projector;
     cv::Mat2f imUVnew     = projector.project( verticesXyzNew, rescale );
     cv::Mat1f imRadiusNew = projector.imRadius.clone();
 
-    ErpViewSynth viewSynth;
-    viewSynth.new_pos = imUVnew.clone();
 
-    cv::Mat1b depthMask = cv::Mat1b::ones( size ) * 255;
-    
-    cv::Mat R;
-    Translation  t;
-    cv::Mat old_cam_mat;
-    cv::Mat new_cam_mat;
-    float sensor =0.f;
-    
-    cv::Mat depth_inv;
-    cv::Mat new_depth_prologation_mask;
-    cv::Mat triangle_shape;
-    
 
-    cv::Mat imResult3f = viewSynth.translateBigger_trianglesMethod_Erp( erpz1.image3f, imRadiusNew, depthMask, R, t, old_cam_mat, new_cam_mat, sensor, depth_inv, new_depth_prologation_mask, triangle_shape);
+    cv::Mat1f depth, quality;
+    cv::Mat3f imResult3f = transform_trianglesMethod(erpz1.image3f, imRadiusNew, imUVnew, sizeOut, depth, quality);
+
 
     cv::Mat3b imResult;
     imResult3f.convertTo(imResult, imResult.type() );
@@ -325,3 +269,4 @@ FUNC( Spike_ErpViewSynthesis )
 
 
 }
+
