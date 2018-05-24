@@ -118,9 +118,6 @@ protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
 	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size) = 0;
 
-	// The quality map is a side-effect of rasterize
-	cv::Mat1f quality;
-
 private:
 	// Unprojector converts input view to world coordinates
 	Unprojector const *unprojector = nullptr;
