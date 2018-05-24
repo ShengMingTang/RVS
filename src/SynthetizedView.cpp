@@ -54,7 +54,7 @@ namespace
 
 		for (int i = 0; i != result.rows; ++i) {
 			for (int j = 0; j != result.cols; ++j) {
-				result(i, j) = cv::Vec2f(i + 0.5f, j + 0.5f);
+				result(i, j) = cv::Vec2f(j + 0.5f, i + 0.5f);
 			}
 		}
 
