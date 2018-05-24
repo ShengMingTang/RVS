@@ -46,26 +46,56 @@ Contact : bart.kroon@philips.com
 
 #include <iostream>
 
-View::View(std::string file_color, std::string file_depth, Parameters parameters, cv::Size size, int bit_depth_color, int bit_depth_depth)
+// Default constructor for use with std::vector
+// Assertions check against using empty color/depth matrices
+View::View() {}
+
+// Construct a View by directly providing the data members
+View::View(cv::Mat3f color, cv::Mat1f depth)
+	: color(color)
+	, depth(depth)
+{}
+
+// Return the texture
+cv::Mat3f View::get_color() const
 {
-	this->filename_color = file_color;
-	this->filename_depth = file_depth;
-	this->parameter = parameters;
-	this->size = size;
-	this->bit_depth_color = bit_depth_color;
-	this->bit_depth_depth = bit_depth_depth;
+	assert(!color.empty() && color.size() == depth.size());
+	return color; 
 }
 
-View::View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1b mask_depth, cv::Size size)
+// Return the depth map (same size as texture)
+cv::Mat1f View::get_depth() const 
 {
-	this->color = color;
-	this->depth = depth;
-	this->mask_depth = mask_depth;
-	this->size = size;
+	assert(!color.empty() && color.size() == depth.size());
+	return depth;
 }
 
-void View::load()
+// Return the size of the texture and depth map
+cv::Size View::get_size() const
 {
-	color = read_color(filename_color, size, bit_depth_color);  
-	depth = read_depth(filename_depth, size, bit_depth_depth, z_near, z_far, mask_depth);
+	assert(!color.empty() && color.size() == depth.size());
+	return color.size(); 
 }
+
+// Return a mask with all valid depth values
+cv::Mat1b View::get_depth_mask() const
+{
+	assert(!color.empty() && color.size() == depth.size());
+	return depth > 0.f;
+}
+
+InputView::InputView() {}
+
+// Load a color image and depth map
+InputView::InputView(
+	std::string filepath_color,
+	std::string filepath_depth,
+	cv::Size size,
+	int bit_depth_color,
+	int bit_depth_depth,
+	float z_near,
+	float z_far)
+: View(
+	read_color(filepath_color, size, bit_depth_color),
+	read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far))
+{}

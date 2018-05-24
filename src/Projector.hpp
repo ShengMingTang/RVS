@@ -40,15 +40,28 @@ Contact : bart.kroon@philips.com
 ------------------------------------------------------------------------------ -*/
 
 #pragma once
+#include "helpers.hpp"
+
 #include <opencv2/core/core.hpp>
 
 class Projector
 {
 public:
-	virtual ~Projector() {}
+	Projector(Parameters const&);
+	virtual ~Projector();
 
 	// world_pos in OMAF Referential: x forward, y left, z up
 	// depth [out] increases with distance from virtual camera
 	// result in image coordinates: u right, v down
-	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth) = 0;
+	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth) const = 0;
+
+	// Virtual view rotation matrix (like in VSRS camparams)
+	cv::Matx33f const& get_rotation() const;
+
+	// Virtual view translation vector (like in VSRS camparams)
+	cv::Vec3f get_translation() const;
+
+private:
+	cv::Matx33f rotation;
+	cv::Vec3f translation;
 };

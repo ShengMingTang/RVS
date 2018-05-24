@@ -39,20 +39,22 @@ Contact : bart.kroon@philips.com
 
 ------------------------------------------------------------------------------ -*/
 
-#pragma once
 #include "Unprojector.hpp"
-#include "Config.hpp"
 
-class PerspectiveUnprojector : public Unprojector
+Unprojector::Unprojector(Parameters const& parameters)
+	: rotation(parameters.rotation)
+	, translation(parameters.translation)
 {
-public:
-	PerspectiveUnprojector(Parameters const& parameters);
+}
 
-	// image_pos in image coordinates: u right, v down
-	// depth is equal to x
-	// world_pos in OMAF Referential: x forward, y left, z up
-	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const;
+Unprojector::~Unprojector() {}
 
-private:
-	Parameters parameters;
-};
+cv::Matx33f const& Unprojector::get_rotation() const
+{
+	return rotation;
+}
+
+cv::Vec3f Unprojector::get_translation() const
+{
+	return translation;
+}

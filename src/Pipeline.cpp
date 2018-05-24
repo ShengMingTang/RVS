@@ -33,6 +33,7 @@ of the 3DoF+ Investigation.
 Modifications copyright © 2018 Koninklijke Philips N.V.
 
 Support for n-bit raw texture and depth streams.
+Generalization of camera projections
 
 Author  : Bart Kroon
 Contact : bart.kroon@philips.com
@@ -46,11 +47,14 @@ Contact : bart.kroon@philips.com
 #include "SynthetizedView.hpp"
 #include "inpainting.hpp"
 #include "image_writing.hpp"
+#include "PerspectiveUnprojector.hpp"
+#include "PerspectiveProjector.hpp"
 
 #include <iostream>
 #include <vector>
 #include <memory>
 
+#include <opencv2/imgproc/imgproc.hpp>
 
 
 Pipeline::Pipeline(std::string filename)
@@ -69,74 +73,85 @@ Pipeline::~Pipeline()
 void Pipeline::execute()
 {
 	parse();
-	create_images();
 	load_images();
 	compute_views();
 }
 
-
-void Pipeline::load_image(int idx) {
-	input_images[idx].load();
-}
-
 void Pipeline::load_images() {
+	input_images.resize(config.params_real.size());
+
+	if (config.znear.empty()) {
+		throw std::runtime_error("We lost compatibility with \"RGB\" depth maps. z_far and z_near are required.");
+	}
 
 	PROF_START("loading");
-	for (size_t idx = 0; idx < input_images.size(); ++idx) {
-		load_image((int)idx);
+	for (std::size_t idx = 0; idx != input_images.size(); ++idx)
+	{
+		input_images[idx] = InputView(
+			config.texture_names[idx],
+			config.depth_names[idx],
+			config.size,
+			config.bit_depth_color,
+			config.bit_depth_depth,
+			config.znear[idx],
+			config.zfar[idx]);
 	}
 	PROF_END("loading");
 }
 
-void Pipeline::compute_view(int idx) {
-	//std::cout << filename << std::endl;
-	std::unique_ptr<BlendedView> BV;
-	if (config.blending_method == BLENDING_SIMPLE) {
-		auto simple = new BlendedViewSimple;
-		BV.reset(simple);
-		simple->set_blending_exp(config.blending_factor);
-	}
-	else if (config.blending_method == BLENDING_MULTISPEC) {
-		auto multispec = new BlendedViewMultiSpec;
-		BV.reset(multispec);
-		multispec->set_blending_exp(config.blending_low_freq_factor, config.blending_high_freq_factor);
-	}
-	for (int input_idx = 0; input_idx < static_cast<int>(input_images.size()); input_idx++) {
-		//compute result from view reference idx
-		std::unique_ptr<SynthetizedView> SV;
-		if (vs_method == SYNTHESIS_TRIANGLE)
-			SV.reset(new SynthetizedViewTriangle(config.params_virtual[idx], input_images[input_idx].get_size()));
-		else if (vs_method == SYNTHESIS_SQUARE)
-			SV.reset(new SynthetizedViewSquare(config.params_virtual[idx], input_images[input_idx].get_size()));
-		else
-			throw std::logic_error("Unknown synthesis method");
-		SV->compute(input_images[input_idx]);
-		//blend with previous results
-		PROF_START("blending");
-		BV->blend(*SV);
-		PROF_END("blending");
-	}
-	cv::Mat to_inpaint = BV->get_inpaint_mask();
-
-	cv::Mat result = BV->get_color();
-
-	PROF_START("inpainting");
-
-	result = inpaint(result, to_inpaint, true);
-
-	PROF_END("inpainting");
-
-	resize(result, result, BV->get_size());
-
-	write_color(config.outfilenames[idx], result, config.bit_depth_color);
-}
-
-
 void Pipeline::compute_views() {
+	for (std::size_t idx = 0; idx != config.params_virtual.size(); ++idx) {
+		std::unique_ptr<BlendedView> blender;
+		if (config.blending_method == BLENDING_SIMPLE)
+			blender.reset(new BlendedViewSimple(config.blending_factor));
+		else if (config.blending_method == BLENDING_MULTISPEC)
+			blender.reset(new BlendedViewMultiSpec(
+				config.blending_low_freq_factor,
+				config.blending_high_freq_factor));
+		else throw std::logic_error("Unknown blending method");
 
-	for (int idx = 0; idx < static_cast<int>(config.params_virtual.size()); idx++) {
-		std::cout << config.outfilenames[idx] << std::endl;
-		compute_view(idx);
+		// Project according to parameters of the virtual view
+		std::unique_ptr<PerspectiveProjector> projector;
+		projector.reset(new PerspectiveProjector(config.params_virtual[idx]));
+
+		for (int input_idx = 0; input_idx < static_cast<int>(input_images.size()); input_idx++) {
+			// Unprojection according to parameters of the camera view
+			std::unique_ptr<PerspectiveUnprojector> unprojector;
+			unprojector.reset(new PerspectiveUnprojector(config.params_real[idx]));
+
+			// Select view synthesis method
+			std::unique_ptr<SynthetizedView> synthesizer;
+			if (vs_method == SYNTHESIS_TRIANGLE)
+				synthesizer.reset(new SynthetizedViewTriangle);
+			else if (vs_method == SYNTHESIS_SQUARE)
+				synthesizer.reset(new SynthetizedViewSquare);
+			else
+				throw std::logic_error("Unknown synthesis method");
+
+			// Bind to projectors
+			synthesizer->setUnprojector(unprojector.get());
+			synthesizer->setProjector(projector.get());
+
+			// Synthesize view
+			synthesizer->compute(input_images[input_idx]);
+
+			// Blend with previous results
+			PROF_START("blending");
+			blender->blend(*synthesizer);
+			PROF_END("blending");
+		}
+
+		PROF_START("inpainting");
+		cv::Mat3f color = inpaint(blender->get_color(), blender->get_quality() == 0.f, true);
+		PROF_END("inpainting");
+
+		PROF_START("downscale");
+		resize(color, color, config.size);
+		PROF_END("downscale");
+
+		PROF_START("write");
+		write_color(config.outfilenames[idx], color, config.bit_depth_color);
+		PROF_END("write");
 	}
 }
 
@@ -144,21 +159,4 @@ void Pipeline::parse()
 {
 	Parser p(filename);
 	this->config = p.get_config();
-}
-
-void Pipeline::create_images()
-{
-	for (size_t idx = 0; idx < config.params_real.size(); ++idx) {
-		create_image((int)idx);
-	}
-}
-
-void Pipeline::create_image(int idx)
-{
-	View image = View(config.texture_names[idx], config.depth_names[idx], config.params_real[idx],
-		config.size, config.bit_depth_color, config.bit_depth_depth);
-	if (config.znear.size() > 0)
-		image.set_z(config.znear[idx], config.zfar[idx]);
-
-	input_images.push_back(image);
 }

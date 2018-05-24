@@ -40,15 +40,28 @@ Contact : bart.kroon@philips.com
 ------------------------------------------------------------------------------ -*/
 
 #pragma once
+#include "helpers.hpp"
+
 #include <opencv2/core/core.hpp>
 
 class Unprojector
 {
 public:
-	virtual ~Unprojector() {}
+	Unprojector(Parameters const& parameters);
+	virtual ~Unprojector();
 
 	// image_pos in image coordinates: u right, v down
 	// depth increases with distance from virtual camera
 	// result in OMAF Referential: x forward, y left, z up
-	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) = 0;
+	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const = 0;
+
+	// Input view rotation matrix (like in VSRS camparams)
+	cv::Matx33f const& get_rotation() const;
+
+	// Input view translation vector (like in VSRS camparams)
+	cv::Vec3f get_translation() const;
+
+private:
+	cv::Matx33f rotation;
+	cv::Vec3f translation;
 };

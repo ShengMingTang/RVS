@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been added by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Extraction of a generalized unproject -> translate/rotate -> project flow
+
+Author  : Bart Kroon, Bart Sonneveldt
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include "View.hpp"
 #include "Config.hpp"
 
@@ -59,13 +72,6 @@ private:
 	void parse();
 
 	/**
-	\brief Create the good number of input views
-	*/
-	void create_images();
-	void create_image(int idx);
-
-	void load_image(int i);
-	/**
 	\brief Load all the input views
 	*/
 	void load_images();
@@ -74,12 +80,11 @@ private:
 	\brief Compute all the virtual views
 	*/
 	void compute_views();
-	void compute_view(int i);
 
 private:
 	std::string filename;
 
 	Config config;
-	std::vector<View> input_images;
+	std::vector<InputView> input_images;
 };
 

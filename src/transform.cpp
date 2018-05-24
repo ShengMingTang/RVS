@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Extraction of a generalized unproject -> translate/rotate -> project flow
+
+Author  : Bart Kroon, Bart Sonneveldt
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #include "transform.hpp"
 
 #include "opencv2/imgproc.hpp"
@@ -34,7 +47,6 @@ copies, substantial portions or derivative works of the Software.
 
 #include <iostream>
 #include <algorithm>
-
 
 namespace {
 cv::Mat translation_map(const cv::Mat& depth, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, float offset) {
@@ -192,7 +204,7 @@ cv::Mat translateBigger_squaresMethod(const cv::Mat& img, const cv::Mat& depth, 
 	return res;
 }
 
-//namespace {
+namespace {
 float valid_tri(const cv::Mat & new_pos, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c, float den) {
 	cv::Vec2f A = new_pos.at<cv::Vec2f>((int)a[1], (int)a[0]);
 	cv::Vec2f B = new_pos.at<cv::Vec2f>((int)b[1], (int)b[0]);
@@ -279,7 +291,7 @@ void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat
 			}
 	return;
 }
-//} // namespace
+} // namespace
 
 cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape) {
 	cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
@@ -303,6 +315,8 @@ cv::Mat translateBigger_trianglesMethod(const cv::Mat& img, const cv::Mat& depth
 					colorize_triangle(img, depth, depth_prologation_mask, new_pos, res, depth_inv, new_depth_prologation_mask, triangle_shape, cv::Vec2f((float)x + 1.0f, (float)y + 1.0f), cv::Vec2f((float)x, (float)y + 1.0f), cv::Vec2f((float)x + 1.0f, (float)y));
 			}
 		}
+
+	triangle_shape *= 100.f;
 	return res;
 }
 

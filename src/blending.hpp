@@ -72,14 +72,3 @@ blend an array of color images by average ponderated with quality of the pixels
 >0 : mean (1/depth)^blending_exp.
 */
 cv::Mat blend_img(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& qualities, const std::vector<cv::Mat>& depth_prolongations, cv::Vec3f empty_color, cv::Mat& quality, cv::Mat& depth_prolongation_mask, cv::Mat& inpaint_mask, float blending_exp);
-
-/**
-blend an array of float images by average ponderated with quality of the pixels
-@param imgs Array of float images
-@param depth_invs Array of disparities or inverse of depth images
-@param blending_exp
-<0 : chose the RGB of the nearest object.
-0 : mean of the available RGB.
->0 : mean (1/depth)^blending_exp.
-*/
-cv::Mat blend_depth(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& depth_invs, int blending_exp);

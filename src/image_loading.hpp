@@ -65,5 +65,6 @@ Reads a depth image: a exr depth file or a YUV disparity file. Returns a float i
 @param bit_depth bit depth of raw stream
 @param z_near to convert YUV disparity to depth
 @param n_far to convert YUV disparity to depth 
+Result may have NaN values to indicate missing depth values
 */
-cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, cv::Mat1b& mask_depth);
+cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far);

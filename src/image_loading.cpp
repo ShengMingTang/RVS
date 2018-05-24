@@ -49,9 +49,12 @@ Contact : bart.kroon@philips.com
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <limits>
 
 namespace 
 {
+	auto const NaN = std::numeric_limits<float>::quiet_NaN();
+
 	void read_raw(std::ifstream& stream, cv::Mat image)
 	{
 		CV_Assert(stream.good() && !image.empty() && image.isContinuous());
@@ -92,17 +95,17 @@ namespace
 	* reads a disparity map (VSRS format)
 	* @return the corresponding depth map
 	* */
-	cv::Mat1f read_depth_YUV(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, cv::Mat1b& mask_depth) {
+	cv::Mat1f read_depth_YUV(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far) {
 		cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1));
 		std::ifstream stream(filename, std::ios_base::binary);
 		read_raw(stream, image);
 
-		mask_depth = image == 0;
+		auto mask_depth = cv::Mat1b(image == 0);
 
 		image.convertTo(image, CV_32F, 1. / max_level(bit_depth));
 
 		cv::Mat1f depth = (z_far * z_near) / (z_near + image * (z_far - z_near));
-		depth.setTo(0.f, mask_depth);
+		depth.setTo(NaN, mask_depth);
 		return depth;
 	}
 
@@ -134,7 +137,7 @@ namespace
 	* read a depth map (in any format supported by opencv)
 	* @return the corresponding depth map, normalized to [0, 1]
 	* */
-	cv::Mat read_depth_RGB(std::string filename, cv::Size size, int bit_depth, cv::Mat1b& mask_depth) {
+	cv::Mat read_depth_RGB(std::string filename, cv::Size size, int bit_depth) {
 		cv::Mat image = cv::imread(filename, cv::IMREAD_UNCHANGED);
 
 		if (image.empty())
@@ -148,8 +151,6 @@ namespace
 		
 		// BK: The original SVS appears not to scale cv::imread depth output.
 		image.convertTo(image, CV_32F);
-
-		mask_depth = cv::Mat1b(image.size(), 255u);
 
 		return image;
 	}
@@ -176,9 +177,9 @@ cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth) {
 	return read_color_RGB(filename, size, bit_depth);
 }
 
-cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, cv::Mat1b& mask_depth) {
+cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far) {
 	if (filename.find(".yuv") != std::string::npos)
-		return read_depth_YUV(filename, size, bit_depth, z_near, z_far, mask_depth);
+		return read_depth_YUV(filename, size, bit_depth, z_near, z_far);
 
-	return read_depth_RGB(filename, size, bit_depth, mask_depth);
+	return read_depth_RGB(filename, size, bit_depth);
 }

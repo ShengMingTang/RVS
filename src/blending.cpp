@@ -417,27 +417,3 @@ void split_frequencies(const cv::Mat & img, cv::Mat & low_freq, cv::Mat & high_f
 
 	PROF_END("blur");
 }
-
-
-cv::Mat blend_depth(const std::vector<cv::Mat>&  imgs, const std::vector<cv::Mat>&  depth_invs, int blending_exp) {
-	if (blending_exp < 0)
-		return blend_depth_by_max(imgs, depth_invs);
-	cv::Mat res = cv::Mat::zeros(imgs[0].size(), CV_32F);
-	for (int x = 0; x < res.cols; ++x)
-		for (int y = 0; y < res.rows; ++y) {
-			float s = 0.0;
-			for (int i = 0; i < static_cast<int>(imgs.size()); ++i) {
-				float d = depth_invs[i].at<float>(y, x);
-				if (d > 0) {
-					float a = powf(d, (float)blending_exp);
-					s += a;
-					res.at<float>(y, x) += a*imgs[i].at<float>(y, x);
-				}
-			}
-			if (s == 0)
-				res.at<float>(y, x) = 0;
-			else
-				res.at<float>(y, x) /= s;
-		}
-	return res;
-}

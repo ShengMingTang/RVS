@@ -26,6 +26,19 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been added by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Extraction of a generalized unproject -> translate/rotate -> project flow
+
+Author  : Bart Kroon, Bart Sonneveldt
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #pragma once
 
 #include "SynthetizedView.hpp"
@@ -36,84 +49,57 @@ copies, substantial portions or derivative works of the Software.
 /**
 Blending class: blends synthetised views one by one as they are generated.
 */
-class BlendedView : public View
+class BlendedView : public VirtualView
 {
 public:
-	/**
-	\brief Initialise an empty blending
-	*/
-	BlendedView();
-	/**
-	\brief Destructor for BlendedView
-	*/
-	virtual ~BlendedView(){};
-	/**
-	\brief Blends with a new synthetised view.	
-	*/
-	virtual void blend(SynthetizedView& view) = 0;
-	/**
-	@return an image indicating the pixels without any value (disoclusion/empty values on every image)
-	*/
-	virtual cv::Mat1b get_inpaint_mask() const = 0;
-	/**
-	@return the final size the image has to be written
-	*/
+	virtual ~BlendedView();
 
-private:
-
-
-protected:
+	/**
+	\brief Blends with a new virtual view.	
+	*/
+	virtual void blend(VirtualView const& view) = 0;
 };
-
 
 /**
 Simple blending: this algorithm blends the images with the formula per pixel: \f$color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)}\f$ if a<0
 */
-class BlendedViewSimple :public BlendedView {
+class BlendedViewSimple : public BlendedView {
 public:
 	/**
 	\brief Initialise an empty blending
 	*/
-	BlendedViewSimple();
+	BlendedViewSimple(float blending_exp);
+	
 	/**
 	\brief Destructor
 	*/
-	~BlendedViewSimple(){};
-	void blend(SynthetizedView& view);
-	/**
-	Set the value of a in the formula \f$ color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)} \f$ if a<0 
-	*/
-	void set_blending_exp(float exp) { blending_exp = exp; };
-	cv::Mat1b get_inpaint_mask() const { return to_inpaint; };
+	~BlendedViewSimple();
+
+	void blend(VirtualView const& view);
+
 private:
+	bool is_empty;
+
 	/** The value of a in the formula \f$color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)}\f$ if a<0 */
 	float blending_exp;
-	bool is_empty;
-	cv::Mat quality;
-	cv::Mat to_inpaint;
-	cv::Mat depth_prolongation;
 };
 
 /**
 Multispectral blending: this algorithm divides the input images in a low frequency image and a high frequency image, to blend them with different coefficients.
 */
-class BlendedViewMultiSpec : public BlendedView{
+class BlendedViewMultiSpec : public BlendedView {
 public:
 	/**
 	\brief Initialise an empty blending
 	*/
-	BlendedViewMultiSpec();
+	BlendedViewMultiSpec(float exp_low_freq, float exp_high_freq);
 	/**
 	\brief Destructor
 	*/
-	~BlendedViewMultiSpec(){};
-	void blend(SynthetizedView& view);
-	/**
-	\brief Set the value of a for low frequency and highfrequency images in the formula \f$color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)}\f$ if a<0
-	*/
-	void set_blending_exp(float exp_low_freq, float exp_high_freq) { low_freq.set_blending_exp(exp_low_freq); high_freq.set_blending_exp(exp_high_freq); };
-	cv::Mat3f get_color() const { return low_freq.get_color() + high_freq.get_color();  };
-	cv::Mat1b get_inpaint_mask() const { return low_freq.get_inpaint_mask(); };
+	~BlendedViewMultiSpec();
+	
+	void blend(VirtualView const& view);
+
 private:
 	BlendedViewSimple low_freq;
 	BlendedViewSimple high_freq;

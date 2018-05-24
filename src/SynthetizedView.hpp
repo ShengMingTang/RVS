@@ -26,106 +26,131 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been added by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Extraction of a generalized unproject -> translate/rotate -> project flow
+
+Author  : Bart Kroon, Bart Sonneveldt
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #pragma once
 #include "opencv2/core.hpp"
 
 #include "Config.hpp"
 #include "View.hpp"
+#include "Projector.hpp"
+#include "Unprojector.hpp"
+
+/**
+* Virtual view computed with DIBR, blending, inpainting or any other means
+* */
+class VirtualView : public View
+{
+public:
+	/**
+	\brief Default constructor
+	*/
+	VirtualView();
+
+	/**
+	\brief Constructor that directly initialized color, depth and quality maps
+	*/
+	VirtualView(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality);
+
+	/**
+	\brief Destructor
+	*/
+	~VirtualView();
+
+	/**
+	\brief Quality per pixel
+	@return An image of the same size than the view, indicating the quality of each pixel.
+	Pixel of higher quality will be prioritized during blending.
+	*/
+	cv::Mat1f get_quality() const { return quality; }
+
+protected:
+	// The quality map is a side-effect of rasterize
+	cv::Mat1f quality;
+};
 
 /**
  * View computed with DIBR
  * */
-class SynthetizedView : public View
+class SynthetizedView : public VirtualView
 {
 public:
-	using View::View;
 	/**
-	\brief Constructor
-	@param color Color image
-	@param depth_inverse Depth inverse
-	@param mask_depth Mask indicating empty values on the depth (for example in a Kinect depth map)
-	@param size View final size
+	\brief Default constructor
 	*/
-	SynthetizedView(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b depth_prolongation_mask, cv::Size size);
-	/**
-	\brief Constructor
-	@param parameters Camera parameters
-	@param size View final size
-	*/
-	SynthetizedView(Parameters parameters, cv::Size size) { this->parameter = parameters; this->size = size; };
-	/**
-	\brief Copies this view
-	*/
-	virtual SynthetizedView* copy() const = 0;
+	SynthetizedView();
+
 	/**
 	\brief Destructor
 	*/
 	virtual ~SynthetizedView();
+
+	// Set unprojector (input view to world)
+	void setUnprojector(Unprojector const *object) { this->unprojector = object; }
+
+	// Set projector (world to virtual view)
+	void setProjector(Projector const *object) { this->projector = object;  }
+
 	/**
 	\brief Computes this view from the input View
 	*/
-	virtual void compute(View& img) = 0;
+	void compute(View& img);
+
 	/**
 	\brief Quality per pixel
 	@return An image of the same size than the view, indicating the quality of each pixel. 
 	Pixel of higher quality will be prioritized during blending.
 	*/
-	virtual cv::Mat1f get_quality() const = 0;
-
-	cv::Mat1f get_depth_inverse() { return depth_inverse; };
-	cv::Mat1f get_depth() { return 1.f / depth_inverse; };
-
+	cv::Mat1f get_quality() const { return quality; }
 	
 protected:
-	/**
-	\brief Disparity
-	*/
-	cv::Mat1f depth_inverse; 
+	// Rasterize the warped image, resulting in updates of color, depth and quality maps
+	virtual void rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth) = 0;
+
+	// The quality map is a side-effect of rasterize
+	cv::Mat1f quality;
+
+private:
+	// Unprojector converts input view to world coordinates
+	Unprojector const *unprojector = nullptr;
+
+	// Projector converts world to virtual view coordinates
+	Projector const *projector = nullptr;
 };
 
 /**
  * The algorithm to compute the view divides the input view in triangles, to avoid non disocclusion holes and get a first inpainting
  * The quality of each pixel is given by the shape of the triangle it belongs to and the depth of the pixel
  * */
-class SynthetizedViewTriangle :public SynthetizedView {
+class SynthetizedViewTriangle : public SynthetizedView {
 public:
-	/**
-	\brief Constructor
-	@param color Color image
-	@param depth_inverse Depth inverse
-	@param mask_depth Mask indicating empty values on the depth (for example in a Kinect depth map)
-	@param triangle_shape Quality map of each of the triangles
-	@param size View final size
-	*/
-	SynthetizedViewTriangle(cv::Mat3f color, cv::Mat1f depth_inverse, cv::Mat1b mask_depth, cv::Mat1f triangle_shape, cv::Size size);
-	using SynthetizedView::SynthetizedView;
-	/**
-	Compute the view by dividing the input view in triangles of 3 adjacent pixels, to avoid non disocclusion holes and get a first inpainting
-	*/
-	void compute(View& img);
-	SynthetizedViewTriangle* copy() const;
-	cv::Mat1f get_triangle_shape() const { return triangle_shape; };
-	cv::Mat1f get_quality() const { return depth_inverse.mul(triangle_shape); };
+	SynthetizedViewTriangle();
 
-private:
-	cv::Mat1f triangle_shape;
+protected:
+	// Rasterize the warped image, resulting in updates of color, depth and quality maps
+	virtual void rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth);
 };
 
 /**
  * The algorithm to compute the view maps every pixel to its new positions. The pixels are considered as squares.
  * The quality of each pixel is given by the depth of the pixel
  * */
-class SynthetizedViewSquare :public SynthetizedView{
+class SynthetizedViewSquare :public SynthetizedView {
 public:
-	using SynthetizedView::SynthetizedView;
-	/**
-	Compute the view by warping every pixel: every pixel is considered as a rectangle
-	*/
-	void compute(View& img);
-	cv::Mat1f get_quality() const { return depth_inverse; };
-	SynthetizedViewSquare* copy() const;
+	SynthetizedViewSquare();
 
-private:
-	int rescale_method_RGB;
-	int rescale_method_Depth;
+protected:
+	// Rasterize the warped image, resulting in updates of color, depth and quality maps
+	virtual void rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth);
 };

@@ -26,69 +26,71 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+Refactoring within the context of extracting a generalized
+unproject -> translate/rotate -> project flow
+
+Author  : Bart Kroon, Bart Sonneveldt
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
 #pragma once
+#include "opencv2/core/core.hpp"
 
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-
-#include "helpers.hpp"
 
 /**
-Class representing a image and its depth map
+Class representing an image and its depth map
 */
 class View
 {
 public:
-	/**
-	\brief Constructor
-	*/
-	View() {};
-	/**
-	\brief Constructor 
-	@param file_color Filename of the color image
-	@param file_depth Filename of the depth map
-	@param parameters Camera parameters
-	@param size Image size
-	*/
-	View(std::string file_color, std::string file_depth, Parameters parameters, cv::Size size, int bit_depth_color, int bit_depth_depth);
+	// Default constructor
+	View();
+
 	/**
 	\brief Constructor
 	@param color Color image
-	@param depth Depth map
-	@param mask_depth Mask indicating empty values on the depth (for example in a Kinect depth map)
-	@param size Image size
+	@param depth Depth map, NaN values permitted
 	*/
-	View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1b mask_depth, cv::Size size);
-	/**
-	\brief Load the View from the files filename_color and filename_depth
-	*/
-	void load();
-	/**
-	\brief Preprocess the 0 values of the depth map
-	*/
-	virtual cv::Mat3f get_color() const { return color; };
-	virtual cv::Mat1f get_depth() const { return depth; };
-	cv::Mat1b get_mask_depth() const { return mask_depth; };
-	cv::Size get_size() const { return size; }
-	Parameters const& get_parameters() const { return parameter; };
-	void set_z(float z_n, float z_f) { this->z_near = z_n, this->z_far = z_f; };
-	void set_color(cv::Mat3f color_img) { this->color = color_img; };
+	View(cv::Mat3f color, cv::Mat1f depth);
+
+	// Return the texture
+	cv::Mat3f get_color() const;
+
+	// Return the depth map (same size as texture)
+	cv::Mat1f get_depth() const;
+
+	// Return the size of the texture and depth map
+	cv::Size get_size() const;
+
+	// Return a mask with all valid depth values
+	cv::Mat1b get_depth_mask() const;
 	
 protected:
 	cv::Mat3f color;
 	cv::Mat1f depth;
-	/**
-	\brief Indicates true where the depth is missing in the file 
-	(for example in the case of a depth acquired with Kinect). 
-	*/
-	cv::Mat1b mask_depth;
-	std::string filename_color;
-	std::string filename_depth;
-	float z_near = 500.0f;
-	float z_far = 2000.0f;
-	cv::Size size;
-	int bit_depth_color;
-	int bit_depth_depth;
-	Parameters parameter;
 };
 
+/**
+Class representing a loaded image and depth map
+*/
+class InputView : public View
+{
+public:
+	InputView();
+
+	InputView(
+		std::string filepath_color, 
+		std::string filepath_depth, 
+		cv::Size size, 
+		int bit_depth_color, 
+		int bit_depth_depth,
+		float z_near,
+		float z_far);
+};

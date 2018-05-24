@@ -92,6 +92,8 @@ set(PROJECT_SOURCES
 	src/inpainting.cpp
 	src/transform.cpp
 	src/EquirectangularProjection.cpp
+	src/Unprojector.cpp
+	src/Projector.cpp
 	src/PerspectiveUnprojector.cpp
 	src/PerspectiveProjector.cpp)
 

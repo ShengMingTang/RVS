@@ -33,11 +33,12 @@ copies, substantial portions or derivative works of the Software.
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveUnprojector::PerspectiveUnprojector(Parameters const& parameters)
-	: parameters(parameters)
+	: Unprojector(parameters)
+	, parameters(parameters)
 {
 }
 
-cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth)
+cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
 {
 	auto fx = parameters.camera_matrix.at<float>(0, 0);
 	auto fy = parameters.camera_matrix.at<float>(1, 1);

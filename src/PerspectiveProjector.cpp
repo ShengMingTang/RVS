@@ -33,11 +33,12 @@ copies, substantial portions or derivative works of the Software.
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
-	: parameters(parameters)
+	: Projector(parameters)
+	, parameters(parameters)
 {
 }
 
-cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, cv::Mat1f& depth)
+cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, cv::Mat1f& depth) const
 {
 	auto fx = parameters.camera_matrix.at<float>(0, 0);
 	auto fy = parameters.camera_matrix.at<float>(1, 1);
@@ -45,7 +46,7 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, cv::Mat1f& depth)
 	auto py = parameters.camera_matrix.at<float>(1, 2);
 
 	cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
-	depth = cv::Mat3f(world_pos.size(), cv::Vec3f::all(NaN));
+	depth = cv::Mat1f(world_pos.size(), NaN);
 
 	for (int i = 0; i != world_pos.rows; ++i) {
 		for (int j = 0; j != world_pos.cols; ++j) {
