@@ -31,7 +31,7 @@ copies, substantial portions or derivative works of the Software.
 
 
 
-cv::Vec3f erp::CalcEuclidanCoordinates( const cv::Vec2f& phiTheta )
+cv::Vec3f erp::calculate_euclidian_coordinates( const cv::Vec2f& phiTheta )
 {
     const float& phi   = phiTheta[0];
     const float& theta = phiTheta[1];
@@ -41,7 +41,7 @@ cv::Vec3f erp::CalcEuclidanCoordinates( const cv::Vec2f& phiTheta )
                        std::sin(theta) );
 }
 
-cv::Vec2f erp::CalcSphereCoordinates( const cv::Vec3f& xyz_norm )
+cv::Vec2f erp::calculate_sperical_coordinates( const cv::Vec3f& xyz_norm )
 {
     const float& x = xyz_norm[0];
     const float& y = xyz_norm[1];
@@ -56,7 +56,7 @@ cv::Vec2f erp::CalcSphereCoordinates( const cv::Vec3f& xyz_norm )
 
 
 
-void erp::BackProjector::CalcNormalizedEuclidianCoordinates(cv::Size size)
+void erp::BackProjector::calculate_normalized_euclidian_coordinates(cv::Size size)
 {
     if( verticesXYZNormalized.size() == size )
         return;
@@ -70,16 +70,16 @@ void erp::BackProjector::CalcNormalizedEuclidianCoordinates(cv::Size size)
     for (int i = 0; i < H; ++i)
     {
         float vPos  = 0.5f + i;
-        float theta = erp::CalcTheta(vPos, H );
+        float theta = erp::calculate_theta(vPos, H );
 
         for (int j = 0; j < W; ++j)
         {
             float hPos = 0.5f + j;
-            float phi  = erp::CalcPhi( hPos, W);
+            float phi  = erp::calculate_phi( hPos, W);
 
             phiTheta(i,j) = cv::Vec2f(phi, theta);
             
-            verticesXYZNormalized(i, j) = erp::CalcEuclidanCoordinates( phiTheta(i,j) );
+            verticesXYZNormalized(i, j) = erp::calculate_euclidian_coordinates( phiTheta(i,j) );
         }
     }
 
@@ -89,11 +89,11 @@ void erp::BackProjector::CalcNormalizedEuclidianCoordinates(cv::Size size)
 
 
 
-cv::Mat3f erp::BackProjector::CalculateVertices( cv::Mat1f radiusMap)
+cv::Mat3f erp::BackProjector::calculate_vertices( cv::Mat1f radiusMap)
 {
     cv::Size size = radiusMap.size();
 
-    CalcNormalizedEuclidianCoordinates(size);
+    calculate_normalized_euclidian_coordinates(size);
 
     verticesXYZ.create(size);
 
@@ -107,7 +107,7 @@ cv::Mat3f erp::BackProjector::CalculateVertices( cv::Mat1f radiusMap)
 
 
 
-cv::Mat2f erp::Projector::ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ, float rescale )
+cv::Mat2f erp::Projector::project_to_image_coordinates_uv( cv::Mat3f vecticesXYZ, float rescale )
 {
     auto size = vecticesXYZ.size();
 
@@ -123,11 +123,11 @@ cv::Mat2f erp::Projector::ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ, fl
             imRadius(i,j)      = radius;
 
             cv::Vec3f xyzNorm  = xyz / radius;
-            cv::Vec2f phiTheta = erp::CalcSphereCoordinates(xyzNorm);
+            cv::Vec2f phiTheta = erp::calculate_sperical_coordinates(xyzNorm);
             imPhiTheta(i,j)    = phiTheta;
 
-            imUV(i,j)[0] = rescale * erp::CalcHorizontalImageCoordinate(phiTheta[0], size.width );
-            imUV(i,j)[1] = rescale * erp::CalcVerticalImageCoordinate(phiTheta[1], size.height  );
+            imUV(i,j)[0] = rescale * erp::calculate_horizontal_image_coordinate(phiTheta[0], size.width );
+            imUV(i,j)[1] = rescale * erp::calculate_vertical_image_coordinate(phiTheta[1], size.height  );
         }
 
     return imUV;

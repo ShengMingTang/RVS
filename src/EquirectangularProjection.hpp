@@ -34,34 +34,34 @@ copies, substantial portions or derivative works of the Software.
 namespace erp
 {
 
-inline float CalcPhi( float hPos, int imageWidth )
+inline float calculate_phi( float hPos, int imageWidth )
 {
     float phi = static_cast<float>( CV_2PI * ( 0.5 - hPos / imageWidth ) );
     return phi;
 }
 
-inline float CalcTheta( float vPos, int imageHeight )
+inline float calculate_theta( float vPos, int imageHeight )
 {
     float theta = static_cast<float>( CV_PI * ( 0.5f - vPos / imageHeight ) );
     return theta;
 }
 
-inline float CalcHorizontalImageCoordinate( float phi, int imageWidth )
+inline float calculate_horizontal_image_coordinate( float phi, int imageWidth )
 {
     float hPos = static_cast<float>( imageWidth * ( 0.5 - phi / CV_2PI) );
     return hPos;
 }
 
-inline float CalcVerticalImageCoordinate( float theta, int imageHeight )
+inline float calculate_vertical_image_coordinate( float theta, int imageHeight )
 {
     float vPos = static_cast<float>( imageHeight * ( 0.5 - theta / CV_PI) );
     return vPos;
 }
 
 
-cv::Vec3f CalcEuclidanCoordinates( const cv::Vec2f& phiTheta );
+cv::Vec3f calculate_euclidian_coordinates( const cv::Vec2f& phiTheta );
 
-cv::Vec2f CalcSphereCoordinates( const cv::Vec3f& xyz_norm );
+cv::Vec2f calculate_sperical_coordinates( const cv::Vec3f& xyz_norm );
 
 
 struct BackProjector
@@ -70,10 +70,9 @@ struct BackProjector
     cv::Mat3f verticesXYZNormalized;
     cv::Mat2f phiTheta;
 
-    cv::Mat3f CalculateVertices( cv::Mat1f radiusMap);
-    void      CalcNormalizedEuclidianCoordinates(cv::Size size);
+    cv::Mat3f calculate_vertices( cv::Mat1f radiusMap);
+    void      calculate_normalized_euclidian_coordinates(cv::Size size);
 
-    cv::Vec<bool, 2>      wrap = cv::Vec<bool, 2>(true, false);;
 };
 
 
@@ -83,9 +82,7 @@ struct Projector
     cv::Mat1f imRadius;
     cv::Mat2f imPhiTheta;
 
-    cv::Mat2f ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ, float rescale);
-
-
+    cv::Mat2f project_to_image_coordinates_uv( cv::Mat3f vecticesXYZ, float rescale);
 
 };
     

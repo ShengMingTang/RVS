@@ -260,7 +260,7 @@ struct ErpReader
 };
 
 
-FUNC( Spike_ReadImageAndDepthErp )
+FUNC( Spike_ErpViewSynthesis )
 {
     ErpReader erpz1;
     erpz1.read(1);
@@ -269,11 +269,12 @@ FUNC( Spike_ReadImageAndDepthErp )
 
     cv::imshow( "img",   ScaleDown(erpz1.image, 0.25)    );
     cv::imshow( "imRadius8u", ScaleDown(erpz1.imRadius8u, 0.25) );
-    cv::waitKey(1);
+    
+    cv::waitKey(100);
 
 
     erp::BackProjector backProjector;
-    auto verticesXyz = backProjector.CalculateVertices(erpz1.imRadius);
+    auto verticesXyz = backProjector.calculate_vertices(erpz1.imRadius);
 
     const auto translation = cv::Vec3f(0.05f, 0.f, 0.f );
     cv::Mat3f verticesXyzNew = verticesXyz + translation;
@@ -281,15 +282,11 @@ FUNC( Spike_ReadImageAndDepthErp )
     rescale = 1.f;
 
     erp::Projector projector;
-    cv::Mat2f imUVnew     = projector.ProjectToImageCoordinatesUV( verticesXyzNew, rescale );
+    cv::Mat2f imUVnew     = projector.project_to_image_coordinates_uv( verticesXyzNew, rescale );
     cv::Mat1f imRadiusNew = projector.imRadius.clone();
-
-
 
     ErpViewSynth viewSynth;
     viewSynth.new_pos = imUVnew.clone();
-    
-    
 
     cv::Mat1b depthMask = cv::Mat1b::ones( size ) * 255;
     

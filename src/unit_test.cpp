@@ -56,18 +56,18 @@ FUNC( TestERP_ConvertImageCoordinateToFromPhiTheta )
     for( int j = 0; j < N; ++j )
     {
         float hPosExpected = j + 0.5f;
-        float phi = erp::CalcPhi( hPosExpected, N);
+        float phi = erp::calculate_phi( hPosExpected, N);
 
-        float hPosActual = erp::CalcHorizontalImageCoordinate(phi, N);
+        float hPosActual = erp::calculate_horizontal_image_coordinate(phi, N);
         ALMOST( hPosExpected, hPosActual, eps);
     }
 
     for( int i = 0; i < N; ++i )
     {
         float vPosExpected = i + 0.5f;
-        float theta = erp::CalcTheta( vPosExpected, N);
+        float theta = erp::calculate_theta( vPosExpected, N);
 
-        float vPosActual = erp::CalcVerticalImageCoordinate(theta, N);
+        float vPosActual = erp::calculate_vertical_image_coordinate(theta, N);
         ALMOST( vPosExpected, vPosActual, eps);
     }
 
@@ -86,13 +86,13 @@ FUNC( TestERP_CoordinateTransform )
             float vPos = i + 0.5f;
             float hPos = j + 0.5f;
 
-            float theta = erp::CalcTheta( vPos, N);
-            float phi   = erp::CalcPhi( hPos, N);
+            float theta = erp::calculate_theta( vPos, N);
+            float phi   = erp::calculate_phi( hPos, N);
 
             auto sphericalExpected = cv::Vec2f(phi, theta);
 
-            auto xyzNorm           = erp::CalcEuclidanCoordinates( sphericalExpected );
-            auto sphericalActual   = erp::CalcSphereCoordinates( xyzNorm);
+            auto xyzNorm           = erp::calculate_euclidian_coordinates( sphericalExpected );
+            auto sphericalActual   = erp::calculate_sperical_coordinates( xyzNorm);
 
             auto err0 = testing::DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] );
             auto err1 = testing::DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] );
@@ -118,7 +118,7 @@ FUNC( TestERP_BackProject)
     cv::Size size(30,30);
     cv::Mat1f radiusMap = cv::Mat1f::ones(size);
 
-    auto vertices = erpMesh.CalculateVertices(radiusMap);
+    auto vertices = erpMesh.calculate_vertices(radiusMap);
 
     const double radiusExpected = 1.0;
 
@@ -139,14 +139,14 @@ FUNC( TestERP_Project)
     cv::Size size(5, 5);
     cv::Mat1f imRadius = cv::Mat1f::ones(size);
 
-    auto imXYZ = backProjector.CalculateVertices(imRadius);
+    auto imXYZ = backProjector.calculate_vertices(imRadius);
 
     float radiusExpected = 2.f;
     
     cv::Mat3f imXYZnew = imXYZ * radiusExpected;
 
     erp::Projector projector;
-    cv::Mat2f imUV = projector.ProjectToImageCoordinatesUV( imXYZnew, rescale);
+    cv::Mat2f imUV = projector.project_to_image_coordinates_uv( imXYZnew, rescale);
 
     eps *= size.area();
     double errorRadius = cv::sum( cv::abs( projector.imRadius  - radiusExpected ) ).val[0];
