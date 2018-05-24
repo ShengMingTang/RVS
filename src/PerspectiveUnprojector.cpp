@@ -53,7 +53,7 @@ cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth
 	cv::Mat3f world_pos(image_pos.size(), cv::Vec3f::all(NaN));
 
 	for (int i = 0; i != image_pos.rows; ++i) {
-		for (int j = 0; j != image_pos.rows; ++j) {
+		for (int j = 0; j != image_pos.cols; ++j) {
 			auto uv = image_pos(i, j);
 			auto d = depth(i, j);
 
