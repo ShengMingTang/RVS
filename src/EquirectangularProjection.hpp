@@ -48,13 +48,13 @@ inline float CalcTheta( float vPos, int imageHeight )
 
 inline float CalcHorizontalImageCoordinate( float phi, int imageWidth )
 {
-    float hPos = static_cast<float>( imageWidth * ( 0.5 * phi / CV_2PI) );
+    float hPos = static_cast<float>( imageWidth * ( 0.5 - phi / CV_2PI) );
     return hPos;
 }
 
 inline float CalcVerticalImageCoordinate( float theta, int imageHeight )
 {
-    float vPos = static_cast<float>( imageHeight * ( 0.5 * theta / CV_PI) );
+    float vPos = static_cast<float>( imageHeight * ( 0.5 - theta / CV_PI) );
     return vPos;
 }
 
@@ -83,7 +83,7 @@ struct Projector
     cv::Mat1f imRadius;
     cv::Mat2f imPhiTheta;
 
-    cv::Mat2f ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ );
+    cv::Mat2f ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ, float rescale);
 
 
 

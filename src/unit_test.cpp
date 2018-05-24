@@ -38,19 +38,48 @@ copies, substantial portions or derivative works of the Software.
 
 using namespace std;
 
-
-double DistanceOnUnitCircle( float a, float b)
+namespace testing
 {
-    return cv::norm( cv::Vec2f( std::sin(a), std::cos(a) ) - cv::Vec2f(std::sin(b), std::cos(b) ) );
-}
+    double DistanceOnUnitCircle( float a, float b)
+    {
+        return cv::norm( cv::Vec2f( std::sin(a), std::cos(a) ) - cv::Vec2f(std::sin(b), std::cos(b) ) );
+    }
 
+} // namespace
+
+
+FUNC( TestERP_ConvertImageCoordinateToFromPhiTheta )
+{
+    const double eps = 1e-6;
+    
+    int N = 10;
+    for( int j = 0; j < N; ++j )
+    {
+        float hPosExpected = j + 0.5f;
+        float phi = erp::CalcPhi( hPosExpected, N);
+
+        float hPosActual = erp::CalcHorizontalImageCoordinate(phi, N);
+        ALMOST( hPosExpected, hPosActual, eps);
+    }
+
+    for( int i = 0; i < N; ++i )
+    {
+        float vPosExpected = i + 0.5f;
+        float theta = erp::CalcTheta( vPosExpected, N);
+
+        float vPosActual = erp::CalcVerticalImageCoordinate(theta, N);
+        ALMOST( vPosExpected, vPosActual, eps);
+    }
+
+
+}
 
 FUNC( TestERP_CoordinateTransform )
 {
     const double eps = 1e-6;
     const int N = 10;
     
-    // exclude poles
+    // exclude poles: 0,N
     for( int i =1; i< N; ++i )      
         for(int j = 0; j<N; ++j )
         {
@@ -65,8 +94,8 @@ FUNC( TestERP_CoordinateTransform )
             auto xyzNorm           = erp::CalcEuclidanCoordinates( sphericalExpected );
             auto sphericalActual   = erp::CalcSphereCoordinates( xyzNorm);
 
-            auto err0 = DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] );
-            auto err1 = DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] );
+            auto err0 = testing::DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] );
+            auto err1 = testing::DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] );
 
             if( err0 > eps || err1 > eps )
             {
@@ -100,9 +129,10 @@ FUNC( TestERP_BackProject)
 
 
 
-FUNC( TestERP_Project_Sanity)
+FUNC( TestERP_Project)
 {
     double eps = 1e-7;
+    const float rescale = 1.f;
 
     erp::BackProjector backProjector;
 
@@ -111,17 +141,16 @@ FUNC( TestERP_Project_Sanity)
 
     auto imXYZ = backProjector.CalculateVertices(imRadius);
 
-    //const auto translation = cv::Vec3f(0.1f, 0.f, 0.f );
-    //cv::Mat3f imXYZt = imXYZ + translation;
-
     float radiusExpected = 2.f;
+    
     cv::Mat3f imXYZnew = imXYZ * radiusExpected;
 
     erp::Projector projector;
-    cv::Mat2f imUV = projector.ProjectToImageCoordinatesUV( imXYZnew);
+    cv::Mat2f imUV = projector.ProjectToImageCoordinatesUV( imXYZnew, rescale);
 
     eps *= size.area();
     double errorRadius = cv::sum( cv::abs( projector.imRadius  - radiusExpected ) ).val[0];
+    
     ALMOST( 0.0, errorRadius, eps );
 
     auto errorPhiTheta = cv::sum( cv::abs( backProjector.phiTheta - projector.imPhiTheta ) );

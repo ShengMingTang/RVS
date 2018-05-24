@@ -195,6 +195,9 @@ struct ErpViewSynth
 
 cv::Mat translateBigger_trianglesMethod_Erp(const cv::Mat& img, const cv::Mat& depth, const cv::Mat& depth_prologation_mask, const cv::Mat& R, const Translation & t, const cv::Mat & old_cam_mat, const cv::Mat & new_cam_mat, float sensor, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape) 
 {
+    cout << endl;
+    cout << "rescale " << rescale << endl;
+    
     cv::Size s((int)(rescale*(float)depth.size().width), (int)(rescale*(float)depth.size().height));
 
     depth_inv = cv::Mat::zeros(s, CV_32F);
@@ -208,16 +211,16 @@ cv::Mat translateBigger_trianglesMethod_Erp(const cv::Mat& img, const cv::Mat& d
     t;
     R;
 
-
-
     //compute new position
     //cv::Mat new_pos; //= translation_map(depth, t, old_cam_mat, new_cam_mat, sensor, 0.5);
     //new_pos = rotation_map(R, new_pos, new_cam_mat, sensor);
 
     //compute triangulation
     for (int x = 0; x < img.cols - 1; ++x)
-        for (int y = 0; y < img.rows - 1; ++y) {
-            if (depth.at<float>(y, x + 1) > 0.0 && depth.at<float>(y + 1, x) > 0.0 && new_pos.at<cv::Vec2f>(y, x + 1)[0] > 0.0 && new_pos.at<cv::Vec2f>(y + 1, x)[0] > 0.0) {
+        for (int y = 0; y < img.rows - 1; ++y) 
+        {
+            if (depth.at<float>(y, x + 1) > 0.0 && depth.at<float>(y + 1, x) > 0.0 && new_pos.at<cv::Vec2f>(y, x + 1)[0] > 0.0 && new_pos.at<cv::Vec2f>(y + 1, x)[0] > 0.0) 
+            {
                 if (depth.at<float>(y, x) > 0.0 && new_pos.at<cv::Vec2f>(y, x)[0] > 0.0)
                     colorize_triangle(img, depth, depth_prologation_mask, new_pos, res, depth_inv, new_depth_prologation_mask, triangle_shape, cv::Vec2f((float)x, (float)y), cv::Vec2f((float)x + 1.0f, (float)y), cv::Vec2f((float)x, (float)y + 1.0f));
                 if (depth.at<float>(y + 1, x + 1) > 0.0 && new_pos.at<cv::Vec2f>(y + 1, x + 1)[0] > 0.0)
@@ -230,41 +233,85 @@ cv::Mat translateBigger_trianglesMethod_Erp(const cv::Mat& img, const cv::Mat& d
 
 };
 
+struct ErpReader
+{
+    std::string nameImgT   = "./classroom/img%04d.png";
+    std::string nameDepthT = "./classroom/depth%04d.exr";
+
+    void read( int num )
+    {
+        image          = cv::imread( cv::format(nameImgT.c_str(), num) );
+        imRadius3f     = cv::imread( cv::format(nameDepthT.c_str(), num), cv::IMREAD_UNCHANGED );
+        
+        CV_Assert( !image.empty() && !imRadius3f.empty() );
+        
+        image.convertTo( image3f, image3f.type() );
+        imRadius       = SelectChannel( imRadius3f, 0 );
+        imRadius.convertTo( imRadius8u, imRadius8u.type(), -255.0/ 10.0, 255.0 );
+        size = imRadius.size();
+    }
+
+    cv::Size  size; 
+    cv::Mat3b image; 
+    cv::Mat3f image3f;
+    cv::Mat3f imRadius3f;
+    cv::Mat1f imRadius;
+    cv::Mat1b imRadius8u;
+};
+
 
 FUNC( Spike_ReadImageAndDepthErp )
 {
-    const std::string nameImg   = "./classroom/img0001.png";
-    const std::string nameDepth = "./classroom/depth0001.exr";
+    ErpReader erpz1;
+    erpz1.read(1);
 
-    cv::Mat3b im             = ::imreadThrow( nameImg );
+    auto size = erpz1.size;
 
-    cv::Mat3f imRadius3f     = ::imreadThrow( nameDepth, cv::IMREAD_UNCHANGED);
-    cv::Mat1f imRadius       = ::SelectChannel( imRadius3f, 0 );
+    cv::imshow( "img",   ScaleDown(erpz1.image, 0.25)    );
+    cv::imshow( "imRadius8u", ScaleDown(erpz1.imRadius8u, 0.25) );
+    cv::waitKey(1);
 
-    auto depth               = ::EncodeRadiusTo8u( imRadius );
-    cv::imshow( "img",   ScaleDown(im, 0.5)    );
-    cv::imshow( "depth", ScaleDown(depth, 0.5) );
-    cv::waitKey(0);
 
     erp::BackProjector backProjector;
-    auto verticesXyz = backProjector.CalculateVertices(imRadius);
+    auto verticesXyz = backProjector.CalculateVertices(erpz1.imRadius);
 
-    const auto translation = cv::Vec3f(0.1f, 0.f, 0.f );
-    //cv::Mat3f imXYZt = imXYZ + translation;
+    const auto translation = cv::Vec3f(0.05f, 0.f, 0.f );
+    cv::Mat3f verticesXyzNew = verticesXyz + translation;
 
-    cv::Mat3b verticesXyzNew = verticesXyz + translation;
+    rescale = 1.f;
 
     erp::Projector projector;
-    cv::Mat2f imUVnew = projector.ProjectToImageCoordinatesUV( verticesXyzNew );
-    cv::Mat1f imRadiusNew = projector.imRadius;
+    cv::Mat2f imUVnew     = projector.ProjectToImageCoordinatesUV( verticesXyzNew, rescale );
+    cv::Mat1f imRadiusNew = projector.imRadius.clone();
 
-    //ErpViewSynth viewSynth;
+
+
+    ErpViewSynth viewSynth;
+    viewSynth.new_pos = imUVnew.clone();
+    
     
 
+    cv::Mat1b depthMask = cv::Mat1b::ones( size ) * 255;
+    
+    cv::Mat R;
+    Translation  t;
+    cv::Mat old_cam_mat;
+    cv::Mat new_cam_mat;
+    float sensor =0.f;
+    
+    cv::Mat depth_inv;
+    cv::Mat new_depth_prologation_mask;
+    cv::Mat triangle_shape;
+    
 
-    // find new coordinates
+    cv::Mat imResultFloat = viewSynth.translateBigger_trianglesMethod_Erp( erpz1.image3f, imRadiusNew, depthMask, R, t, old_cam_mat, new_cam_mat, sensor, depth_inv, new_depth_prologation_mask, triangle_shape);
 
+    cv::Mat3b imResult;
+    imResultFloat.convertTo(imResult, imResult.type() );
 
+    
+    cv::imshow( "imResult",   ScaleDown(imResult, 0.25)    );
+    cv::waitKey(0);
 
 
 }

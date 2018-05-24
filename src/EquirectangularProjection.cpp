@@ -107,7 +107,7 @@ cv::Mat3f erp::BackProjector::CalculateVertices( cv::Mat1f radiusMap)
 
 
 
-cv::Mat2f erp::Projector::ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ )
+cv::Mat2f erp::Projector::ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ, float rescale )
 {
     auto size = vecticesXYZ.size();
 
@@ -126,8 +126,8 @@ cv::Mat2f erp::Projector::ProjectToImageCoordinatesUV( cv::Mat3f vecticesXYZ )
             cv::Vec2f phiTheta = erp::CalcSphereCoordinates(xyzNorm);
             imPhiTheta(i,j)    = phiTheta;
 
-            imUV(i,j)[0] = erp::CalcHorizontalImageCoordinate(phiTheta[0], size.width );
-            imUV(i,j)[1] = erp::CalcVerticalImageCoordinate(phiTheta[1], size.height  );
+            imUV(i,j)[0] = rescale * erp::CalcHorizontalImageCoordinate(phiTheta[0], size.width );
+            imUV(i,j)[1] = rescale * erp::CalcVerticalImageCoordinate(phiTheta[1], size.height  );
         }
 
     return imUV;
