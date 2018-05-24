@@ -28,7 +28,7 @@ copies, substantial portions or derivative works of the Software.
 
 #pragma once
 
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 
 /**
 @file inpainting.hpp

@@ -54,7 +54,7 @@ Contact : bart.kroon@philips.com
 #include <vector>
 #include <memory>
 
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc.hpp>
 
 
 Pipeline::Pipeline(std::string filename)

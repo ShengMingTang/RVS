@@ -109,22 +109,22 @@ void SynthetizedView::compute(View& input)
 	auto translation = projector->get_rotation().inv()*(unprojector->get_translation() - projector->get_translation());
 
 	// Rotate and translate from input (real) to output (virtual) view
-	auto output_xyz = affine_transform(input_xyz, rotation, translation);
+	auto virtual_xyz = affine_transform(input_xyz, rotation, translation);
 
 	// Project: output view world to output view image coordinates
-	cv::Mat1f output_depth; // Depth 
-	auto output_uv = projector->project(output_xyz, /*out*/ output_depth);
+	cv::Mat1f virtual_depth; // Depth 
+	auto virtual_uv = projector->project(virtual_xyz, /*out*/ virtual_depth);
 
 	// Resize: rasterize with oversampling
 	auto output_size = cv::Size(
 		int(0.5f + input_size.width * rescale),
 		int(0.5f + input_size.height * rescale));
-	cv::transform(output_uv, output_uv, cv::Matx22f(
+	cv::transform(virtual_uv, virtual_uv, cv::Matx22f(
 		float(output_size.width) / input_size.width, 0.f,
 		0.f, float(output_size.height) / input_size.height));
 
     // Rasterization results in a color, depth and quality map
-	rasterize(input.get_color(), output_uv, output_depth);
+	transform(input.get_color(), virtual_uv, virtual_depth, output_size);
 	assert(!color.empty() && color.size() == depth.size() && color.size() == quality.size());
 	
 	PROF_END("warping");
@@ -132,14 +132,14 @@ void SynthetizedView::compute(View& input)
 
 SynthetizedViewTriangle::SynthetizedViewTriangle() {}
 
-void SynthetizedViewTriangle::rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth)
+void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
 {
-	color = rasterize_trianglesMethod(input_color, input_positions, input_depth, /*out*/ depth, /*out*/ quality);
+	color = transform_trianglesMethod(input_color, input_positions, input_depth, output_size, /*out*/ depth, /*out*/ quality);
 }
 
 SynthetizedViewSquare::SynthetizedViewSquare() {}
 
-void SynthetizedViewSquare::rasterize(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth)
+void SynthetizedViewSquare::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
 {
-	color = rasterize_squaresMethod(input_color, input_positions, input_depth, /*out*/ depth, /*out*/ quality);
+	color = transform_squaresMethod(input_color, input_positions, input_depth, output_size, /*out*/ depth, /*out*/ quality);
 }

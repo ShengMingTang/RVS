@@ -41,7 +41,7 @@ Contact : bart.kroon@philips.com
 ------------------------------------------------------------------------------ -*/
 
 #pragma once
-#include "opencv2/core/core.hpp"
+#include <opencv2/core.hpp>
 
 
 /**

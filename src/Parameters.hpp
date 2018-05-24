@@ -1,11 +1,11 @@
 /*------------------------------------------------------------------------------ -
 
-Copyright Â© 2018 - 2025 UniversitÃ© Libre de Bruxelles(ULB)
+Copyright © 2018 - 2025 Université Libre de Bruxelles(ULB)
 
 Authors : Sarah Fachada, Daniele Bonatto, Arnaud Schenkel
 Contact : Gauthier.Lafruit@ulb.ac.be
 
-SVS â€“ Several inputs View Synthesis
+SVS – Several inputs View Synthesis
 This software synthesizes virtual views at any position and orientation in space,
 from any number of camera input views, using depth image - based rendering
 techniques.
@@ -26,42 +26,42 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
-/*------------------------------------------------------------------------------ -
-
-This source file has been added by Koninklijke Philips N.V. for the purpose of
-of the 3DoF+ Investigation.
-Modifications copyright Â© 2018 Koninklijke Philips N.V.
-
-Extraction of a generalized unproject -> translate/rotate -> project flow
-
-Author  : Bart Kroon, Bart Sonneveldt
-Contact : bart.kroon@philips.com
-
------------------------------------------------------------------------------- -*/
-
 #pragma once
-#include "Parameters.hpp"
+
 
 #include <opencv2/core.hpp>
 
-class Projector
-{
-public:
-	Projector(Parameters const&);
-	virtual ~Projector();
+/**
+@file helpers.hpp
+\brief Definition of external and internal camera paramters
+*/
 
-	// world_pos in OMAF Referential: x forward, y left, z up
-	// depth [out] increases with distance from virtual camera
-	// result in image coordinates: u right, v down
-	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth) const = 0;
-
-	// Virtual view rotation matrix (like in VSRS camparams)
-	cv::Matx33f const& get_rotation() const;
-
-	// Virtual view translation vector (like in VSRS camparams)
-	cv::Vec3f get_translation() const;
-
-private:
+/** Camera parameters*/
+struct Parameters {
+	/**External parameter of rotation*/
 	cv::Matx33f rotation;
+
+	/**External parameter of translation*/
 	cv::Vec3f translation;
+
+	/**Internal parameters*/
+	cv::Matx33f camera_matrix;
+
+	/**Size of the sensor, in the same unit as camera_matrix*/
+	float sensor;
+
+	Parameters() {}
+
+	/** Camera parameters
+	@param rotation External parameter of rotation
+	@param translation External parameter of translation
+	@param camera_matrix Internal parameters
+	@param sensor_size Size of the sensor, in the same unit as camera_matrix
+	*/
+	Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor)
+		: rotation(rotation)
+		, translation(translation)
+		, camera_matrix(camera_matrix)
+		, sensor(sensor)
+	{}
 };

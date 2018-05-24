@@ -43,7 +43,7 @@ Contact : bart.kroon@philips.com
 
 #include "SynthetizedView.hpp"
 
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 
 
 /**

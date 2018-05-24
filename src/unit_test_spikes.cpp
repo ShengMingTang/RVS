@@ -312,11 +312,3 @@ FUNC( Spike_ErpViewSynthesis )
 
 
 }
-
-
-
-
-
-
-
-

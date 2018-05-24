@@ -41,7 +41,7 @@ Contact : bart.kroon@philips.com
 
 #pragma once
 
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 
 /**
 @file transform.hpp
@@ -57,7 +57,7 @@ Translates camera in any 3D direction
 @param quality Quality metric to drive blending; involves depth and shape of warped triangles (elongated and big = low quality)
 @result Output color map
 */
-cv::Mat3f rasterize_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Mat1f& depth, cv::Mat1f& quality);
+cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality);
 
 /**
 Translates camera in any 3D direction
@@ -68,4 +68,4 @@ Translates camera in any 3D direction
 @param quality Quality metric to drive blending; involves depth and shape of warped triangles (elongated and big = low quality)
 @result Output color map
 */
-cv::Mat3f rasterize_squaresMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Mat1f& depth, cv::Mat1f& quality);
+cv::Mat3f transform_squaresMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality);

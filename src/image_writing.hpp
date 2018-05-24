@@ -39,7 +39,7 @@ Contact : bart.kroon@philips.com
 
 ------------------------------------------------------------------------------ -*/
 
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 
 /**
 @file image_writing.hpp
