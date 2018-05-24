@@ -134,12 +134,12 @@ SynthetizedViewTriangle::SynthetizedViewTriangle() {}
 
 void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
 {
-	color = transform_trianglesMethod(input_color, input_positions, input_depth, output_size, /*out*/ depth, /*out*/ quality);
+	color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality);
 }
 
 SynthetizedViewSquare::SynthetizedViewSquare() {}
 
 void SynthetizedViewSquare::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
 {
-	color = transform_squaresMethod(input_color, input_positions, input_depth, output_size, /*out*/ depth, /*out*/ quality);
+	color = transform_squaresMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality);
 }

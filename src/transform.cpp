@@ -140,6 +140,7 @@ namespace
 
 cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality)
 {
+	auto input_size = input_color.size();
 	cv::Mat1b input_depth_mask = input_depth > 0.f;
 	cv::Mat3f color = cv::Mat3f::zeros(output_size);
 	cv::Mat1f depth_inv = cv::Mat1f::zeros(output_size);
@@ -147,8 +148,8 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 	cv::Mat1b new_depth_prologation_mask = cv::Mat1b::ones(output_size);
 
 	// Compute triangulation
-	for (int i = 0; i < output_size.height - 1; ++i) {
-		for (int j = 0; j < output_size.width - 1; ++j) {
+	for (int i = 0; i < input_size.height - 1; ++i) {
+		for (int j = 0; j < input_size.width - 1; ++j) {
 			if (input_depth(i, j + 1) > 0.f && input_depth(i + 1, j) > 0.f && /*why?*/ input_positions(i, j + 1)[0] > 0.f && /*why?*/ input_positions(i + 1, j)[0] > 0.f) {
 				if (input_depth(i, j) > 0.f && /*why?*/ input_positions(i, j)[0] > 0.f)
 					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality,
@@ -161,8 +162,7 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 	}
 
 	depth = 1.f / depth_inv;
-	quality *= depth_inv;
-	quality *= 100.f; /*why?*/ 
+	cv::multiply(quality, depth_inv, quality, /*why?*/ 100.f);
 
 	return color;
 }
