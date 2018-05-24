@@ -40,6 +40,7 @@ using namespace std;
 
 namespace testing
 {
+    // for testing if two angles are the same. resolves modulo 2pi
     double DistanceOnUnitCircle( float a, float b)
     {
         return cv::norm( cv::Vec2f( std::sin(a), std::cos(a) ) - cv::Vec2f(std::sin(b), std::cos(b) ) );

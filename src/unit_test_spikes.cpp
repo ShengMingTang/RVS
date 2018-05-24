@@ -260,23 +260,27 @@ struct ErpReader
 };
 
 
+
+
 FUNC( Spike_ErpViewSynthesis )
 {
     ErpReader erpz1;
     erpz1.read(1);
 
+    ErpReader erpz2;
+    erpz2.read(2);
+
     auto size = erpz1.size;
 
-    cv::imshow( "img",   ScaleDown(erpz1.image, 0.25)    );
-    cv::imshow( "imRadius8u", ScaleDown(erpz1.imRadius8u, 0.25) );
-    
+    cv::imshow( "img_2",   ScaleDown(erpz2.image, 0.25)    );
+    cv::imshow( "imRadius8u_2", ScaleDown(erpz2.imRadius8u, 0.25) );
     cv::waitKey(100);
 
 
     erp::BackProjector backProjector;
     auto verticesXyz = backProjector.calculate_vertices(erpz1.imRadius);
 
-    const auto translation = cv::Vec3f(0.05f, 0.f, 0.f );
+    const auto translation = cv::Vec3f(0.f, 0.05f, 0.f );
     cv::Mat3f verticesXyzNew = verticesXyz + translation;
 
     rescale = 1.f;
@@ -301,13 +305,22 @@ FUNC( Spike_ErpViewSynthesis )
     cv::Mat triangle_shape;
     
 
-    cv::Mat imResultFloat = viewSynth.translateBigger_trianglesMethod_Erp( erpz1.image3f, imRadiusNew, depthMask, R, t, old_cam_mat, new_cam_mat, sensor, depth_inv, new_depth_prologation_mask, triangle_shape);
+    cv::Mat imResult3f = viewSynth.translateBigger_trianglesMethod_Erp( erpz1.image3f, imRadiusNew, depthMask, R, t, old_cam_mat, new_cam_mat, sensor, depth_inv, new_depth_prologation_mask, triangle_shape);
 
     cv::Mat3b imResult;
-    imResultFloat.convertTo(imResult, imResult.type() );
+    imResult3f.convertTo(imResult, imResult.type() );
 
-    
     cv::imshow( "imResult",   ScaleDown(imResult, 0.25)    );
+
+    cv::Mat3b imDiff;
+    cv::absdiff(imResult, erpz2.image, imDiff );
+    cv::imshow( "imDiff",   ScaleDown(imDiff, 0.25)    );
+
+    cv::Mat3b imDiffRef;
+    cv::absdiff(erpz1.image, erpz2.image, imDiffRef );
+    cv::imshow( "imDiffRef",   ScaleDown(imDiffRef, 0.25)    );
+
+
     cv::waitKey(0);
 
 
