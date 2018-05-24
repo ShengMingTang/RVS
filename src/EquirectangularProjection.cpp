@@ -56,7 +56,7 @@ cv::Vec2f erp::calculate_sperical_coordinates( const cv::Vec3f& xyz_norm )
 
 
 
-void erp::BackProjector::calculate_normalized_euclidian_coordinates(cv::Size size)
+void erp::Unprojector::create(cv::Size size)
 {
     if( verticesXYZNormalized.size() == size )
         return;
@@ -89,25 +89,24 @@ void erp::BackProjector::calculate_normalized_euclidian_coordinates(cv::Size siz
 
 
 
-cv::Mat3f erp::BackProjector::calculate_vertices( cv::Mat1f radiusMap)
+cv::Mat3f erp::Unprojector::unproject( cv::Mat1f radiusMap) const 
 {
     cv::Size size = radiusMap.size();
 
-    calculate_normalized_euclidian_coordinates(size);
+    CV_Assert( size == verticesXYZNormalized.size() );
 
-    verticesXYZ.create(size);
+    cv::Mat3f verticesXYZ(size);
 
     for( int i=0; i < verticesXYZ.rows; ++i )
         for( int j =0; j < verticesXYZ.cols; ++j )
             verticesXYZ(i,j) = radiusMap(i,j) * verticesXYZNormalized(i,j);
-
 
     return verticesXYZ;
 }
 
 
 
-cv::Mat2f erp::Projector::project_to_image_coordinates_uv( cv::Mat3f vecticesXYZ, float rescale )
+cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, float rescale )
 {
     auto size = vecticesXYZ.size();
 

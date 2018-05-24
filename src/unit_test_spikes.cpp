@@ -277,8 +277,8 @@ FUNC( Spike_ErpViewSynthesis )
     cv::waitKey(100);
 
 
-    erp::BackProjector backProjector;
-    auto verticesXyz = backProjector.calculate_vertices(erpz1.imRadius);
+    erp::Unprojector backProjector;
+    auto verticesXyz = backProjector.unproject(erpz1.imRadius);
 
     const auto translation = cv::Vec3f(0.f, 0.05f, 0.f );
     cv::Mat3f verticesXyzNew = verticesXyz + translation;
@@ -286,7 +286,7 @@ FUNC( Spike_ErpViewSynthesis )
     rescale = 1.f;
 
     erp::Projector projector;
-    cv::Mat2f imUVnew     = projector.project_to_image_coordinates_uv( verticesXyzNew, rescale );
+    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, rescale );
     cv::Mat1f imRadiusNew = projector.imRadius.clone();
 
     ErpViewSynth viewSynth;

@@ -28,6 +28,9 @@ copies, substantial portions or derivative works of the Software.
 ------------------------------------------------------------------------------ - */
 
 #pragma once
+#include "Projector.hpp"
+#include "Unprojector.hpp"
+#include "Config.hpp"
 
 #include "opencv2/core/core.hpp"
 
@@ -64,26 +67,27 @@ cv::Vec3f calculate_euclidian_coordinates( const cv::Vec2f& phiTheta );
 cv::Vec2f calculate_sperical_coordinates( const cv::Vec3f& xyz_norm );
 
 
-struct BackProjector
+class Unprojector 
 {
-    cv::Mat3f verticesXYZ;
+public:
+    void      create(cv::Size size);
+    cv::Mat3f unproject( cv::Mat1f radiusMap) const;
+
     cv::Mat3f verticesXYZNormalized;
     cv::Mat2f phiTheta;
-
-    cv::Mat3f calculate_vertices( cv::Mat1f radiusMap);
-    void      calculate_normalized_euclidian_coordinates(cv::Size size);
 
 };
 
 
-struct Projector
+class Projector 
 {
+public:
+    
     cv::Mat2f imUV;
     cv::Mat1f imRadius;
     cv::Mat2f imPhiTheta;
 
-    cv::Mat2f project_to_image_coordinates_uv( cv::Mat3f vecticesXYZ, float rescale);
-
+    cv::Mat2f project( cv::Mat3f vecticesXYZ, float rescale);
 };
     
 

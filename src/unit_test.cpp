@@ -113,13 +113,14 @@ FUNC( TestERP_CoordinateTransform )
 FUNC( TestERP_BackProject)
 {
     const double eps = 1e-7;
-    
-    erp::BackProjector erpMesh;
-
     cv::Size size(30,30);
+    
+    erp::Unprojector unprojector;
+    unprojector.create(size);
+    
     cv::Mat1f radiusMap = cv::Mat1f::ones(size);
 
-    auto vertices = erpMesh.calculate_vertices(radiusMap);
+    auto vertices = unprojector.unproject(radiusMap);
 
     const double radiusExpected = 1.0;
 
@@ -135,26 +136,28 @@ FUNC( TestERP_Project)
     double eps = 1e-7;
     const float rescale = 1.f;
 
-    erp::BackProjector backProjector;
-
-    cv::Size size(5, 5);
+    const cv::Size size(5, 5);
+    
+    erp::Unprojector unprojector;
+    unprojector.create(size);
+    
     cv::Mat1f imRadius = cv::Mat1f::ones(size);
 
-    auto imXYZ = backProjector.calculate_vertices(imRadius);
+    auto imXYZ = unprojector.unproject(imRadius);
 
     float radiusExpected = 2.f;
     
     cv::Mat3f imXYZnew = imXYZ * radiusExpected;
 
     erp::Projector projector;
-    cv::Mat2f imUV = projector.project_to_image_coordinates_uv( imXYZnew, rescale);
+    cv::Mat2f imUV = projector.project( imXYZnew, rescale);
 
     eps *= size.area();
     double errorRadius = cv::sum( cv::abs( projector.imRadius  - radiusExpected ) ).val[0];
     
     ALMOST( 0.0, errorRadius, eps );
 
-    auto errorPhiTheta = cv::sum( cv::abs( backProjector.phiTheta - projector.imPhiTheta ) );
+    auto errorPhiTheta = cv::sum( cv::abs( unprojector.phiTheta - projector.imPhiTheta ) );
     ALMOST( 0.0, errorPhiTheta[0], eps );
     ALMOST( 0.0, errorPhiTheta[1], eps );
 
