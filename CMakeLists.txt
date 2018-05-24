@@ -106,7 +106,7 @@ set(PROJECT_HEADERS
 	src/Timer.hpp
 	src/View.hpp
 	src/blending.hpp
-	src/helpers.hpp
+	src/Parameters.hpp
 	src/image_loading.hpp
 	src/image_writing.hpp
 	src/inpainting.hpp
