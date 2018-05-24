@@ -100,7 +100,7 @@ void Pipeline::load_images() {
 }
 
 void Pipeline::compute_views() {
-	for (std::size_t idx = 0; idx != config.params_virtual.size(); ++idx) {
+	for (std::size_t virtual_idx = 0; virtual_idx != config.params_virtual.size(); ++virtual_idx) {
 		std::unique_ptr<BlendedView> blender;
 		if (config.blending_method == BLENDING_SIMPLE)
 			blender.reset(new BlendedViewSimple(config.blending_factor));
@@ -112,12 +112,12 @@ void Pipeline::compute_views() {
 
 		// Project according to parameters of the virtual view
 		std::unique_ptr<PerspectiveProjector> projector;
-		projector.reset(new PerspectiveProjector(config.params_virtual[idx]));
+		projector.reset(new PerspectiveProjector(config.params_virtual[virtual_idx]));
 
-		for (int input_idx = 0; input_idx < static_cast<int>(input_images.size()); input_idx++) {
+		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
 			// Unprojection according to parameters of the camera view
 			std::unique_ptr<PerspectiveUnprojector> unprojector;
-			unprojector.reset(new PerspectiveUnprojector(config.params_real[idx]));
+			unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
 
 			// Select view synthesis method
 			std::unique_ptr<SynthetizedView> synthesizer;
@@ -150,7 +150,7 @@ void Pipeline::compute_views() {
 		PROF_END("downscale");
 
 		PROF_START("write");
-		write_color(config.outfilenames[idx], color, config.bit_depth_color);
+		write_color(config.outfilenames[virtual_idx], color, config.bit_depth_color);
 		PROF_END("write");
 	}
 }
