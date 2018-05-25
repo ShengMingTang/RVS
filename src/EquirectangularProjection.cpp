@@ -58,9 +58,10 @@ erp::Unprojector::Unprojector()
 {
 }
 
-erp::Unprojector::Unprojector(Parameters const& parameters)
+erp::Unprojector::Unprojector(Parameters const& parameters, const cv::Size& size)
     : ::Unprojector(parameters)
 {
+    create(size);
 }
 
 void erp::Unprojector::create(cv::Size size)

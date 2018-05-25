@@ -126,7 +126,7 @@ void Pipeline::compute_views() {
             if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
                 unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
             else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
-                unprojector.reset(new erp::Unprojector(config.params_real[input_idx]));
+                unprojector.reset(new erp::Unprojector(config.params_real[input_idx], config.size ));
 
             // Select view synthesis method
 			std::unique_ptr<SynthetizedView> synthesizer;

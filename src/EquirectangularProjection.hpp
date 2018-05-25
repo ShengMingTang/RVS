@@ -71,7 +71,7 @@ class Unprojector : public ::Unprojector
 {
 public:
     Unprojector();
-    Unprojector(Parameters const& parameters);
+    Unprojector(Parameters const& parameters, const cv::Size& size);
     
     void      create(cv::Size size);
     
