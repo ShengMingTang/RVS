@@ -171,6 +171,16 @@ FUNC(ULB_Unicorn_10b)
 		cv::Size(1920, 1080), 10, 21.26, 26.16); // VC14 + OpenCV 3.1.0: 21.3168, 26.2117
 }
 
+FUNC(ULB_Unicorn_Same_View)
+{
+	Pipeline p("./config_files/Unicorn_Same_View.cfg");
+	p.execute();
+	testing::compareWithReferenceView<std::uint8_t>(
+		"030003250506_from_030003250506_Same_View.yuv",
+		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0506.yuv",
+		cv::Size(1920, 1080), 8, 19.80, 34.03); // VC14 + OpenCV 3.1.0: 19.8503, 34.0891											
+}
+
 // Need test cases to cover:
 //   Load/write PNG
 //   YUV and RGB
