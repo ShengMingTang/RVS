@@ -67,29 +67,28 @@ cv::Vec3f calculate_euclidian_coordinates( const cv::Vec2f& phiTheta );
 cv::Vec2f calculate_sperical_coordinates( const cv::Vec3f& xyz_norm );
 
 
-class Unprojector 
+class Unprojector : public ::Unprojector
 {
 public:
     void      create(cv::Size size);
+    
+    cv::Mat3f unproject( cv::Mat2f image_pos, cv::Mat1f radiusMap) const override;
     cv::Mat3f unproject( cv::Mat1f radiusMap) const;
 
     cv::Mat3f verticesXYZNormalized;
     cv::Mat2f phiTheta;
-
 };
 
 
-class Projector 
+class Projector : public ::Projector
 {
 public:
     
-    cv::Mat2f imUV;
-    cv::Mat1f imRadius;
-    cv::Mat2f imPhiTheta;
+    //cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth) const = 0;
 
-    cv::Mat2f project( cv::Mat3f vecticesXYZ, float rescale);
+    cv::Mat2f project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius) const override;
 };
-    
+
 
 
 

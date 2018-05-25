@@ -104,15 +104,19 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat1f radiusMap) const
     return verticesXYZ;
 }
 
+cv::Mat3f erp::Unprojector::unproject( cv::Mat2f image_pos, cv::Mat1f radiusMap) const 
+{
+    image_pos; // ignore image pos, assume regular grid
+    return unproject(radiusMap);
+}
 
 
-cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, float rescale )
+cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius ) const
 {
     auto size = vecticesXYZ.size();
 
-    imUV.create(size);
+    cv::Mat2f imUV(size);
     imRadius.create(size);
-    imPhiTheta.create(size);
 
     for(int i = 0; i < size.height; ++i )
         for( int j=0; j < size.width; ++j )
@@ -123,7 +127,6 @@ cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, float rescale )
 
             cv::Vec3f xyzNorm  = xyz / radius;
             cv::Vec2f phiTheta = erp::calculate_sperical_coordinates(xyzNorm);
-            imPhiTheta(i,j)    = phiTheta;
 
             imUV(i,j)[0] = rescale * erp::calculate_horizontal_image_coordinate(phiTheta[0], size.width );
             imUV(i,j)[1] = rescale * erp::calculate_vertical_image_coordinate(phiTheta[1], size.height  );

@@ -47,7 +47,8 @@ Contact : bart.kroon@philips.com
 class Projector
 {
 public:
-	Projector(Parameters const&);
+    Projector();
+    Projector(Parameters const&);
 	virtual ~Projector();
 
 	// world_pos in OMAF Referential: x forward, y left, z up
