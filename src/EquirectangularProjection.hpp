@@ -83,13 +83,9 @@ class Projector
 {
 public:
     
-    cv::Mat2f imUV;
-    cv::Mat1f imRadius;
-    cv::Mat2f imPhiTheta;
-
-    cv::Mat2f project( cv::Mat3f vecticesXYZ, float rescale);
+    cv::Mat2f project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, float rescale) const;
 };
-    
+
 
 
 
