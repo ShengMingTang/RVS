@@ -224,8 +224,7 @@ FUNC(Test_PerspectiveProjector)
 	// Check projections results against reference
 	auto image_pos_error = norm(reference_image_pos, actual_image_pos);
 	auto depth_error = norm(reference_depth, actual_depth);
-	auto threshold = 1e-6;
 
-	CHECK(image_pos_error < 1e-12);
-	CHECK(depth_error < 1e-12);
+	ALMOST(image_pos_error, 0, 1e-12);
+	ALMOST(depth_error, 0, 1e-12);
 }
