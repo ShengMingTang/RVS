@@ -104,8 +104,14 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat1f radiusMap) const
     return verticesXYZ;
 }
 
+cv::Mat3f erp::Unprojector::unproject( cv::Mat2f image_pos, cv::Mat1f radiusMap) const 
+{
+    image_pos; // ignore image pos, assume regular grid
+    return unproject(radiusMap);
+}
 
-cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, float rescale ) const
+
+cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius ) const
 {
     auto size = vecticesXYZ.size();
 

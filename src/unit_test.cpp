@@ -134,7 +134,8 @@ FUNC( TestERP_BackProject)
 FUNC( TestERP_Project)
 {
     double eps = 1e-7;
-    const float rescale = 1.f;
+    //const float rescale = 1.f;
+    rescale = 1.f;
 
     const cv::Size size(5, 5);
     
@@ -151,7 +152,7 @@ FUNC( TestERP_Project)
 
     erp::Projector projector;
     cv::Mat1f imRadiusActual;
-    cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual, rescale);
+    cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual);
 
 
     eps *= size.area();

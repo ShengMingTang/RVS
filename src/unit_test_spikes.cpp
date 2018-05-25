@@ -243,7 +243,7 @@ FUNC( Spike_ErpViewSynthesis )
 
     erp::Projector projector;
     cv::Mat1f imRadiusNew;
-    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew, rescale );
+    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew );
 
 
 

@@ -47,7 +47,8 @@ Contact : bart.kroon@philips.com
 class Unprojector
 {
 public:
-	Unprojector(Parameters const& parameters);
+    Unprojector();
+    Unprojector(Parameters const& parameters);
 	virtual ~Unprojector();
 
 	// image_pos in image coordinates: u right, v down

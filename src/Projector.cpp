@@ -41,6 +41,13 @@ Contact : bart.kroon@philips.com
 
 #include "Projector.hpp"
 
+Projector::Projector()
+    : rotation( cv::Matx33f::eye())
+    , translation( cv::Vec3f::all(0.f))
+{
+}
+
+
 Projector::Projector(Parameters const& parameters)
 	: rotation(parameters.rotation)
 	, translation(parameters.translation)

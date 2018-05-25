@@ -41,6 +41,13 @@ Contact : bart.kroon@philips.com
 
 #include "Unprojector.hpp"
 
+Unprojector::Unprojector()
+    : rotation( cv::Matx33f::eye())
+    , translation( cv::Vec3f::all(0.f))
+{
+}
+
+
 Unprojector::Unprojector(Parameters const& parameters)
 	: rotation(parameters.rotation)
 	, translation(parameters.translation)
