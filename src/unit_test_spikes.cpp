@@ -270,7 +270,7 @@ FUNC( Spike_ErpViewSynthesis )
 
 }
 
-FUNC(ULB_Unicorn_Triangles_Simple_Erp)
+FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
 {
     Pipeline p("./config_files/Unicorn_Triangles_Simple_ToErp.cfg");
     p.execute();
