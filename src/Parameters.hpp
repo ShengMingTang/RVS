@@ -26,18 +26,62 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
-#pragma once
+/*------------------------------------------------------------------------------ -
 
+This source file has been added by Koninklijke Philips N.V. for the purpose of
+of the 3DoF+ Investigation.
+Modifications copyright © 2018 Koninklijke Philips N.V.
+
+OMAF Referential coordinate system
+Renamed from helpers.hpp to Parameters.hpp/cpp
+
+Author  : Bart Kroon, Bart Sonneveldt
+Contact : bart.kroon@philips.com
+
+------------------------------------------------------------------------------ -*/
+
+#pragma once
 
 #include <opencv2/core.hpp>
 
+enum class CoordinateSystem
+{
+	VSRS,
+	MPEG_I_OMAF,
+	MPEG_H_3DAudio = MPEG_I_OMAF
+};
+
 /**
-@file helpers.hpp
+@file Parameters.hpp
 \brief Definition of external and internal camera paramters
 */
 
 /** Camera parameters*/
-struct Parameters {
+class Parameters {
+public:
+	Parameters();
+
+	/** Camera parameters
+	@param rotation External parameter of rotation
+	@param translation External parameter of translation
+	@param camera_matrix Internal parameters
+	@param sensor_size Size of the sensor, in the same unit as camera_matrix
+	*/
+	Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor, CoordinateSystem system);
+
+	/**External parameter of rotation*/
+	cv::Matx33f const& get_rotation() const;
+
+	/**External parameter of translation*/
+	cv::Vec3f get_translation() const;
+
+	/**Internal parameters*/
+	cv::Matx33f const& get_camera_matrix() const;
+
+	/**Size of the sensor, in the same unit as camera_matrix*/
+	float const get_sensor() const;
+
+private:
 	/**External parameter of rotation*/
 	cv::Matx33f rotation;
 
@@ -49,19 +93,4 @@ struct Parameters {
 
 	/**Size of the sensor, in the same unit as camera_matrix*/
 	float sensor;
-
-	Parameters() {}
-
-	/** Camera parameters
-	@param rotation External parameter of rotation
-	@param translation External parameter of translation
-	@param camera_matrix Internal parameters
-	@param sensor_size Size of the sensor, in the same unit as camera_matrix
-	*/
-	Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor)
-		: rotation(rotation)
-		, translation(translation)
-		, camera_matrix(camera_matrix)
-		, sensor(sensor)
-	{}
 };

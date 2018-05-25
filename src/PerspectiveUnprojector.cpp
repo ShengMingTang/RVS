@@ -42,13 +42,14 @@ cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth
 {
 	assert(image_pos.size() == depth.size());
 
-	if (image_pos.cols != parameters.sensor)
+	if (image_pos.cols != parameters.get_sensor())
 		throw std::runtime_error("Situation where sensor size is different from input view width is currently not supported");
 	
-	auto fx = parameters.camera_matrix(0, 0);
-	auto fy = parameters.camera_matrix(1, 1);
-	auto px = parameters.camera_matrix(0, 2);
-	auto py = parameters.camera_matrix(1, 2);
+	auto M = parameters.get_camera_matrix();
+	auto fx = M(0, 0);
+	auto fy = M(1, 1);
+	auto px = M(0, 2);
+	auto py = M(1, 2);
 
 	cv::Mat3f world_pos(image_pos.size(), cv::Vec3f::all(NaN));
 

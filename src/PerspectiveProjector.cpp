@@ -40,13 +40,14 @@ PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
 
 cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth) const
 {
-	if (world_pos.cols != parameters.sensor)
+	if (world_pos.cols != parameters.get_sensor())
 		throw std::runtime_error("Situation where sensor size is different from input view width is currently not supported");
 
-	auto fx = parameters.camera_matrix(0, 0);
-	auto fy = parameters.camera_matrix(1, 1);
-	auto px = parameters.camera_matrix(0, 2);
-	auto py = parameters.camera_matrix(1, 2);
+	auto M = parameters.get_camera_matrix();
+	auto fx = M(0, 0);
+	auto fy = M(1, 1);
+	auto px = M(0, 2);
+	auto py = M(1, 2);
 
 	cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
 	depth = cv::Mat1f(world_pos.size(), NaN);

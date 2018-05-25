@@ -81,6 +81,7 @@ endif()
 set(PROJECT_SOURCES
 	src/BlendedView.cpp
 	src/Config.cpp
+	src/Parameters.cpp
 	src/Parser.cpp
 	src/Pipeline.cpp
 	src/SynthetizedView.cpp

@@ -49,8 +49,8 @@ Projector::Projector()
 
 
 Projector::Projector(Parameters const& parameters)
-	: rotation(parameters.rotation)
-	, translation(parameters.translation)
+	: rotation(parameters.get_rotation())
+	, translation(parameters.get_translation())
 {
 }
 

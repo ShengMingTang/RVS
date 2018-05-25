@@ -188,7 +188,7 @@ FUNC(Test_PerspectiveProjector)
 		0.f, 0.f, 1.f);
 
 	// Intrinsic and extrinsic camera parameters
-	auto const parameters = Parameters(R, t, M, w);
+	auto const parameters = Parameters(R, t, M, w, CoordinateSystem::MPEG_I_OMAF);
 
 	// Construct projector
 	PerspectiveProjector projector(parameters);

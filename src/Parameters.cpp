@@ -1,11 +1,11 @@
 /*------------------------------------------------------------------------------ -
 
-Copyright Â© 2018 - 2025 UniversitÃ© Libre de Bruxelles(ULB)
+Copyright © 2018 - 2025 Université Libre de Bruxelles(ULB)
 
 Authors : Sarah Fachada, Daniele Bonatto, Arnaud Schenkel
 Contact : Gauthier.Lafruit@ulb.ac.be
 
-SVS â€“ Several inputs View Synthesis
+SVS – Several inputs View Synthesis
 This software synthesizes virtual views at any position and orientation in space,
 from any number of camera input views, using depth image - based rendering
 techniques.
@@ -30,38 +30,63 @@ copies, substantial portions or derivative works of the Software.
 
 This source file has been added by Koninklijke Philips N.V. for the purpose of
 of the 3DoF+ Investigation.
-Modifications copyright Â© 2018 Koninklijke Philips N.V.
+Modifications copyright © 2018 Koninklijke Philips N.V.
 
-Extraction of a generalized unproject -> translate/rotate -> project flow
+OMAF Referential coordinate system
+Renamed from helpers.hpp to Parameters.hpp/cpp
 
 Author  : Bart Kroon, Bart Sonneveldt
 Contact : bart.kroon@philips.com
 
 ------------------------------------------------------------------------------ -*/
 
-#include "Unprojector.hpp"
+#include "Parameters.hpp"
 
-Unprojector::Unprojector()
-    : rotation( cv::Matx33f::eye())
-    , translation( cv::Vec3f::all(0.f))
+Parameters::Parameters()
+	: sensor(std::numeric_limits<float>::quiet_NaN()) 
+{}
+
+/** Camera parameters
+@param rotation External parameter of rotation
+@param translation External parameter of translation
+@param camera_matrix Internal parameters
+@param sensor_size Size of the sensor, in the same unit as camera_matrix
+*/
+Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor, CoordinateSystem system)
+	: camera_matrix(camera_matrix)
+	, sensor(sensor)
 {
+	if (system == CoordinateSystem::MPEG_I_OMAF) {
+		this->rotation = rotation;
+		this->translation = translation;
+	}
+	else if (system == CoordinateSystem::VSRS) {
+		auto P = cv::Matx33f(
+				0.f,  1.f,  0.f,
+				1.f,  0.f,  0.f,
+				0.f,  0.f,  1.f);
+		this->rotation = P * rotation * P.t();
+		this->translation = -P * translation;
+	}
+	else throw std::logic_error("Unknown coordinate system");
 }
 
-
-Unprojector::Unprojector(Parameters const& parameters)
-	: rotation(parameters.get_rotation())
-	, translation(parameters.get_translation())
-{
+cv::Matx33f const& Parameters::get_rotation() const {
+	assert(sensor > 0.f); 
+	return rotation; 
 }
 
-Unprojector::~Unprojector() {}
-
-cv::Matx33f const& Unprojector::get_rotation() const
-{
-	return rotation;
+cv::Vec3f Parameters::get_translation() const {
+	assert(sensor > 0.f); 
+	return translation; 
 }
 
-cv::Vec3f Unprojector::get_translation() const
-{
-	return translation;
+cv::Matx33f const& Parameters::get_camera_matrix() const {
+	assert(sensor > 0.f);
+	return camera_matrix; 
+}
+
+float const Parameters::get_sensor() const {
+	assert(sensor > 0.f);
+	return sensor; 
 }

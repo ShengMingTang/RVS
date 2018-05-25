@@ -158,7 +158,7 @@ void read_cameras_paramaters(std::string filename, std::vector<std::string>& cam
 			cv::Mat r = (cv::Mat_<float>(3, 3) << r11, r12, r13, r21, r22, r23, r31, r32, r33);
 			cv::Vec3f t = cv::Vec3f(tx, ty, tz);
 			camnames.push_back(id);
-			params.push_back(Parameters(r, t, cam_mat, sensor_size));
+			params.push_back(Parameters(r, t, cam_mat, sensor_size, CoordinateSystem::VSRS));
 		}
 		return;
 	}
@@ -168,7 +168,7 @@ void read_cameras_paramaters(std::string filename, std::vector<std::string>& cam
 		cv::Vec3f t;
 		cv::Mat cam_mat;
 		if (find_cam(filename, r, t, cam_mat, camnames[i])) {
-			params.push_back(Parameters(r, t, cam_mat, sensor_size));
+			params.push_back(Parameters(r, t, cam_mat, sensor_size, CoordinateSystem::VSRS));
 		}
 	}
 }
