@@ -49,6 +49,7 @@ Contact : bart.kroon@philips.com
 #include "image_writing.hpp"
 #include "PerspectiveUnprojector.hpp"
 #include "PerspectiveProjector.hpp"
+#include "EquirectangularProjection.hpp"
 
 #include <iostream>
 #include <vector>
@@ -102,7 +103,8 @@ void Pipeline::load_images() {
 void Pipeline::compute_views() {
 	for (std::size_t virtual_idx = 0; virtual_idx != config.params_virtual.size(); ++virtual_idx) {
 		std::unique_ptr<BlendedView> blender;
-		if (config.blending_method == BLENDING_SIMPLE)
+		
+        if (config.blending_method == BLENDING_SIMPLE)
 			blender.reset(new BlendedViewSimple(config.blending_factor));
 		else if (config.blending_method == BLENDING_MULTISPEC)
 			blender.reset(new BlendedViewMultiSpec(
@@ -111,15 +113,22 @@ void Pipeline::compute_views() {
 		else throw std::logic_error("Unknown blending method");
 
 		// Project according to parameters of the virtual view
-		std::unique_ptr<PerspectiveProjector> projector;
-		projector.reset(new PerspectiveProjector(config.params_virtual[virtual_idx]));
+        std::unique_ptr<Projector> projector;
+		if( config.input_projection_type == PROJECTION_PERSPECTIVE )
+            projector.reset(new PerspectiveProjector(config.params_virtual[virtual_idx]));
+        else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
+            projector.reset(new erp::Projector(config.params_virtual[virtual_idx]));
 
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
-			// Unprojection according to parameters of the camera view
-			std::unique_ptr<PerspectiveUnprojector> unprojector;
-			unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
+			
+            // Select type of un-projection 
+			std::unique_ptr<Unprojector> unprojector;
+            if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
+                unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
+            else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
+                unprojector.reset(new erp::Unprojector(config.params_real[input_idx]));
 
-			// Select view synthesis method
+            // Select view synthesis method
 			std::unique_ptr<SynthetizedView> synthesizer;
 			if (vs_method == SYNTHESIS_TRIANGLE)
 				synthesizer.reset(new SynthetizedViewTriangle);

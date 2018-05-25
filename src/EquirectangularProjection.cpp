@@ -53,8 +53,15 @@ cv::Vec2f erp::calculate_sperical_coordinates( const cv::Vec3f& xyz_norm )
     return cv::Vec2f(phi, theta);
 }
 
+erp::Unprojector::Unprojector()
+    : ::Unprojector()
+{
+}
 
-
+erp::Unprojector::Unprojector(Parameters const& parameters)
+    : ::Unprojector(parameters)
+{
+}
 
 void erp::Unprojector::create(cv::Size size)
 {
@@ -108,6 +115,18 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat2f image_pos, cv::Mat1f radiusMap)
 {
     image_pos; // ignore image pos, assume regular grid
     return unproject(radiusMap);
+}
+
+
+
+erp::Projector::Projector()
+    : ::Projector()
+{
+}
+
+erp::Projector::Projector(Parameters const& parameters)
+    : ::Projector(parameters)
+{
 }
 
 

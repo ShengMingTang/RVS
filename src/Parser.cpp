@@ -393,7 +393,24 @@ void Parser::read_SVS_config_file() {
 	if (seek_float(filename_parameter_file, config.sensor_size, "SensorSize", "Sensor size") == 0)
 		config.sensor_size = static_cast<float>(w);
 
-	
+    //seek projection types
+    std::vector<std::string> inputProjectionType;
+    if (seek_string(filename_parameter_file, 1, inputProjectionType, "InputProjectionType", "Input Projection Type"))
+    {
+        if (inputProjectionType[0] == "Perspective") config.input_projection_type = PROJECTION_PERSPECTIVE;
+        else if (inputProjectionType[0] == "Equirectangular") config.input_projection_type = PROJECTION_EQUIRECTANGULAR;
+        else throw std::runtime_error("InputProjectionType");
+    }
+    std::vector<std::string> virtualProjectionType;
+    if (seek_string(filename_parameter_file, 1, virtualProjectionType, "VirtualProjectionType", "Virtual Projection Type"))
+    {
+        if (virtualProjectionType[0] == "Perspective") config.virtual_projection_type = PROJECTION_PERSPECTIVE;
+        else if (virtualProjectionType[0] == "Equirectangular") config.virtual_projection_type = PROJECTION_EQUIRECTANGULAR;
+        else throw std::runtime_error("VirtualProjectionType");
+    }
+
+
+
 	print_results(InputCameraParameterFile, config.texture_names, config.depth_names, VirtualCameraParameterFile, number_input_cameras, number_output_cameras);
 
 	config.camerasParameters_in = InputCameraParameterFile[0];

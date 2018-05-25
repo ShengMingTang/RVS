@@ -69,12 +69,16 @@ enum InpaintingMethod {
 	INPAINTING_LINES = 1
 };
 
+enum ProjectionType {
+    PROJECTION_PERSPECTIVE = 0,
+    PROJECTION_EQUIRECTANGULAR = 1
+};
 
 /**Precision*/
 extern float rescale;
 const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
 const cv::Vec3f empty_yuv_color(0.0f, 0.0f, 0.0f);
-/**Working color space (RGB or YUV). Independant of the input or output formats*/
+/**Working color space (RGB or YUV). Independent of the input or output formats*/
 extern ColorSpace color_space;
 extern ViewSynthesisMethod vs_method;
 
@@ -86,13 +90,13 @@ public:
 	/** Input camera names to lookup in the config file */
 	std::vector<std::string> InputCameraNames;
 
-	/** Virtual camera names to lookup in the config file. "ALL" to synthetised all the views of the file */
+	/** Virtual camera names to lookup in the config file. "ALL" to synthesized all the views of the file */
 	std::vector<std::string> VirtualCameraNames;
 
-	/** real cameras's parameters read from file */
+	/** real camera's parameters read from file */
 	std::string camerasParameters_in;
 
-	/** virtual cameras's parameters read from file */
+	/** virtual camera's parameters read from file */
 	std::string virtualCamerasParameters_in;
 
 	/** folder for output */
@@ -119,7 +123,7 @@ public:
 	/** zfar of every input view in case of disparity map yuv file */
 	std::vector<float> zfar;
 
-	/** "ALL" to Synthetised all the views of the config file or the name of each output filename */
+	/** "ALL" to Synthesized all the views of the config file or the name of each output filename */
 	std::vector<std::string> outfilenames;
 
 	/** What is the extension of the files to use if not specified in configuration file */
@@ -150,6 +154,8 @@ public:
 	float blending_high_freq_factor = 4.0f;
 	float blending_factor = 1.0f;
 
+    ProjectionType input_projection_type   = PROJECTION_PERSPECTIVE;
+    ProjectionType virtual_projection_type = PROJECTION_PERSPECTIVE;
 
 	/**size of the cameras sensor, in the same unit as focal length*/
 	float sensor_size = 1920.0f;
