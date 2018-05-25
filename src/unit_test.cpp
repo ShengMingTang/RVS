@@ -31,6 +31,7 @@ copies, substantial portions or derivative works of the Software.
 #include "yaffut.hpp"
 
 #include "EquirectangularProjection.hpp"
+#include "PerspectiveProjector.hpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -163,4 +164,65 @@ FUNC( TestERP_Project)
 
 }
 
+FUNC(Test_PerspectiveProjector)
+{
+	// Aribitrary extrinsics
+	auto const R = cv::Matx33f::randn(3, 3);
+	auto const t = cv::Vec3f(5.f, 3.f, 9.f);
 
+	// Example values
+	auto const w = 4.f;
+	auto const h = 2.f;
+	auto const f = 6.f;
+	auto const p_x = 1.f; // assymmetric
+	auto const p_y = 1.f;
+	auto const far_away = 42.f;
+
+	// Intrinsics
+	auto const M = cv::Matx33f(
+		 f , 0.f, p_x,
+		0.f,  f , p_y,
+		0.f, 0.f, 1.f);
+
+	// Intrinsic and extrinsic camera parameters
+	auto const parameters = Parameters(R, t, M, w);
+
+	// Construct projector
+	PerspectiveProjector projector(parameters);
+	
+	// Check that extrinsics can be obtained
+	EQUAL(R, projector.get_rotation());
+	EQUAL(t, projector.get_translation());
+
+	// Example world positions
+	// OMAF Referential: x forward, y left, z up
+	cv::Mat3f world_pos(1, 4);
+	world_pos(0, 0) = cv::Vec3f(far_away, 0.f, 0.f); // straight ahead, far away
+	world_pos(0, 1) = cv::Vec3f(f, 0.f, 0.f); // principle point
+	world_pos(0, 2) = cv::Vec3f(f, p_x, p_y); // top-left corner of sensor
+	world_pos(0, 3) = cv::Vec3f(f, p_x - w, p_y - h); // botom-right corner of sensor
+
+	// Reference image positions and depth values
+	cv::Mat2f reference_image_pos(1, 4);
+	reference_image_pos(0, 0) = cv::Vec2f(p_x, p_y);
+	reference_image_pos(0, 1) = cv::Vec2f(p_x, p_y);
+	reference_image_pos(0, 2) = cv::Vec2f(0.f, 0.f);
+	reference_image_pos(0, 3) = cv::Vec2f(w, h);
+	cv::Mat1f reference_depth(1, 4);
+	reference_depth(0, 0) = far_away;
+	reference_depth(0, 1) = f;
+	reference_depth(0, 2) = f;
+	reference_depth(0, 3) = f;
+
+	// Project
+	cv::Mat1f actual_depth;
+	auto actual_image_pos = projector.project(world_pos, actual_depth);
+
+	// Check projections results against reference
+	auto image_pos_error = norm(reference_image_pos, actual_image_pos);
+	auto depth_error = norm(reference_depth, actual_depth);
+	auto threshold = 1e-6;
+
+	CHECK(image_pos_error < 1e-12);
+	CHECK(depth_error < 1e-12);
+}
