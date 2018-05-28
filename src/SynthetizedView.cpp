@@ -46,6 +46,13 @@ Contact : bart.kroon@philips.com
 #include <algorithm>
 #include <iostream>
 
+#define DUMP_VALUES !defined NDEBUG
+
+#if DUMP_VALUES
+const int DUMP_I = 540;
+const int DUMP_J = 960;
+#endif
+
 namespace
 {
 	cv::Mat2f uvCoordinates(cv::Size size)
@@ -96,39 +103,23 @@ void SynthetizedView::compute(View& input)
 	assert(projector && unprojector);
 	PROF_START("warping");
 
-	int i = 540, j = 960;
-	std::clog << "(i, j) == (" << i << ", " << j << ")" << std::endl;
-
 	// Generate image coordinates 
-	// BK: Probably specific to Triangle/Square so need to extend class interface
 	auto input_size = input.get_size();
 	auto input_uv = uvCoordinates(input_size);
-	std::clog << "input_uv(i, j) == " << input_uv(i, j) << std::endl;
-	std::clog << "input_get_depth()(i, j) == " << input.get_depth()(i, j) << std::endl;
 
 	// Unproject: input view image to input view world coordinates
 	auto input_xyz = unprojector->unproject(input_uv, input.get_depth());
-	std::clog << "input_xyz(i, j) == " << input_xyz(i, j) << std::endl;
 
 	// Combine rotations and translations of input and virtual views
-	std::clog << "unprojector->get_translation() == " << unprojector->get_translation() << std::endl;
-	std::clog << "unprojector->get_rotation() == " << unprojector->get_rotation() << std::endl;
-	std::clog << "projector->get_translation() == " << projector->get_translation() << std::endl;
-	std::clog << "projector->get_rotation() == " << projector->get_rotation() << std::endl;
 	auto rotation = projector->get_rotation().t() * unprojector->get_rotation();
 	auto translation = unprojector->get_rotation() * (projector->get_translation() - unprojector->get_translation());
-	std::clog << "rotation == " << rotation << std::endl;
-	std::clog << "translation == " << translation << std::endl;
 
 	// Rotate and translate from input (real) to output (virtual) view
 	auto virtual_xyz = affine_transform(input_xyz, rotation, translation);
-	std::clog << "virtual_xyz(i, j) == " << virtual_xyz(i, j) << std::endl;
 
 	// Project: output view world to output view image coordinates
 	cv::Mat1f virtual_depth; // Depth 
 	auto virtual_uv = projector->project(virtual_xyz, /*out*/ virtual_depth);
-	std::clog << "virtual_uv(i, j) == " << virtual_uv(i, j) << std::endl;
-	std::clog << "virtual_depth(i, j) == " << virtual_depth(i, j) << std::endl;
 
 	// Resize: rasterize with oversampling
 	auto output_size = cv::Size(
@@ -138,11 +129,27 @@ void SynthetizedView::compute(View& input)
 	cv::transform(virtual_uv, scaled_uv, cv::Matx22f(
 		float(output_size.width) / input_size.width, 0.f,
 		0.f, float(output_size.height) / input_size.height));
-	std::clog << "scaled_uv(i, j) == " << scaled_uv(i, j) << std::endl;
 
     // Rasterization results in a color, depth and quality map
 	transform(input.get_color(), scaled_uv, virtual_depth, output_size);
-	
+
+#if DUMP_VALUES
+	std::clog << "(i, j) == (" << DUMP_I << ", " << DUMP_J << ")" << '\n';
+	std::clog << "input_uv(i, j) == " << input_uv(DUMP_I, DUMP_J) << '\n';
+	std::clog << "input_get_depth()(i, j) == " << input.get_depth()(DUMP_I, DUMP_J) << '\n';
+	std::clog << "input_xyz(i, j) == " << input_xyz(DUMP_I, DUMP_J) << '\n';
+	std::clog << "unprojector->get_translation() == " << unprojector->get_translation() << '\n';
+	std::clog << "unprojector->get_rotation() == " << unprojector->get_rotation() << '\n';
+	std::clog << "projector->get_translation() == " << projector->get_translation() << '\n';
+	std::clog << "projector->get_rotation() == " << projector->get_rotation() << '\n';
+	std::clog << "rotation == " << rotation << '\n';
+	std::clog << "translation == " << translation << '\n';
+	std::clog << "virtual_xyz(i, j) == " << virtual_xyz(DUMP_I, DUMP_J) << '\n';
+	std::clog << "virtual_uv(i, j) == " << virtual_uv(DUMP_I, DUMP_J) << '\n';
+	std::clog << "virtual_depth(i, j) == " << virtual_depth(DUMP_I, DUMP_J) << '\n';
+	std::clog << "scaled_uv(i, j) == " << scaled_uv(DUMP_I, DUMP_J) << std::endl;
+#endif
+
 	PROF_END("warping");
 }
 
