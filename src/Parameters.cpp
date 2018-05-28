@@ -56,17 +56,15 @@ Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::M
 	: camera_matrix(camera_matrix)
 	, sensor(sensor)
 {
+	// TODO: Make a decision on internal coordinate system
+
 	if (system == CoordinateSystem::MPEG_I_OMAF) {
 		this->rotation = rotation;
 		this->translation = translation;
 	}
 	else if (system == CoordinateSystem::VSRS) {
-		auto P = cv::Matx33f(
-				0.f,  1.f,  0.f,
-				1.f,  0.f,  0.f,
-				0.f,  0.f,  1.f);
-		this->rotation = P * rotation * P.t();
-		this->translation = -P * translation;
+		this->rotation = rotation;
+		this->translation = translation;
 	}
 	else throw std::logic_error("Unknown coordinate system");
 }

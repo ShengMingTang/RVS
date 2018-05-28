@@ -60,9 +60,9 @@ cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth
 
 			if (d > 0.f) {
 				world_pos(i, j) = cv::Vec3f(
-					d,
-					(px - uv[0]) * d / fx,
-					(py - uv[1]) * d / fy);
+					(d / fx) * (uv[0] - px),
+					(d / fy) * (uv[1] - py),
+					d);
 			}
 		}
 	}
