@@ -61,14 +61,14 @@ namespace
 		return result;
 	}
 
-	// Affine transformation: x -> Rx + t
+	// Affine transformation: x -> R.t()*(x + t)
 	cv::Mat3f affine_transform(cv::Mat3f x, cv::Matx33f R, cv::Vec3f t)
 	{
 		auto y = cv::Mat3f(x.size());
 
 		for (int i = 0; i != y.rows; ++i) {
 			for (int j = 0; j != y.cols; ++j) {
-				y(i, j) = R * x(i, j) + t;
+				y(i, j) = R.t() * (x(i, j) - t);
 			}
 		}
 
@@ -104,6 +104,7 @@ void SynthetizedView::compute(View& input)
 	auto input_size = input.get_size();
 	auto input_uv = uvCoordinates(input_size);
 	std::clog << "input_uv(i, j) == " << input_uv(i, j) << std::endl;
+	std::clog << "input_get_depth()(i, j) == " << input.get_depth()(i, j) << std::endl;
 
 	// Unproject: input view image to input view world coordinates
 	auto input_xyz = unprojector->unproject(input_uv, input.get_depth());
