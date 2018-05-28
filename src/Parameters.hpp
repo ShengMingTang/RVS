@@ -79,7 +79,7 @@ public:
 	cv::Matx33f const& get_camera_matrix() const;
 
 	/**Size of the sensor, in the same unit as camera_matrix*/
-	float const get_sensor() const;
+	float get_sensor() const;
 
 private:
 	/**External parameter of rotation*/

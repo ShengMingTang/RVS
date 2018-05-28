@@ -167,7 +167,3 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 	return color;
 }
 
-cv::Mat3f transform_squaresMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality)
-{
-	throw std::logic_error("STUB");
-}

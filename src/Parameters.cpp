@@ -84,7 +84,7 @@ cv::Matx33f const& Parameters::get_camera_matrix() const {
 	return camera_matrix; 
 }
 
-float const Parameters::get_sensor() const {
+float Parameters::get_sensor() const {
 	assert(sensor > 0.f);
 	return sensor; 
 }
