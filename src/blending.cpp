@@ -404,13 +404,13 @@ void split_frequencies(const cv::Mat & img, cv::Mat & low_freq, cv::Mat & high_f
 	}
 	//YCrCb: blur only Y channel
 	else if (color_space == COLORSPACE_YUV) {
-		std::vector<cv::Mat> chans;
+		CV_DbgAssert(img.channels() == 3);
+		cv::Mat chans[3];
 		cv::split(img, chans);
-		chans = { chans[0], chans[1], chans[2] };
 		
 		calcBlurring(chans[0], chans[0], mask, kernel_size);
 
-		cv::merge(chans, low_freq);
+		cv::merge(chans, 3, low_freq);
 
 		high_freq = img - low_freq;
 	}
