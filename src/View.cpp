@@ -46,42 +46,71 @@ Contact : bart.kroon@philips.com
 
 #include <iostream>
 
-// Default constructor for use with std::vector
-// Assertions check against using empty color/depth matrices
-View::View() {}
+// Initialize all maps at once
+View::View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality)
+{
+	assign(color, depth, quality);
+}
 
-// Construct a View by directly providing the data members
-View::View(cv::Mat3f color, cv::Mat1f depth)
-	: color(color)
-	, depth(depth)
-{}
+// Initialize all maps at once
+void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality)
+{
+	_color = color;
+	_depth = depth;
+	_quality = quality;
+	validate();
+}
 
 // Return the texture
 cv::Mat3f View::get_color() const
 {
-	assert(!color.empty() && color.size() == depth.size());
-	return color; 
+	validate();
+	CV_Assert(!_color.empty());
+	return _color;
 }
 
 // Return the depth map (same size as texture)
 cv::Mat1f View::get_depth() const 
 {
-	assert(!color.empty() && color.size() == depth.size());
-	return depth;
+	validate();
+	CV_Assert(!_depth.empty());
+	return _depth;
+}
+
+// Return the quality map (same size as texture)
+cv::Mat1f View::get_quality() const
+{
+	validate();
+	CV_Assert(!_quality.empty());
+	return _quality;
 }
 
 // Return the size of the texture and depth map
 cv::Size View::get_size() const
 {
-	assert(!color.empty() && color.size() == depth.size());
-	return color.size(); 
+	validate();
+	return _color.size();
 }
 
 // Return a mask with all valid depth values
 cv::Mat1b View::get_depth_mask() const
 {
-	assert(!color.empty() && color.size() == depth.size());
-	return depth > 0.f;
+	return get_depth() > 0.f; // excludes NaN's
+}
+
+// Calculate a mask for inpainting
+cv::Mat1b View::get_inpaint_mask() const
+{
+	auto inpaint_mask = cv::Mat1b(get_size(), 255);
+	inpaint_mask.setTo(0, get_quality() > 0); // excludes NaN's
+	return inpaint_mask;
+}
+
+void View::validate() const
+{
+	auto size = _color.size();
+	CV_Assert(_depth.empty() || _depth.size() == size);
+	CV_Assert(_quality.empty() || _quality.size() == size);
 }
 
 InputView::InputView() {}
@@ -95,7 +124,9 @@ InputView::InputView(
 	int bit_depth_depth,
 	float z_near,
 	float z_far)
-: View(
-	read_color(filepath_color, size, bit_depth_color),
-	read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far))
-{}
+{
+	assign(
+		read_color(filepath_color, size, bit_depth_color),
+		read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far),
+		cv::Mat1f());
+}

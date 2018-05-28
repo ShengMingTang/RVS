@@ -83,17 +83,6 @@ namespace
 	}
 }
 
-VirtualView::VirtualView() {}
-
-VirtualView::VirtualView(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality)
-	: View(color, depth)
-	, quality(quality)
-{
-	assert(!color.empty() && color.size() == depth.size() && depth.size() == quality.size());
-}
-
-VirtualView::~VirtualView() {}
-
 SynthetizedView::SynthetizedView() {}
 
 SynthetizedView::~SynthetizedView() {}
@@ -157,8 +146,9 @@ SynthetizedViewTriangle::SynthetizedViewTriangle() {}
 
 void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
 {
-	cv::Mat1f depth_;
-	cv::Mat1f quality_;
-	auto color_ = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth_, /*out*/ quality_);
-	static_cast<VirtualView&>(*this) = VirtualView(color_, depth_, quality_);
+	cv::Mat1f depth;
+	cv::Mat1f quality;
+	auto color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality);
+	
+	assign(color, depth, quality);
 }

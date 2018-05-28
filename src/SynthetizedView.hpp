@@ -48,42 +48,9 @@ Contact : bart.kroon@philips.com
 #include "Unprojector.hpp"
 
 /**
-* Virtual view computed with DIBR, blending, inpainting or any other means
-* */
-class VirtualView : public View
-{
-public:
-	/**
-	\brief Default constructor
-	*/
-	VirtualView();
-
-	/**
-	\brief Constructor that directly initialized color, depth and quality maps
-	*/
-	VirtualView(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality);
-
-	/**
-	\brief Destructor
-	*/
-	~VirtualView();
-
-	/**
-	\brief Quality per pixel
-	@return An image of the same size than the view, indicating the quality of each pixel.
-	Pixel of higher quality will be prioritized during blending.
-	*/
-	cv::Mat1f get_quality() const { return quality; }
-
-private:
-	// The quality map is a side-effect of rasterize
-	cv::Mat1f quality;
-};
-
-/**
  * View computed with DIBR
  * */
-class SynthetizedView : public VirtualView
+class SynthetizedView : public View
 {
 public:
 	/**

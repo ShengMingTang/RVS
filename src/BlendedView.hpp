@@ -49,7 +49,7 @@ Contact : bart.kroon@philips.com
 /**
 Blending class: blends synthetised views one by one as they are generated.
 */
-class BlendedView : public VirtualView
+class BlendedView : public View
 {
 public:
 	virtual ~BlendedView();
@@ -57,7 +57,7 @@ public:
 	/**
 	\brief Blends with a new virtual view.	
 	*/
-	virtual void blend(VirtualView const& view) = 0;
+	virtual void blend(View const& view) = 0;
 };
 
 /**
@@ -75,7 +75,7 @@ public:
 	*/
 	~BlendedViewSimple();
 
-	void blend(VirtualView const& view);
+	void blend(View const& view);
 
 private:
 	bool is_empty;
@@ -98,7 +98,7 @@ public:
 	*/
 	~BlendedViewMultiSpec();
 	
-	void blend(VirtualView const& view);
+	void blend(View const& view);
 
 private:
 	BlendedViewSimple low_freq;

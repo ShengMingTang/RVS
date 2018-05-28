@@ -45,20 +45,18 @@ Contact : bart.kroon@philips.com
 
 
 /**
-Class representing an image and its depth map
+Class representing an image, optionally a depth map, and optionally a quality map
 */
 class View
 {
 public:
-	// Default constructor
-	View();
+	View() = default;
 
-	/**
-	\brief Constructor
-	@param color Color image
-	@param depth Depth map, NaN values permitted
-	*/
-	View(cv::Mat3f color, cv::Mat1f depth);
+	// Initialize all maps at once
+	View(cv::Mat3f, cv::Mat1f, cv::Mat1f);
+
+	// Assign all maps at once
+	void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f);
 
 	// Return the texture
 	cv::Mat3f get_color() const;
@@ -66,15 +64,24 @@ public:
 	// Return the depth map (same size as texture)
 	cv::Mat1f get_depth() const;
 
+	// Return the quality map (same size as texture)
+	cv::Mat1f get_quality() const;
+
 	// Return the size of the texture and depth map
 	cv::Size get_size() const;
 
 	// Return a mask with all valid depth values
 	cv::Mat1b get_depth_mask() const;
-	
+
+	// Return a mask for inpainting
+	cv::Mat1b get_inpaint_mask() const;
+
 private:
-	cv::Mat3f color;
-	cv::Mat1f depth;
+	void validate() const;
+
+	cv::Mat3f _color;
+	cv::Mat1f _depth;
+	cv::Mat1f _quality;
 };
 
 /**
