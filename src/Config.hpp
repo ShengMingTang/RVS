@@ -133,16 +133,6 @@ public:
 	/** The element bit depth of raw input and output depth streams */
 	int bit_depth_depth = 16;
 
-	/** Do we use inpainting (TODO)*/
-	int inpainting = 0;
-
-	size_t size_virtual() {
-		return VirtualCameraNames.size();
-	}
-	size_t size_real() {
-		return InputCameraNames.size();
-	}
-
 	/** Size of input and output image (multiply by rescale to get the working size)*/
 	cv::Size size = cv::Size(1920, 1080);
 

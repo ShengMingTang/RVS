@@ -274,8 +274,6 @@ void Parser::read_vsrs_config_file() {
 	//seek filesnames for output
 	seek_string(filename_parameter_file, 1, config.outfilenames, "OutputVirtualViewImageName", "Output file names");
 
-	//seek inpainting (default = 0)
-	seek_int(filename_parameter_file, config.inpainting, "IvsrsInpaint", "");
 	//seek w,h (default = 1920x1080)
 	int w, h;
 	if (seek_int(filename_parameter_file, w, "SourceWidth", "") && seek_int(filename_parameter_file, h, "SourceHeight", ""))
@@ -343,8 +341,6 @@ void Parser::read_SVS_config_file() {
 	//seek filesnames for output
 	seek_string(filename_parameter_file, number_output_cameras, config.outfilenames, "OutputFiles", "Output file names");
 
-	//seek inpainting (default = 0)
-	seek_int(filename_parameter_file, config.inpainting, "Inpaint", "");
 	//seek w,h (default = 1920x1080)
 	int w, h;
 	if (seek_int(filename_parameter_file, w, "Width", "") && seek_int(filename_parameter_file, h, "Height", ""))
