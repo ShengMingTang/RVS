@@ -56,6 +56,7 @@ Contact : bart.kroon@philips.com
 #include <memory>
 
 #include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 
 Pipeline::Pipeline(std::string filename)
@@ -150,8 +151,19 @@ void Pipeline::compute_views() {
 			PROF_END("blending");
 		}
 
+		auto blended_color = cv::Mat3b();
+		blender->get_color().convertTo(blended_color, CV_8U, 255.);
+		resize(blended_color, blended_color, config.size);
+		imwrite("blended_color.png", blended_color);
+
+		auto quality = blender->get_quality();
+		CV_Assert(!quality.empty());
+		cv::Mat1b inpaint_mask = cv::Mat1b(quality.size(), 255);
+		inpaint_mask.setTo(0, quality > 0);
+		imwrite("to_inpaint.png", inpaint_mask);
+
 		PROF_START("inpainting");
-		cv::Mat3f color = inpaint(blender->get_color(), blender->get_quality() == 0.f, true);
+		cv::Mat3f color = inpaint(blender->get_color(), inpaint_mask, true);
 		PROF_END("inpainting");
 
 		PROF_START("downscale");

@@ -142,7 +142,6 @@ void SynthetizedView::compute(View& input)
 
     // Rasterization results in a color, depth and quality map
 	transform(input.get_color(), scaled_uv, virtual_depth, output_size);
-	assert(!color.empty() && color.size() == depth.size() && color.size() == quality.size());
 	
 	PROF_END("warping");
 }
@@ -151,12 +150,20 @@ SynthetizedViewTriangle::SynthetizedViewTriangle() {}
 
 void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
 {
-	color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality);
+	cv::Mat1f depth_;
+	cv::Mat1f quality_;
+	auto color_ = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth_, /*out*/ quality_);
+	static_cast<VirtualView&>(*this) = VirtualView(color_, depth_, quality_);
 }
+
+// TODO: Remove squares method
 
 SynthetizedViewSquare::SynthetizedViewSquare() {}
 
 void SynthetizedViewSquare::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
 {
-	color = transform_squaresMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality);
+	cv::Mat1f depth_;
+	cv::Mat1f quality_;
+	auto color_ = transform_squaresMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth_, /*out*/ quality_);
+	static_cast<VirtualView&>(*this) = VirtualView(color_, depth_, quality_);
 }

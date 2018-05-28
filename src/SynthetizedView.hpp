@@ -75,7 +75,7 @@ public:
 	*/
 	cv::Mat1f get_quality() const { return quality; }
 
-protected:
+private:
 	// The quality map is a side-effect of rasterize
 	cv::Mat1f quality;
 };
@@ -106,13 +106,6 @@ public:
 	\brief Computes this view from the input View
 	*/
 	void compute(View& img);
-
-	/**
-	\brief Quality per pixel
-	@return An image of the same size than the view, indicating the quality of each pixel. 
-	Pixel of higher quality will be prioritized during blending.
-	*/
-	cv::Mat1f get_quality() const { return quality; }
 	
 protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps

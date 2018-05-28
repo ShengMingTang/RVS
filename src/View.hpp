@@ -72,7 +72,7 @@ public:
 	// Return a mask with all valid depth values
 	cv::Mat1b get_depth_mask() const;
 	
-protected:
+private:
 	cv::Mat3f color;
 	cv::Mat1f depth;
 };

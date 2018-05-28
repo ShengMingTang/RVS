@@ -71,8 +71,9 @@ void BlendedViewMultiSpec::blend(VirtualView const& view)
 	high_freq.blend(high_view);
 
 	// Combine result
-	color = low_freq.get_color() + high_freq.get_color();
-	// depth = ... (not used)
+	cv::Mat3f color_ = low_freq.get_color() + high_freq.get_color();
+	auto no_depth = cv::Mat1f(color_.size(), std::numeric_limits<float>::quiet_NaN()); // TODO: Remove depth from interface
+	static_cast<VirtualView&>(*this) = VirtualView(color_, no_depth, low_freq.get_quality());
 }
 
 BlendedViewSimple::BlendedViewSimple(float blending_exp)
@@ -86,9 +87,7 @@ void BlendedViewSimple::blend(VirtualView const& view)
 { 
 	if (is_empty) {
 		is_empty = false;
-		color = view.get_color();
-		depth = view.get_depth();
-		quality = view.get_quality();
+		static_cast<VirtualView&>(*this) = view; // TODO: Protected constructors or setters
 	}
 	else {
 		std::vector<cv::Mat> colors = { get_color(), view.get_color() };
@@ -99,14 +98,17 @@ void BlendedViewSimple::blend(VirtualView const& view)
 		cv::Mat depth_prolongation_mask; // don't care
 		cv::Mat inpaint_mask; // don't care
 		
-		color = blend_img(
+		auto color_ = blend_img(
 			colors, qualities, depth_masks,
 			empty_rgb_color,
 			/*out*/ quality_,
 			/*out*/ depth_prolongation_mask,
 			/*out*/ inpaint_mask,
 			blending_exp);
-		// depth = ... (not used)
-		quality = quality_;
+
+		// Not used
+		auto no_depth = cv::Mat1f(color_.size(), std::numeric_limits<float>::quiet_NaN());
+
+		static_cast<VirtualView&>(*this) = VirtualView(color_, no_depth, quality_);
 	}
 }
