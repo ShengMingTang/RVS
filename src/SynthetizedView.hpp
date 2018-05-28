@@ -131,16 +131,3 @@ protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
 	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size);
 };
-
-/**
-* The algorithm to compute the view maps every pixel to its new positions. The pixels are considered as squares.
-* The quality of each pixel is given by the depth of the pixel
-* */
-class SynthetizedViewSquare :public SynthetizedView {
-public:
-	SynthetizedViewSquare();
-
-protected:
-	// Rasterize the warped image, resulting in updates of color, depth and quality maps
-	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size);
-};

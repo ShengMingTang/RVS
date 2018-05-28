@@ -56,9 +56,7 @@ enum ColorSpace {
 	COLORSPACE_RGB = 1
 };
 enum ViewSynthesisMethod {
-	SYNTHESIS_TRIANGLE = 0,
-	SYNTHESIS_SQUARE = 1,
-	SYNTHESIS_VSRS = 2, //not implemented
+	SYNTHESIS_TRIANGLE = 0
 };
 enum BlendingMethod {
 	BLENDING_SIMPLE = 0,

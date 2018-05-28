@@ -150,17 +150,6 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 										   // GCC 4.9.2 + OpenCV 3.4.1: 21.1701, 26.0268
 }
 
-FUNC(ULB_Unicorn_Squares_Simple)
-{
-	Pipeline p("./config_files/Unicorn_Squares_Simple.cfg");
-	p.execute();
-	testing::compareWithReferenceView<std::uint8_t>(
-		"030003250438_from_030003070370_030003430506_Squares_Simple.yuv",
-		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
-		cv::Size(1920, 1080), 8, 20.94, 25.00); // VC14 + OpenCV 3.1.0: 20.9853, 25.05
-										   // GCC 4.9.2 + OpenCV 3.4.1: 20.9853, 25.05
-}
-
 FUNC(ULB_Unicorn_10b)
 {
 	Pipeline p("./config_files/Unicorn_10b.cfg");

@@ -155,15 +155,3 @@ void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_p
 	auto color_ = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth_, /*out*/ quality_);
 	static_cast<VirtualView&>(*this) = VirtualView(color_, depth_, quality_);
 }
-
-// TODO: Remove squares method
-
-SynthetizedViewSquare::SynthetizedViewSquare() {}
-
-void SynthetizedViewSquare::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
-{
-	cv::Mat1f depth_;
-	cv::Mat1f quality_;
-	auto color_ = transform_squaresMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth_, /*out*/ quality_);
-	static_cast<VirtualView&>(*this) = VirtualView(color_, depth_, quality_);
-}

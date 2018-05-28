@@ -366,14 +366,14 @@ void Parser::read_SVS_config_file() {
 	{
 		if(cs[0] == "RGB") color_space = COLORSPACE_RGB;
 		else if (cs[0] == "YUV") color_space = COLORSPACE_YUV;
+		else throw std::runtime_error("ColorSpace");
 	}
 	//view synthesis method
 	std::vector<std::string> vs;
 	if (seek_string(filename_parameter_file, 1, vs, "ViewSynthesisMethod", "View Synthesis Method"))
 	{
 		if (vs[0] == "Triangles") vs_method = SYNTHESIS_TRIANGLE;
-		else if (vs[0] == "Squares") vs_method = SYNTHESIS_SQUARE;
-		else if (vs[0] == "VSRS") vs_method = SYNTHESIS_VSRS;
+		else throw std::runtime_error("ViewSynthesisMethod");
 	}
 	//seek blending method
 	std::vector<std::string> bl;
@@ -381,6 +381,7 @@ void Parser::read_SVS_config_file() {
 	{
 		if (bl[0] == "Simple") config.blending_method = BLENDING_SIMPLE;
 		else if (bl[0] == "MultiSpectral") config.blending_method = BLENDING_MULTISPEC;
+		else throw std::runtime_error("BlendingMethod");
 	}
 	//seek blending factors
 	if (seek_float(filename_parameter_file, config.blending_low_freq_factor, "BlendingLowFreqFactor", "Blending Low Freq Factor") == 0)

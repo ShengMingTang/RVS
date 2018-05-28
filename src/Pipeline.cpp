@@ -133,8 +133,6 @@ void Pipeline::compute_views() {
 			std::unique_ptr<SynthetizedView> synthesizer;
 			if (vs_method == SYNTHESIS_TRIANGLE)
 				synthesizer.reset(new SynthetizedViewTriangle);
-			else if (vs_method == SYNTHESIS_SQUARE)
-				synthesizer.reset(new SynthetizedViewSquare);
 			else
 				throw std::logic_error("Unknown synthesis method");
 
