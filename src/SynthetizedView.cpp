@@ -111,7 +111,9 @@ void SynthetizedView::compute(View& input)
 
 	// Combine rotations and translations of input and virtual views
 	std::clog << "unprojector->get_translation() == " << unprojector->get_translation() << std::endl;
+	std::clog << "unprojector->get_rotation() == " << unprojector->get_rotation() << std::endl;
 	std::clog << "projector->get_translation() == " << projector->get_translation() << std::endl;
+	std::clog << "projector->get_rotation() == " << projector->get_rotation() << std::endl;
 	auto rotation = projector->get_rotation().t() * unprojector->get_rotation();
 	auto translation = unprojector->get_rotation() * (projector->get_translation() - unprojector->get_translation());
 	std::clog << "rotation == " << rotation << std::endl;
