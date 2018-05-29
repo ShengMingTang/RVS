@@ -56,7 +56,7 @@ Reads a color image (RGB or YUV). Returns a CV_8UC3 image
 @param size size of the loaded file
 @param bit_depth bit depth of raw stream
 */
-cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth);
+cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth, int frame);
 
 /**
 Reads a depth image: a exr depth file or a YUV disparity file. Returns a float image
@@ -67,4 +67,4 @@ Reads a depth image: a exr depth file or a YUV disparity file. Returns a float i
 @param n_far to convert YUV disparity to depth 
 Result may have NaN values to indicate missing depth values
 */
-cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far);
+cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, int frame);

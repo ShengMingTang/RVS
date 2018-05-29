@@ -99,5 +99,6 @@ public:
 		int bit_depth_color, 
 		int bit_depth_depth,
 		float z_near,
-		float z_far);
+		float z_far,
+		int frame);
 };

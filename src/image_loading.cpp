@@ -64,13 +64,14 @@ namespace
 	 * reads a color image in yuv 420 format
 	 * @return the corresponding color image, normalized to [0, 1]
 	 * */
-	cv::Mat3f read_color_YUV(std::string filename, cv::Size size, int bit_depth) {
+	cv::Mat3f read_color_YUV(std::string filename, cv::Size size, int bit_depth, int frame) {
 		auto type = CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1);
 		cv::Mat y_channel(size, type);
 		cv::Mat cb_channel(size / 2, type);
 		cv::Mat cr_channel(size / 2, type);
 
 		std::ifstream stream(filename, std::ios::binary);
+		stream.seekg(size.area() * y_channel.elemSize() * 3 / 2 * frame);
 		read_raw(stream, y_channel);
 		read_raw(stream, cb_channel);
 		read_raw(stream, cr_channel);
@@ -94,9 +95,10 @@ namespace
 	* reads a disparity map (VSRS format)
 	* @return the corresponding depth map
 	* */
-	cv::Mat1f read_depth_YUV(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far) {
+	cv::Mat1f read_depth_YUV(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, int frame) {
 		cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1));
 		std::ifstream stream(filename, std::ios_base::binary);
+		stream.seekg(size.area() * image.elemSize() * 3 / 2 * frame); // YUV 4:2:0 also for raw depth streams
 		read_raw(stream, image);
 
 		auto mask_depth = cv::Mat1b(image == 0);
@@ -169,16 +171,22 @@ unsigned max_level(int bit_depth)
 	return (1u << bit_depth) - 1u;
 }
 
-cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth) {
+cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth, int frame) {
 	if (filename.find(".yuv") != std::string::npos)
-		return read_color_YUV(filename, size, bit_depth);
+		return read_color_YUV(filename, size, bit_depth, frame);
+
+	if (frame != 0)
+		throw std::runtime_error("Readig multiple frames not (yet) supported for image files");
 
 	return read_color_RGB(filename, size, bit_depth);
 }
 
-cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far) {
+cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, int frame) {
 	if (filename.find(".yuv") != std::string::npos)
-		return read_depth_YUV(filename, size, bit_depth, z_near, z_far);
+		return read_depth_YUV(filename, size, bit_depth, z_near, z_far, frame);
+
+	if (frame != 0)
+		throw std::runtime_error("Readig multiple frames not (yet) supported for image files");
 
 	return read_depth_RGB(filename, size, bit_depth);
 }

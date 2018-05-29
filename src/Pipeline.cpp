@@ -86,7 +86,7 @@ void Pipeline::execute()
 	}
 }
 
-void Pipeline::load_images() {
+void Pipeline::load_images(int frame) {
 	input_images.resize(config.params_real.size());
 
 	if (config.znear.empty()) {
@@ -103,7 +103,8 @@ void Pipeline::load_images() {
 			config.bit_depth_color,
 			config.bit_depth_depth,
 			config.znear[idx],
-			config.zfar[idx]);
+			config.zfar[idx],
+			frame);
 	}
 	PROF_END("loading");
 }
