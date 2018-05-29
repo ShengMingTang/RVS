@@ -147,4 +147,10 @@ public:
 
 	/**size of the cameras sensor, in the same unit as focal length*/
 	float sensor_size = 1920.0f;
+
+	/** First frame to process (zero-based) */
+	int start_frame = 0;
+
+	/** Number of frames to process */
+	int number_of_frames = 1;
 };

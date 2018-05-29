@@ -406,7 +406,13 @@ void Parser::read_SVS_config_file() {
         else throw std::runtime_error("VirtualProjectionType");
     }
 
-
+	// Frame range
+	if (seek_int(filename_parameter_file, config.start_frame, "StartFrame", "First frame (zero-based)") == 0) {
+		config.start_frame = 0;
+	}
+	if (seek_int(filename_parameter_file, config.number_of_frames, "NumberOfFrames", "Number of frames to process") == 0) {
+		config.number_of_frames = 1;
+	}
 
 	print_results(InputCameraParameterFile, config.texture_names, config.depth_names, VirtualCameraParameterFile, number_input_cameras, number_output_cameras);
 
