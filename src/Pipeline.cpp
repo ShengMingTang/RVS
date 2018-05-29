@@ -75,8 +75,15 @@ Pipeline::~Pipeline()
 void Pipeline::execute()
 {
 	parse();
-	load_images();
-	compute_views();
+
+	for (int frame = config.start_frame; frame < config.start_frame + config.number_of_frames; ++frame) {
+		if (config.number_of_frames > 1) {
+			std::clog << std::string(80, '=') << "\nFRAME " << frame << std::string(80, '=') << std::endl;
+		}
+
+		load_images(frame);
+		compute_views();
+	}
 }
 
 void Pipeline::load_images() {
