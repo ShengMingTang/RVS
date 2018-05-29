@@ -270,6 +270,55 @@ FUNC( Spike_ErpViewSynthesis )
 
 }
 
+
+struct ErpReaderRaw
+{
+    std::string nameImg   = "./ClassRoomVideo/v0_4096_2048_420_10b.yuv";
+    std::string nameDepth = "./ClassRoomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv";
+    
+    cv::Size size = cv::Size(4096,2048);
+    int bit_depth = 10;
+    float z_near = 0.8;
+    float z_far  = 1e6;
+
+    void read( int num )
+    {
+        num;
+        image3f  = read_color(nameImg, size, bit_depth);
+        
+        imRadius = read_depth(nameDepth, size, bit_depth, z_near, z_far);
+
+        CV_Assert( !image3f.empty() && !imRadius.empty() );
+
+        image3f.convertTo( image, image.type(), 255.0 );
+        imRadius.convertTo( imRadius8u, imRadius8u.type(), -255.0/ 10.0, 255.0 );
+        size = imRadius.size();
+    }
+
+    cv::Mat3b image; 
+    cv::Mat3f image3f;
+    cv::Mat1f imRadius;
+    cv::Mat1b imRadius8u;
+};
+
+FUNC( Spike_ErpViewSynthesisRaw )
+{
+    ErpReaderRaw erpz1;
+    erpz1.read(0);
+
+    
+    cv::Mat3b imBGR;
+    cv::cvtColor(erpz1.image, imBGR, cv::COLOR_YUV2BGR  );
+    cv::imshow( "im",    ScaleDown(imBGR, 0.25)    );
+    
+    cv::imshow( "depth", ScaleDown(erpz1.imRadius8u, 0.25)    );
+
+
+    cv::waitKey(0);
+
+
+}
+
 FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
 {
     Pipeline p("./config_files/Unicorn_Triangles_Simple_ToErp.cfg");
