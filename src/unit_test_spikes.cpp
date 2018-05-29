@@ -41,6 +41,7 @@ copies, substantial portions or derivative works of the Software.
 #include <iostream>
 
 using namespace std;
+using namespace cv;
 
 
 cv::Mat ScaleDown(cv::Mat im, double scale)
@@ -319,9 +320,113 @@ FUNC( Spike_ErpViewSynthesisRaw )
 
 }
 
+FUNC( Spike_WriteJSON )
+{
+
+
+    FileStorage fs("./Spike_WriteJSON.json", FileStorage::WRITE);
+    fs << "frameCount" << 5;
+    //time_t rawtime; time(&rawtime);
+    //fs << "calibrationDate" << asctime(localtime(&rawtime));
+    Mat cameraMatrix = (Mat_<double>(3,3) << 1000, 0, 320, 0, 1000, 240, 0, 0, 1);
+    Mat distCoeffs = (Mat_<double>(5,1) << 0.1, 0.01, -0.001, 0, 0);
+    fs << "cameraMatrix" << cameraMatrix << "distCoeffs" << distCoeffs;
+    fs << "features" << "[";
+    for( int i = 0; i < 3; i++ )
+    {
+        int x = rand() % 640;
+        int y = rand() % 480;
+        uchar lbp = rand() % 256;
+        fs << "{:" << "x" << x << "y" << y << "lbp" << "[:";
+        for( int j = 0; j < 8; j++ )
+            fs << ((lbp >> j) & 1);
+        fs << "]" << "}";
+    }
+    fs << "]";
+    fs.release();
+
+}
+
+FUNC( Spike_ParseJSON )
+{
+    //std::string name   = "./ClassRoomVideo/ClassroomVideo.json";
+    std::string name   = "./ClassRoomVideo/example.json";
+
+    cv::FileStorage fs(name.c_str(), cv::FileStorage::READ);
+
+    //string Content_name = static_cast<std::string>( fs["Content_name"] );
+
+    //std::cout << endl;
+    //std::cout << Content_name << endl;
+
+}
+
+
 FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
 {
     Pipeline p("./config_files/Unicorn_Triangles_Simple_ToErp.cfg");
     p.execute();
 
 }
+
+
+#if 0
+To read the previously written XML, YAML or JSON file, do the following:
+-#  Open the file storage using FileStorage::FileStorage constructor or FileStorage::open method.
+In the current implementation the whole file is parsed and the whole representation of file
+storage is built in memory as a hierarchy of file nodes (see FileNode)
+-#  Read the data you are interested in. Use FileStorage::operator [], FileNode::operator []
+and/or FileNodeIterator.
+-#  Close the storage using FileStorage::release.
+Here is how to read the file created by the code sample above:
+@code
+FileStorage fs2("test.yml", FileStorage::READ);
+// first method: use (type) operator on FileNode.
+int frameCount = (int)fs2["frameCount"];
+String date;
+// second method: use FileNode::operator >>
+fs2["calibrationDate"] >> date;
+Mat cameraMatrix2, distCoeffs2;
+fs2["cameraMatrix"] >> cameraMatrix2;
+fs2["distCoeffs"] >> distCoeffs2;
+cout << "frameCount: " << frameCount << endl
+<< "calibration date: " << date << endl
+<< "camera matrix: " << cameraMatrix2 << endl
+<< "distortion coeffs: " << distCoeffs2 << endl;
+FileNode features = fs2["features"];
+FileNodeIterator it = features.begin(), it_end = features.end();
+int idx = 0;
+std::vector<uchar> lbpval;
+// iterate through a sequence using FileNodeIterator
+for( ; it != it_end; ++it, idx++ )
+{
+    cout << "feature #" << idx << ": ";
+    cout << "x=" << (int)(*it)["x"] << ", y=" << (int)(*it)["y"] << ", lbp: (";
+    // you can also easily read numerical arrays using FileNode >> std::vector operator.
+    (*it)["lbp"] >> lbpval;
+    for( int i = 0; i < (int)lbpval.size(); i++ )
+        cout << " " << (int)lbpval[i];
+    cout << ")" << endl;
+}
+fs2.release();
+@endcode
+Format specification    {#format_spec}
+--------------------
+`([count]{u|c|w|s|i|f|d})`... where the characters correspond to fundamental C++ types:
+-   `u` 8-bit unsigned number
+-   `c` 8-bit signed number
+-   `w` 16-bit unsigned number
+-   `s` 16-bit signed number
+-   `i` 32-bit signed number
+-   `f` single precision floating-point number
+-   `d` double precision floating-point number
+-   `r` pointer, 32 lower bits of which are written as a signed integer. The type can be used to
+store structures with links between the elements.
+`count` is the optional counter of values of a given type. For example, `2if` means that each array
+element is a structure of 2 integers, followed by a single-precision floating-point number. The
+equivalent notations of the above specification are `iif`, `2i1f` and so forth. Other examples: `u`
+means that the array consists of bytes, and `2d` means the array consists of pairs of doubles.
+@see @ref filestorage.cpp
+*/
+
+#endif
