@@ -197,12 +197,14 @@ svs_file = fopen(svs_config_path, 'w');
 
 fprintf(svs_file, 'SVSFile 1\n\n');
 fprintf(svs_file, 'InputCameraParameterFile\n%s\n\n', camparams_path);   
+fprintf(svs_file, 'InputProjectionType Equirectangular\n\n');
 fprintf(svs_file, 'InputCameraNumber %d\n\n', length(input_view_indices));
 fprintf(svs_file, 'ViewImagesNames\n%s\n', sprintf('%s\n', input_texture_path{1 + input_view_indices}));
 fprintf(svs_file, 'DepthMapsNames\n%s\n', sprintf('%s\n', input_depth_path{1 + input_view_indices}));
 fprintf(svs_file, 'ZValues\n%s\n\n', depth_range_path);
 fprintf(svs_file, 'CamerasNames\n%s\n', sprintf('%s\n', Ci(1 + input_view_indices).Name));
 fprintf(svs_file, 'VirtualCameraParamaterFile\n%s\n\n', camparams_path);
+fprintf(svs_file, 'VirtualProjectionType Equirectangular\n\n');
 fprintf(svs_file, 'VirtualCameraNumber %d\n\n', length(output_view_indices));
 fprintf(svs_file, 'VirtualCamerasNames\n%s\n', sprintf('%s\n', Co(1 + output_view_indices).Name));
 fprintf(svs_file, 'OuputDir\n./\n\n');
