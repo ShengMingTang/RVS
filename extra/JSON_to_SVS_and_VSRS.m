@@ -24,6 +24,8 @@
 % 
 % ------------------------------------------------------------------------------ -
 
+% TODO: Change coordinate system (see Parameters.cpp)
+
 clear;
 
 % Parameters

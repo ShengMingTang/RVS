@@ -178,7 +178,7 @@ FUNC(ClassroomVideo_10frames)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2160), 10, 0, 0); // VC14 + OpenCV 3.1.0: ..., ...
+		cv::Size(4096, 2048), 10, 42.95, 41.81); // VC14 + OpenCV 3.1.0: 43.0071, 41.8697
 }
 
 // Need test cases to cover:
