@@ -56,15 +56,26 @@ Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::M
 	: camera_matrix(camera_matrix)
 	, sensor(sensor)
 {
-	// TODO: Make a decision on internal coordinate system
-
 	if (system == CoordinateSystem::MPEG_I_OMAF) {
+		// This is the internal coordinate system, so accept extrinsics without transformation
 		this->rotation = rotation;
 		this->translation = translation;
 	}
 	else if (system == CoordinateSystem::VSRS) {
-		this->rotation = rotation;
-		this->translation = translation;
+		// Affine transformation: x --> R^T (x - t)
+		// But now "x" is OMAF Referential: x forward, y left, z up,
+		// and "t" and "R" has VSRS system: x right, y down, z forward
+		// We need a P such that x == P x_VSRS:
+		// x --> P R_VSRS^T P^T (x - P t_VSRS)
+
+		//   right   down    forward
+		auto P = cv::Matx33f(
+			  0.f,   0.f,    1.f,	// forward
+			 -1.f,   0.f,    0.f,   // left
+			  0.f,  -1.f,    0.f);  // up
+
+		this->rotation = P * rotation * P.t();
+		this->translation = P * translation;
 	}
 	else throw std::logic_error("Unknown coordinate system");
 }

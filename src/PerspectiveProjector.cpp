@@ -56,11 +56,14 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 		for (int j = 0; j != world_pos.cols; ++j) {
 			auto xyz = world_pos(i, j);
 
-			if (xyz[2] > 0.f) {
+			// OMAF Referential: x forward, y left, z up
+			// Image plane: x right, y down
+
+			if (xyz[0] > 0.f) {
 				image_pos(i, j) = cv::Vec2f(
-					fx * xyz[0] / xyz[2] + px,
-					fy * xyz[1] / xyz[2] + py);
-				depth(i, j) = xyz[2];
+					-fx * xyz[1] / xyz[0] + px,
+					-fy * xyz[2] / xyz[0] + py);
+				depth(i, j) = xyz[0];
 			}
 		}
 	}
