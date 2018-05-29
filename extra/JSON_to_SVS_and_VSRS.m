@@ -208,7 +208,7 @@ fprintf(svs_file, 'VirtualProjectionType Equirectangular\n\n');
 fprintf(svs_file, 'VirtualCameraNumber %d\n\n', length(output_view_indices));
 fprintf(svs_file, 'VirtualCamerasNames\n%s\n', sprintf('%s\n', Co(1 + output_view_indices).Name));
 fprintf(svs_file, 'OuputDir\n./\n\n');
-fprintf(svs_file, 'OutputFileNames\n');
+fprintf(svs_file, 'OutputFiles\n');
 for n = 1:length(output_view_indices)
     oi = 1 + output_view_indices(n);
     fprintf(svs_file, '%s\n', sprintf(output_pathfmt, Co(oi).Name, resolution));

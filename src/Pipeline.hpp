@@ -79,7 +79,7 @@ private:
 	/**
 	\brief Compute all the virtual views
 	*/
-	void compute_views();
+	void compute_views(int frame);
 
 private:
 	std::string filename;

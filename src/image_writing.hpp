@@ -51,4 +51,4 @@ Writes a color image in RGB or YUV fileformat
 @param filename name of the image file
 @param img image to write
 */
-void write_color(std::string filename, const cv::Mat3f image, int bit_depth);
+void write_color(std::string filename, const cv::Mat3f image, int bit_depth, int frame);

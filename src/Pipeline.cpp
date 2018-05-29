@@ -78,11 +78,11 @@ void Pipeline::execute()
 
 	for (int frame = config.start_frame; frame < config.start_frame + config.number_of_frames; ++frame) {
 		if (config.number_of_frames > 1) {
-			std::clog << std::string(80, '=') << "\nFRAME " << frame << std::string(80, '=') << std::endl;
+			std::clog << std::string(5, '=') << " FRAME " << frame << std::string(80, '=') << std::endl;
 		}
 
 		load_images(frame);
-		compute_views();
+		compute_views(frame - config.start_frame);
 	}
 }
 
@@ -109,7 +109,7 @@ void Pipeline::load_images(int frame) {
 	PROF_END("loading");
 }
 
-void Pipeline::compute_views() {
+void Pipeline::compute_views(int frame) {
 	for (std::size_t virtual_idx = 0; virtual_idx != config.params_virtual.size(); ++virtual_idx) {
 		std::unique_ptr<BlendedView> blender;
 		
@@ -166,7 +166,7 @@ void Pipeline::compute_views() {
 		PROF_END("downscale");
 
 		PROF_START("write");
-		write_color(config.outfilenames[virtual_idx], color, config.bit_depth_color);
+		write_color(config.outfilenames[virtual_idx], color, config.bit_depth_color, frame);
 		PROF_END("write");
 	}
 }
