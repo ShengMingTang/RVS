@@ -54,6 +54,7 @@ namespace testing
 		auto filesize = static_cast<std::size_t>(stream.tellg());
 		stream.seekg(0, std::ios::beg);
 		auto framesize = size.area() * 3 / 2 * sizeof(T);
+		std::clog << "size == " << size << ", sizeof(T) == " << sizeof(T) << ", filesize == " << filesize << ", framesize == " << framesize << std::endl;
 		YAFFUT_CHECK(filesize && filesize % framesize == 0);
 
 		// Allocate planes
@@ -168,6 +169,16 @@ FUNC(ULB_Unicorn_Same_View)
 		"030003250506_from_030003250506_Same_View.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0506.yuv",
 		cv::Size(1920, 1080), 8, 19.80, 34.03); // VC14 + OpenCV 3.1.0: 19.8503, 34.0891											
+}
+
+FUNC(ClassroomVideo_10frames)
+{
+	Pipeline p("./config_files/ClassroomVideo-SVS-v0_to_v0.cfg");
+	p.execute();
+	testing::compareWithReferenceView<std::uint16_t>(
+		"v0vs_4096_2048_420_10b.yuv",
+		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
+		cv::Size(4096, 2160), 10, 0, 0); // VC14 + OpenCV 3.1.0: ..., ...
 }
 
 // Need test cases to cover:

@@ -58,7 +58,7 @@ namespace
 		stream.write(reinterpret_cast<char const*>(image.data), image.size().area() * image.elemSize());
 	}
 
-	void write_color_YUV(std::string filename, cv::Mat3f image, int bit_depth)
+	void write_color_YUV(std::string filename, cv::Mat3f image, int bit_depth, int frame)
 	{
 		if (color_space == COLORSPACE_RGB)
 			cv::cvtColor(image, image, CV_BGR2YCrCb);
@@ -66,7 +66,9 @@ namespace
 		cv::Mat ycbcr;
 		image.convertTo(ycbcr, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
 
-		std::ofstream stream(filename, std::ios::binary);
+		std::ofstream stream(filename, frame 
+			? std::ios::binary | std::ios::app
+			: std::ios::binary);
 		if (!stream.is_open())
 			throw std::runtime_error("Failed to open YUV output image");
 
@@ -93,10 +95,12 @@ namespace
 	}
 }
 
-void write_color(std::string filename, cv::Mat3f image, int bit_depth)
+void write_color(std::string filename, cv::Mat3f image, int bit_depth, int frame)
 {
 	if (filename.find("yuv") != std::string::npos)
-		write_color_YUV(filename, image, bit_depth);
-	else
+		write_color_YUV(filename, image, bit_depth, frame);
+	else if (frame == 0)
 		write_color_RGB(filename, image, bit_depth);
+	else
+		throw std::runtime_error("Writing multiple frames as images not (yet) supported");
 }
