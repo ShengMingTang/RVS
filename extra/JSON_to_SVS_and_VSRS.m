@@ -24,7 +24,7 @@
 % 
 % ------------------------------------------------------------------------------ -
 
-% TODO: Number of frames
+clear;
 
 % Parameters
 input_view_metadata_path = 'ClassroomVideo/ClassroomVideo.json';
@@ -36,7 +36,7 @@ depth_range_path = 'ClassroomVideo/depth_range.txt';
 texture_bitdepth = 10;
 depth_bitdepth = 10;
 texture_pathfmt = 'ClassroomVideo/%s_%d_%d_420_10b.yuv';
-depth_pathfmt = 'ClassroomVideo/%s_%d_%d_%s_%s_420_10b.depth';
+depth_pathfmt = 'ClassroomVideo/%s_%d_%d_%s_%s_420_10b.yuv';
 output_pathfmt = '%svs_%d_%d_420_10b.yuv';
 input_view_indices = [7 8]; % Just an example, zero-based
 output_view_indices = 0; % Just an example, also zero-based
@@ -124,29 +124,19 @@ end
 fclose(file);
 
 % String formatting
-Ck = cell(size(input_view_indices));
-CkName = cell(size(input_view_indices));
-input_texture_path = cell(size(input_view_indices));
-input_depth_path = cell(size(input_view_indices));
+input_texture_path = cell(Ni, 1);
+input_depth_path = cell(Ni, 1);
 
-for k = 1:length(input_view_indices)
-    Ck{k} = Ci(1 + input_view_indices(k));
-    CkName{k} = Ck{k}.Name;
-    Rmin_s = sprintf('%.6f', Ck{k}.Rmin);
+for k = 1:Ni
+    Rmin_s = sprintf('%.6f', Ci(k).Rmin);
     Rmin_s = strrep(Rmin_s, '.', '_');
     while Rmin_s(end) == '0' && Rmin_s(end - 1) ~= '_', Rmin_s = Rmin_s(1:end - 1); end
-    Rmax_s = sprintf('%.6f', Ck{k}.Rmax);
+    Rmax_s = sprintf('%.6f', Ci(k).Rmax);
     Rmax_s = strrep(Rmax_s, '.', '_');
     while Rmax_s(end) == '0' && Rmax_s(end - 1) ~= '_', Rmax_s = Rmax_s(1:end - 1); end
-    if Ck{k}.Rmax >= 1000, Ck{k}.Rmax = 1e6; end
-    input_texture_path{k} = sprintf(texture_pathfmt, Ck{k}.Name, Ck{k}.Resolution);
-    input_depth_path{k} = sprintf(depth_pathfmt, Ck{k}.Name, Ck{k}.Resolution, Rmin_s, Rmax_s);
-end
-
-CoName = cell(size(output_view_indices));
-
-for k = 1:length(output_view_indices)
-    CoName{k} = Co(1 + output_view_indices(k)).Name;
+    if Ci(k).Rmax >= 1000, Ci(k).Rmax = 1e6; end
+    input_texture_path{k} = sprintf(texture_pathfmt, Ci(k).Name, Ci(k).Resolution);
+    input_depth_path{k} = sprintf(depth_pathfmt, Ci(k).Name, Ci(k).Resolution, Rmin_s, Rmax_s);
 end
 
 %
@@ -155,9 +145,9 @@ end
 
 % Generate configuration files per output view and frame
 for m = 1:length(output_view_indices)
-    Cm = Co(1 + output_view_indices(m));
+    oi = 1 + output_view_indices(m);
 
-    description = sprintf('%s_to_%s', sprintf('%s', CkName{:}), Cm.Name);
+    description = sprintf('%s_to_%s', sprintf('%s', Ci(1 + input_view_indices).Name), Co(oi).Name);
 
     vsrs_config_path = sprintf(vsrs_config_pathfmt, description);
     vsrs_file = fopen(vsrs_config_path, 'w');
@@ -173,16 +163,17 @@ for m = 1:length(output_view_indices)
     % NOTE: We need to decide on a naming system
     %       This is a suggestion but it is not backwards compatible
     for k = 1:length(input_view_indices)
-        fprintf(vsrs_file, 'Input%dNearestDepthValue %g\n', k - 1, Ck{k}.Rmin);
-        fprintf(vsrs_file, 'Input%dFarthestDepthValue %g\n', k - 1, Ck{k}.Rmax);
-        fprintf(vsrs_file, 'Input%dImageName %s\n', k - 1, input_texture_path{k});
-        fprintf(vsrs_file, 'Input%dDepthMapName %s\n', k - 1, input_depth_path{k});
+        ii = 1 + input_view_indices(k);
+        fprintf(vsrs_file, 'Input%dNearestDepthValue %g\n', k - 1, Ci(ii).Rmin);
+        fprintf(vsrs_file, 'Input%dFarthestDepthValue %g\n', k - 1, Ci(ii).Rmax);
+        fprintf(vsrs_file, 'Input%dImageName %s\n', k - 1, input_texture_path{ii});
+        fprintf(vsrs_file, 'Input%dDepthMapName %s\n', k - 1, input_depth_path{ii});
         fprintf(vsrs_file, '\n');        
     end
     
     fprintf(vsrs_file, 'CameraParameterFile %s\n', camparams_path);
-    fprintf(vsrs_file, 'VirtualCameraName %s\n', Cm.Name);
-    output_texture_path = sprintf(output_pathfmt, Cm.Name, resolution);
+    fprintf(vsrs_file, 'VirtualCameraName %s\n', Co(oi).Name);
+    output_texture_path = sprintf(output_pathfmt, Co(oi).Name, resolution);
     fprintf(vsrs_file, 'OutputVirtualViewImageName %s\n', output_texture_path);
     fprintf(vsrs_file, 'ColorSpace 0\n');
     fprintf(vsrs_file, 'Precision 4\n');
@@ -197,7 +188,9 @@ end
 % SVS
 %
 
-description = sprintf('%s_to_%s', sprintf('%s', CkName{:}), sprintf('%s', CoName{:}));
+description = sprintf('%s_to_%s', ...
+    sprintf('%s', Ci(1 + input_view_indices).Name), ...
+    sprintf('%s', Co(1 + output_view_indices).Name));
 
 svs_config_path = sprintf(svs_config_pathfmt, description);
 svs_file = fopen(svs_config_path, 'w');
@@ -205,17 +198,18 @@ svs_file = fopen(svs_config_path, 'w');
 fprintf(svs_file, 'SVSFile 1\n\n');
 fprintf(svs_file, 'InputCameraParameterFile\n%s\n\n', camparams_path);   
 fprintf(svs_file, 'InputCameraNumber %d\n\n', length(input_view_indices));
-fprintf(svs_file, 'ViewImagesNames\n%s\n', sprintf('%s\n', input_texture_path{:}));
-fprintf(svs_file, 'DepthMapsNames\n%s\n', sprintf('%s\n', input_depth_path{:}));
+fprintf(svs_file, 'ViewImagesNames\n%s\n', sprintf('%s\n', input_texture_path{1 + input_view_indices}));
+fprintf(svs_file, 'DepthMapsNames\n%s\n', sprintf('%s\n', input_depth_path{1 + input_view_indices}));
 fprintf(svs_file, 'ZValues\n%s\n\n', depth_range_path);
-fprintf(svs_file, 'CameraNames\n%s\n', sprintf('%s\n', CkName{:}));
+fprintf(svs_file, 'CamerasNames\n%s\n', sprintf('%s\n', Ci(1 + input_view_indices).Name));
 fprintf(svs_file, 'VirtualCameraParamaterFile\n%s\n\n', camparams_path);
 fprintf(svs_file, 'VirtualCameraNumber %d\n\n', length(output_view_indices));
-fprintf(svs_file, 'VirtualCamerasNames\n%s\n', sprintf('%s\n', CoName{:}));
+fprintf(svs_file, 'VirtualCamerasNames\n%s\n', sprintf('%s\n', Co(1 + output_view_indices).Name));
 fprintf(svs_file, 'OuputDir\n./\n\n');
 fprintf(svs_file, 'OutputFileNames\n');
 for n = 1:length(output_view_indices)
-    fprintf(svs_file, '%s\n', sprintf(output_pathfmt, Co(1 + n).Name, resolution));
+    oi = 1 + output_view_indices(n);
+    fprintf(svs_file, '%s\n', sprintf(output_pathfmt, Co(oi).Name, resolution));
 end
 fprintf(svs_file, '\nExtension\nyuv\n\n');
 fprintf(svs_file, 'BitDepthColor %d\n\n', texture_bitdepth);
@@ -237,9 +231,9 @@ fclose(svs_file);
 %
 
 depth_range_file = fopen(depth_range_path, 'w');
-for k = 1:length(input_view_indices)
+for k = 1:Ni
     fprintf(depth_range_file, '%s\n', input_depth_path{k});
-    fprintf(depth_range_file, 'NearestDepthValue %f\n', Ck{k}.Rmin);
-    fprintf(depth_range_file, 'FarthestDepthValue %f\n\n', Ck{k}.Rmax);
+    fprintf(depth_range_file, 'NearestDepthValue %f\n', Ci(k).Rmin);
+    fprintf(depth_range_file, 'FarthestDepthValue %f\n\n', Ci(k).Rmax);
 end
 fclose(depth_range_file);
