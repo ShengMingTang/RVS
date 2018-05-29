@@ -373,9 +373,9 @@ FUNC(Spike_ClassRoomVideo )
 {
     Pipeline p("./config_files/ClassroomVideo-SVS-v0v4v7v9v13_to_i2i3.cfg");
 
-    p.parse();
+    //p.parse();
     //p.config;
-    p.load_images();
+    //p.load_images();
 
 }
 
