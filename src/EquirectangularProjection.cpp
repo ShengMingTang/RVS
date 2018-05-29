@@ -150,8 +150,8 @@ cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius ) 
             cv::Vec3f xyzNorm  = xyz / radius;
             cv::Vec2f phiTheta = erp::calculate_sperical_coordinates(xyzNorm);
 
-            imUV(i,j)[0] = rescale * erp::calculate_horizontal_image_coordinate(phiTheta[0], size.width );
-            imUV(i,j)[1] = rescale * erp::calculate_vertical_image_coordinate(phiTheta[1], size.height  );
+            imUV(i,j)[0] = erp::calculate_horizontal_image_coordinate(phiTheta[0], size.width );
+            imUV(i,j)[1] = erp::calculate_vertical_image_coordinate(phiTheta[1], size.height  );
         }
 
     return imUV;
