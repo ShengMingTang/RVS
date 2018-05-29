@@ -123,10 +123,11 @@ InputView::InputView(
 	int bit_depth_color,
 	int bit_depth_depth,
 	float z_near,
-	float z_far)
+	float z_far,
+	int frame)
 {
 	assign(
-		read_color(filepath_color, size, bit_depth_color),
-		read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far),
+		read_color(filepath_color, size, bit_depth_color, frame),
+		read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far, frame),
 		cv::Mat1f());
 }

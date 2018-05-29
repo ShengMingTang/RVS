@@ -69,12 +69,12 @@ FUNC(Spike_ReadImageAndDepth)
 
     cv::Size size = cv::Size(1920,1080);
     color_space = COLORSPACE_RGB;
-    cv::Mat im = read_color(nameImg, size, bit_depth_color);
+    cv::Mat im = read_color(nameImg, size, bit_depth_color, 0);
     cv::Mat1b mask_depth = cv::Mat1b::ones(size) * 255;
 
     float z_near  = 500;
     float z_far   = 2000;
-    cv::Mat depth = read_depth(nameDepth, size, bit_depth_depth, z_near, z_far );
+    cv::Mat depth = read_depth(nameDepth, size, bit_depth_depth, z_near, z_far, 0);
 
     depth.convertTo( depth, -1, 1.0 / 2000);
 
@@ -278,15 +278,15 @@ struct ErpReaderRaw
     
     cv::Size size = cv::Size(4096,2048);
     int bit_depth = 10;
-    float z_near = 0.8;
-    float z_far  = 1e6;
+    float z_near = 0.8f;
+    float z_far  = 1e6f;
 
     void read( int num )
     {
         num;
-        image3f  = read_color(nameImg, size, bit_depth);
+        image3f  = read_color(nameImg, size, bit_depth, 0);
         
-        imRadius = read_depth(nameDepth, size, bit_depth, z_near, z_far);
+        imRadius = read_depth(nameDepth, size, bit_depth, z_near, z_far, 0);
 
         CV_Assert( !image3f.empty() && !imRadius.empty() );
 

@@ -74,7 +74,7 @@ private:
 	/**
 	\brief Load all the input views
 	*/
-	void load_images();
+	void load_images(int frame);
 
 	/**
 	\brief Compute all the virtual views
