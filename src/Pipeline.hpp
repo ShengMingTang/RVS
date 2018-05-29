@@ -65,7 +65,7 @@ public:
 	*/
 	void execute();
 
-private:
+//private:
 	/**
 	\brief Parse the config file
 	*/
@@ -81,7 +81,7 @@ private:
 	*/
 	void compute_views(int frame);
 
-private:
+//private:
 	std::string filename;
 
 	Config config;

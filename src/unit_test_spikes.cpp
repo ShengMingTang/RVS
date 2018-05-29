@@ -41,6 +41,7 @@ copies, substantial portions or derivative works of the Software.
 #include <iostream>
 
 using namespace std;
+using namespace cv;
 
 
 cv::Mat ScaleDown(cv::Mat im, double scale)
@@ -273,8 +274,8 @@ FUNC( Spike_ErpViewSynthesis )
 
 struct ErpReaderRaw
 {
-    std::string nameImg   = "./ClassRoomVideo/v0_4096_2048_420_10b.yuv";
-    std::string nameDepth = "./ClassRoomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv";
+    std::string nameImgT   = "./ClassRoomVideo/v%d_4096_2048_420_10b.yuv";
+    std::string nameDepthT = "./ClassRoomVideo/v%d_4096_2048_0_8_1000_0_420_10b.yuv";
     
     cv::Size size = cv::Size(4096,2048);
     int bit_depth = 10;
@@ -283,10 +284,8 @@ struct ErpReaderRaw
 
     void read( int num )
     {
-        num;
-        image3f  = read_color(nameImg, size, bit_depth, 0);
-        
-        imRadius = read_depth(nameDepth, size, bit_depth, z_near, z_far, 0);
+        image3f  = read_color(cv::format(nameImgT.c_str(), num), size, bit_depth, 0);
+        imRadius = read_depth(cv::format(nameDepthT.c_str(), num), size, bit_depth, z_near, z_far, 0);
 
         CV_Assert( !image3f.empty() && !imRadius.empty() );
 
@@ -301,27 +300,100 @@ struct ErpReaderRaw
     cv::Mat1b imRadius8u;
 };
 
+
+
 FUNC( Spike_ErpViewSynthesisRaw )
 {
-    ErpReaderRaw erpz1;
-    erpz1.read(0);
+    ::ErpReaderRaw erpzV0;
+    erpzV0.read(0);
+    
+    auto size = erpzV0.size;
 
-    
+    ::ErpReaderRaw erpzV1;
+    erpzV1.read(1);
+
+
+
     cv::Mat3b imBGR;
-    cv::cvtColor(erpz1.image, imBGR, cv::COLOR_YUV2BGR  );
+    cv::cvtColor(erpzV0.image, imBGR, cv::COLOR_YUV2BGR  );
     cv::imshow( "im",    ScaleDown(imBGR, 0.25)    );
-    
-    cv::imshow( "depth", ScaleDown(erpz1.imRadius8u, 0.25)    );
+    cv::imshow( "depth", ScaleDown(erpzV0.imRadius8u, 0.25)    );
+    cv::waitKey(200);
+
+
+
+    erp::Unprojector unprojector;
+    unprojector.create(size);
+    auto verticesXyz = unprojector.unproject(erpzV0.imRadius);
+
+    //const auto translation = cv::Vec3f(-0.0519615f, 0.03f, 0.f );
+    const auto translation = cv::Vec3f(0.0519615f, -0.03f, 0.f );
+    cv::Mat3f verticesXyzNew = verticesXyz + translation;
+
+    rescale = 1.f;
+    cv::Size sizeOut = size;
+
+    erp::Projector projector;
+    cv::Mat1f imRadiusNew;
+    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew );
+
+    bool wrapHorizontal = true;
+
+    cv::Mat1f depth, quality;
+    cv::Mat3f imResult3f = transform_trianglesMethod(erpzV0.image3f, imRadiusNew, imUVnew, sizeOut, depth, quality, wrapHorizontal);
+
+
+    cv::Mat3b imResult;
+    imResult3f.convertTo(imResult, imResult.type(), 255.0 );
+    cv::Mat3b imResultBGR;
+    cv::cvtColor(imResult, imResultBGR, cv::COLOR_YUV2BGR  );
+    cv::imshow( "imResultBGR",   ScaleDown(imResultBGR, 0.25)    );
+
+
+    cv::Mat3b imBGR_V1;
+    cv::cvtColor(erpzV1.image, imBGR_V1, cv::COLOR_YUV2BGR  );
+
+
+    cv::Mat3b imDiff;
+    cv::absdiff(imResultBGR, imBGR_V1, imDiff );
+    cv::imshow( "imDiff",   ScaleDown(imDiff, 0.25)    );
+
+    cv::Mat3b imDiffRef;
+    cv::absdiff(imBGR, imBGR_V1, imDiffRef );
+    cv::imshow( "imDiffRef",   ScaleDown(imDiffRef, 0.25)    );
 
 
     cv::waitKey(0);
 
-
 }
+
+
 
 FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
 {
     Pipeline p("./config_files/Unicorn_Triangles_Simple_ToErp.cfg");
     p.execute();
+
+}
+
+FUNC(Spike_ClassRoomVideo )
+{
+    //Pipeline p("./config_files/ClassroomVideo-SVS-v0v4v7v9v13_to_i2i3.cfg");
+    Pipeline p("./ClassroomVideo/ClassroomVideo-SVS-v7v8_to_i0.cfg");
+
+    p.execute();
+}
+
+FUNC( Spike_ParseJSON )
+{
+    //std::string name   = "./ClassRoomVideo/ClassroomVideo.json";
+    std::string name   = "./ClassRoomVideo/example.json";
+
+    cv::FileStorage fs(name.c_str(), cv::FileStorage::READ);
+
+    //string Content_name = static_cast<std::string>( fs["Content_name"] );
+
+    //std::cout << endl;
+    //std::cout << Content_name << endl;
 
 }
