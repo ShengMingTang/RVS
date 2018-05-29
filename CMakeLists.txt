@@ -125,7 +125,8 @@ set(CONFIGURATION_FILES
 	config_files/Unicorn_Triangles_MultiSpectral.cfg
 	config_files/Unicorn_10b.cfg
 	config_files/Unicorn_Same_View.cfg
-	config_files/ClassroomVideo-SVS-v0_to_v0.cfg)
+	config_files/ClassroomVideo-SVS-v0_to_v0.cfg
+	config_files/ClassroomVideo-SVS-v7v8_to_v0.cfg)
 				 						 	 
 source_group("Source" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
 source_group("Headers" FILES ${PROJECT_HEADERS})

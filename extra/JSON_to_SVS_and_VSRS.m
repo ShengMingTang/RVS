@@ -24,8 +24,6 @@
 % 
 % ------------------------------------------------------------------------------ -
 
-% TODO: Change coordinate system (see Parameters.cpp)
-
 clear;
 
 % Parameters
@@ -111,6 +109,17 @@ for m = 1:No
     end
 end
 
+% Affine transformation: x --> R^T (x - t)
+% Whereby "x" is OMAF Referential: x forward, y left, z up,
+% But "t" and "R" are stored in VSRS system: x right, y down, z forward
+% Define P such that x == P x_VSRS (same as Parameters.cpp)
+% x --> P R_VSRS^T P^T (x - P t_VSRS)
+
+%    right down forward
+P = [  0     0     1     % forward
+      -1     0     0     % left
+       0    -1     0 ];  % up
+
 % Write out camera parameters
 file = fopen(camparams_path, 'w');
 for n = 1:length(C)
@@ -119,7 +128,9 @@ for n = 1:length(C)
     fprintf(file, '%g %g %g\n', fake');
     fprintf(file, '0\n');
     fprintf(file, '0\n');
-    M = [eye(3) C(n).Position]; % TODO: rotation matrix
+    R_VSRS = eye(3); % TODO: rotation matrix
+    t_VSRS = P' * C(n).Position;
+    M = [R_VSRS t_VSRS]; 
     fprintf(file, '%g %g %g %g\n', M');
     fprintf(file, '\n');
 end

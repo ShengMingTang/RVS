@@ -181,6 +181,16 @@ FUNC(ClassroomVideo_10frames)
 		cv::Size(4096, 2048), 10, 42.95, 41.81); // VC14 + OpenCV 3.1.0: 43.0071, 41.8697
 }
 
+FUNC(ClassroomVideo_v7v8_to_v0)
+{
+	Pipeline p("./config_files/ClassroomVideo-SVS-v7v8_to_v0.cfg");
+	p.execute();
+	testing::compareWithReferenceView<std::uint16_t>(
+		"v0vs_from_v7v8_4096_2048_420_10b.yuv",
+		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
+		cv::Size(4096, 2048), 10, 35.31, 35.94); // VC14 + OpenCV 3.1.0: 35.366, 35.9966
+}
+
 // Need test cases to cover:
 //   Load/write PNG
 //   YUV and RGB
