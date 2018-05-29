@@ -274,8 +274,8 @@ FUNC( Spike_ErpViewSynthesis )
 
 struct ErpReaderRaw
 {
-    std::string nameImg   = "./ClassRoomVideo/v0_4096_2048_420_10b.yuv";
-    std::string nameDepth = "./ClassRoomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv";
+    std::string nameImgT   = "./ClassRoomVideo/v%d_4096_2048_420_10b.yuv";
+    std::string nameDepthT = "./ClassRoomVideo/v%d_4096_2048_0_8_1000_0_420_10b.yuv";
     
     cv::Size size = cv::Size(4096,2048);
     int bit_depth = 10;
@@ -284,10 +284,8 @@ struct ErpReaderRaw
 
     void read( int num )
     {
-        num;
-        image3f  = read_color(nameImg, size, bit_depth, 0);
-        
-        imRadius = read_depth(nameDepth, size, bit_depth, z_near, z_far, 0);
+        image3f  = read_color(cv::format(nameImgT.c_str(), num), size, bit_depth, 0);
+        imRadius = read_depth(cv::format(nameDepthT.c_str(), num), size, bit_depth, z_near, z_far, 0);
 
         CV_Assert( !image3f.empty() && !imRadius.empty() );
 
@@ -302,49 +300,88 @@ struct ErpReaderRaw
     cv::Mat1b imRadius8u;
 };
 
+
+
 FUNC( Spike_ErpViewSynthesisRaw )
 {
-    ErpReaderRaw erpz1;
-    erpz1.read(0);
+    ::ErpReaderRaw erpzV0;
+    erpzV0.read(0);
+    
+    auto size = erpzV0.size;
 
-    
+    ::ErpReaderRaw erpzV1;
+    erpzV1.read(1);
+
+
+
     cv::Mat3b imBGR;
-    cv::cvtColor(erpz1.image, imBGR, cv::COLOR_YUV2BGR  );
+    cv::cvtColor(erpzV0.image, imBGR, cv::COLOR_YUV2BGR  );
     cv::imshow( "im",    ScaleDown(imBGR, 0.25)    );
-    
-    cv::imshow( "depth", ScaleDown(erpz1.imRadius8u, 0.25)    );
+    cv::imshow( "depth", ScaleDown(erpzV0.imRadius8u, 0.25)    );
+    cv::waitKey(200);
+
+
+
+    erp::Unprojector unprojector;
+    unprojector.create(size);
+    auto verticesXyz = unprojector.unproject(erpzV0.imRadius);
+
+    //const auto translation = cv::Vec3f(-0.0519615f, 0.03f, 0.f );
+    const auto translation = cv::Vec3f(0.0519615f, -0.03f, 0.f );
+    cv::Mat3f verticesXyzNew = verticesXyz + translation;
+
+    rescale = 1.f;
+    cv::Size sizeOut = size;
+
+    erp::Projector projector;
+    cv::Mat1f imRadiusNew;
+    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew );
+
+    bool wrapHorizontal = true;
+
+    cv::Mat1f depth, quality;
+    cv::Mat3f imResult3f = transform_trianglesMethod(erpzV0.image3f, imRadiusNew, imUVnew, sizeOut, depth, quality, wrapHorizontal);
+
+
+    cv::Mat3b imResult;
+    imResult3f.convertTo(imResult, imResult.type(), 255.0 );
+    cv::Mat3b imResultBGR;
+    cv::cvtColor(imResult, imResultBGR, cv::COLOR_YUV2BGR  );
+    cv::imshow( "imResultBGR",   ScaleDown(imResultBGR, 0.25)    );
+
+
+    cv::Mat3b imBGR_V1;
+    cv::cvtColor(erpzV1.image, imBGR_V1, cv::COLOR_YUV2BGR  );
+
+
+    cv::Mat3b imDiff;
+    cv::absdiff(imResultBGR, imBGR_V1, imDiff );
+    cv::imshow( "imDiff",   ScaleDown(imDiff, 0.25)    );
+
+    cv::Mat3b imDiffRef;
+    cv::absdiff(imBGR, imBGR_V1, imDiffRef );
+    cv::imshow( "imDiffRef",   ScaleDown(imDiffRef, 0.25)    );
 
 
     cv::waitKey(0);
 
+}
+
+
+
+FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
+{
+    Pipeline p("./config_files/Unicorn_Triangles_Simple_ToErp.cfg");
+    p.execute();
 
 }
 
-FUNC( Spike_WriteJSON )
+FUNC(Spike_ClassRoomVideo )
 {
+    //Pipeline p("./config_files/ClassroomVideo-SVS-v0v4v7v9v13_to_i2i3.cfg");
+    Pipeline p("./ClassroomVideo/ClassroomVideo-SVS-v7v8_to_i0.cfg");
 
-
-    FileStorage fs("./Spike_WriteJSON.json", FileStorage::WRITE);
-    fs << "frameCount" << 5;
-    //time_t rawtime; time(&rawtime);
-    //fs << "calibrationDate" << asctime(localtime(&rawtime));
-    Mat cameraMatrix = (Mat_<double>(3,3) << 1000, 0, 320, 0, 1000, 240, 0, 0, 1);
-    Mat distCoeffs = (Mat_<double>(5,1) << 0.1, 0.01, -0.001, 0, 0);
-    fs << "cameraMatrix" << cameraMatrix << "distCoeffs" << distCoeffs;
-    fs << "features" << "[";
-    for( int i = 0; i < 3; i++ )
-    {
-        int x = rand() % 640;
-        int y = rand() % 480;
-        uchar lbp = rand() % 256;
-        fs << "{:" << "x" << x << "y" << y << "lbp" << "[:";
-        for( int j = 0; j < 8; j++ )
-            fs << ((lbp >> j) & 1);
-        fs << "]" << "}";
-    }
-    fs << "]";
-    fs.release();
-
+    p.execute();
 }
 
 FUNC( Spike_ParseJSON )
@@ -360,82 +397,3 @@ FUNC( Spike_ParseJSON )
     //std::cout << Content_name << endl;
 
 }
-
-
-FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
-{
-    Pipeline p("./config_files/Unicorn_Triangles_Simple_ToErp.cfg");
-    p.execute();
-
-}
-
-FUNC(Spike_ClassRoomVideo )
-{
-    Pipeline p("./config_files/ClassroomVideo-SVS-v0v4v7v9v13_to_i2i3.cfg");
-
-    //p.parse();
-    //p.config;
-    //p.load_images();
-
-}
-
-#if 0
-To read the previously written XML, YAML or JSON file, do the following:
--#  Open the file storage using FileStorage::FileStorage constructor or FileStorage::open method.
-In the current implementation the whole file is parsed and the whole representation of file
-storage is built in memory as a hierarchy of file nodes (see FileNode)
--#  Read the data you are interested in. Use FileStorage::operator [], FileNode::operator []
-and/or FileNodeIterator.
--#  Close the storage using FileStorage::release.
-Here is how to read the file created by the code sample above:
-@code
-FileStorage fs2("test.yml", FileStorage::READ);
-// first method: use (type) operator on FileNode.
-int frameCount = (int)fs2["frameCount"];
-String date;
-// second method: use FileNode::operator >>
-fs2["calibrationDate"] >> date;
-Mat cameraMatrix2, distCoeffs2;
-fs2["cameraMatrix"] >> cameraMatrix2;
-fs2["distCoeffs"] >> distCoeffs2;
-cout << "frameCount: " << frameCount << endl
-<< "calibration date: " << date << endl
-<< "camera matrix: " << cameraMatrix2 << endl
-<< "distortion coeffs: " << distCoeffs2 << endl;
-FileNode features = fs2["features"];
-FileNodeIterator it = features.begin(), it_end = features.end();
-int idx = 0;
-std::vector<uchar> lbpval;
-// iterate through a sequence using FileNodeIterator
-for( ; it != it_end; ++it, idx++ )
-{
-    cout << "feature #" << idx << ": ";
-    cout << "x=" << (int)(*it)["x"] << ", y=" << (int)(*it)["y"] << ", lbp: (";
-    // you can also easily read numerical arrays using FileNode >> std::vector operator.
-    (*it)["lbp"] >> lbpval;
-    for( int i = 0; i < (int)lbpval.size(); i++ )
-        cout << " " << (int)lbpval[i];
-    cout << ")" << endl;
-}
-fs2.release();
-@endcode
-Format specification    {#format_spec}
---------------------
-`([count]{u|c|w|s|i|f|d})`... where the characters correspond to fundamental C++ types:
--   `u` 8-bit unsigned number
--   `c` 8-bit signed number
--   `w` 16-bit unsigned number
--   `s` 16-bit signed number
--   `i` 32-bit signed number
--   `f` single precision floating-point number
--   `d` double precision floating-point number
--   `r` pointer, 32 lower bits of which are written as a signed integer. The type can be used to
-store structures with links between the elements.
-`count` is the optional counter of values of a given type. For example, `2if` means that each array
-element is a structure of 2 integers, followed by a single-precision floating-point number. The
-equivalent notations of the above specification are `iif`, `2i1f` and so forth. Other examples: `u`
-means that the array consists of bytes, and `2d` means the array consists of pairs of doubles.
-@see @ref filestorage.cpp
-*/
-
-#endif
