@@ -369,6 +369,15 @@ FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
 
 }
 
+FUNC(Spike_ClassRoomVideo )
+{
+    Pipeline p("./config_files/ClassroomVideo-SVS-v0v4v7v9v13_to_i2i3.cfg");
+
+    p.parse();
+    //p.config;
+    p.load_images();
+
+}
 
 #if 0
 To read the previously written XML, YAML or JSON file, do the following:
