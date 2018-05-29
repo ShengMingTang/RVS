@@ -1,0 +1,8 @@
+ClassroomVideo/v7_4096_2048_0_8_1000_0_420_10b.depth
+NearestDepthValue 0.800000
+FarthestDepthValue 1000000.000000
+
+ClassroomVideo/v8_4096_2048_0_8_1000_0_420_10b.depth
+NearestDepthValue 0.800000
+FarthestDepthValue 1000000.000000
+

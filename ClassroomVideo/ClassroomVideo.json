@@ -1,0 +1,194 @@
+{
+	"Content_name": "ClassroomVideo",
+	"BoundingBox_center": [0.0, 0.0, 0.0],
+	"Fps": 30,
+	"Frames_number": 120,
+	"Informative":
+	{
+		"BoundingBox_size": 0.207846,
+		"Document": "MPEG2018/M42415"
+	},
+	"cameras":
+	[
+		{
+			"Name": "v0",
+			"Position": [0.0000000000, -0.0000000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v1",
+			"Position": [-0.0519615242, 0.0300000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v2",
+			"Position": [-0.0519615242, -0.0300000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v3",
+			"Position": [0.0000000000, 0.0600000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v4",
+			"Position": [0.0000000000, -0.0600000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v5",
+			"Position": [0.0519615242, 0.0300000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v6",
+			"Position": [0.0519615242, -0.0300000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v7",
+			"Position": [0.0000000000, -0.0000000000, -0.0600000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v8",
+			"Position": [0.0000000000, -0.0000000000, 0.0600000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v9",
+			"Position": [-0.1039230485, -0.0000000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v10",
+			"Position": [-0.0519615242, 0.0900000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v11",
+			"Position": [-0.0519615242, -0.0900000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v12",
+			"Position": [0.0519615242, 0.0900000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v13",
+			"Position": [0.0519615242, -0.0900000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		},
+		{
+			"Name": "v14",
+			"Position": [0.1039230485, -0.0000000000, 0.0000000000],
+			"Rotation": [0.0, 0.0, 0.0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Rmin": 0.8,
+			"Rmax": 1000.0,
+			"Resolution": [4096, 2048],
+			"Hor_range": [-180.0, 180.0],
+			"Ver_range": [-90.0, 90.0]
+		}
+	]
+}
