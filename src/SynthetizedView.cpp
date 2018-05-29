@@ -119,8 +119,9 @@ void SynthetizedView::compute(View& input)
 		float(output_size.width) / input_size.width, 0.f,
 		0.f, float(output_size.height) / input_size.height));
 
+
     // Rasterization results in a color, depth and quality map
-	transform(input.get_color(), scaled_uv, virtual_depth, output_size);
+	transform(input.get_color(), scaled_uv, virtual_depth, output_size, projector->get_wrapping_method());
 
 #if DUMP_VALUES
 	std::clog << "(i, j) == (" << DUMP_I << ", " << DUMP_J << ")" << '\n';
@@ -144,11 +145,15 @@ void SynthetizedView::compute(View& input)
 
 SynthetizedViewTriangle::SynthetizedViewTriangle() {}
 
-void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size)
+void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, 
+    cv::Size output_size, WrappingMethod wrapping_method)
 {
 	cv::Mat1f depth;
 	cv::Mat1f quality;
-	auto color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality);
+	
+    bool wrapHorizontal = wrapping_method == WrappingMethod::HORIZONTAL ? true : false; 
+
+    auto color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality, wrapHorizontal);
 	
 	assign(color, depth, quality);
 }

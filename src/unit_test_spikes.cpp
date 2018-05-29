@@ -245,10 +245,10 @@ FUNC( Spike_ErpViewSynthesis )
     cv::Mat1f imRadiusNew;
     cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew );
 
-
+    bool wrapHorizontal = true;
 
     cv::Mat1f depth, quality;
-    cv::Mat3f imResult3f = transform_trianglesMethod(erpz1.image3f, imRadiusNew, imUVnew, sizeOut, depth, quality);
+    cv::Mat3f imResult3f = transform_trianglesMethod(erpz1.image3f, imRadiusNew, imUVnew, sizeOut, depth, quality, wrapHorizontal);
 
 
     cv::Mat3b imResult;

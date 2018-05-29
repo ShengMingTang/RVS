@@ -53,6 +53,8 @@ public:
 	// result in image coordinates: u right, v down
 	virtual cv::Mat2f project(cv::Mat3f world_pos,  /*out*/ cv::Mat1f& depth) const;
 
+    virtual WrappingMethod get_wrapping_method() const  { return WrappingMethod::NONE; }
+
 private:
 	Parameters parameters;
 };

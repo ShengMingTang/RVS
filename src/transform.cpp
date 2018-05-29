@@ -138,9 +138,10 @@ namespace
 	}
 } // namespace
 
-cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality)
+cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality, bool horizontalWrap)
 {
 	auto input_size = input_color.size();
+    int w = input_size.width;
 	cv::Mat1b input_depth_mask = input_depth > 0.f;
 	cv::Mat3f color = cv::Mat3f::zeros(output_size);
 	cv::Mat1f depth_inv = cv::Mat1f::zeros(output_size);
@@ -157,7 +158,15 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 				if (input_depth(i + 1, j + 1) > 0.f && input_positions(i + 1, j + 1)[0] > 0.f)
 					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality,
 						/*why float?*/ cv::Vec2i(j + 1, i + 1), cv::Vec2i(j, i + 1), cv::Vec2i(j + 1, i));
-			}
+			
+                // stitch left and right borders with triangles (e.g. for equirectangular projection)
+                if( horizontalWrap && j == 0 ) { 
+                    colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality, 
+                        cv::Vec2i(w-1, i), cv::Vec2i( 0, i), cv::Vec2i(w-1, i + 1));
+                    colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality, 
+                        cv::Vec2i(0, i + 1),   cv::Vec2i(w-1, i + 1), cv::Vec2i(0, i));
+                }
+            }
 		}
 	}
 

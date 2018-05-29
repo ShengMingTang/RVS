@@ -74,9 +74,12 @@ public:
 	*/
 	void compute(View& img);
 	
+    
+
 protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
-	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size) = 0;
+	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, 
+        cv::Size output_size, WrappingMethod wrapping_method) = 0;
 
 private:
 	// Unprojector converts input view to world coordinates
@@ -96,5 +99,6 @@ public:
 
 protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
-	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, cv::Size output_size);
+	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, 
+        cv::Size output_size, WrappingMethod wrapping_method);
 };

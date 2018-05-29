@@ -85,6 +85,8 @@ void erp::Unprojector::create(cv::Size size)
             float hPos = 0.5f + j;
             float phi  = erp::calculate_phi( hPos, W);
 
+            //phi -= float(CV_PI / 4.0);                
+
             phiTheta(i,j) = cv::Vec2f(phi, theta);
             
             verticesXYZNormalized(i, j) = erp::calculate_euclidian_coordinates( phiTheta(i,j) );
