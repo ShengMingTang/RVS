@@ -1,0 +1,134 @@
+{
+    "Content_name": "TechnicolorHijack", 
+    "BoundingBox_center": [0.0,0.0,1.65], 
+    "Fps": 30,
+    "Frames_number": 300,
+    "Informative":
+    {     
+        "Cameras_number": 10,
+        "RigRadius": 0.30
+    },
+    "cameras":
+    [
+        {
+            "Name":"camEA01",
+            "Position": [  0.3000,   -0.0000, 1.6500], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA02",
+            "Position": [  0.0927,   -0.2853, 1.6500], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA03",
+            "Position": [  -0.2427,   -0.1763, 1.6500], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA04",
+            "Position": [  -0.2427,   0.1763, 1.6500], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA05",
+            "Position": [  0.0927,   0.2853, 1.6500], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA11",
+            "Position": [  -0.1500,   0.0000, 1.3902], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA12",
+            "Position": [  0.1500,   0.0000, 1.3902], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA31",
+            "Position": [  -0.1500,   0.0000, 1.9098], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA32",
+            "Position": [  0.1500,   0.0000, 1.9098], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        },
+        {
+            "Name":"camEA00",
+            "Position": [  0.0000,   -0.0000, 1.6500], 
+            "Rotation": [  0.0000,   -0.0000, 0.0000], 
+            "Depthmap": 1,
+            "Background": 1,
+            "Rmin":   0.50,
+            "Rmax":  25.00,
+            "Resolution": [4096,4096],
+            "Hor_range": [ -90.0, 90.0 ],
+            "Ver_range": [ -90.0, 90.0 ]
+        }
+    ]
+}

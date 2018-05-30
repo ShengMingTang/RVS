@@ -24,22 +24,21 @@
 % 
 % ------------------------------------------------------------------------------ -
 
-clear;
 
-% Parameters
-input_view_metadata_path = 'ClassroomVideo/ClassroomVideo.json';
-output_view_metadata_path = 'ClassroomVideo/ClassroomVideo-IntermediateViews.json';
-camparams_path = 'ClassroomVideo/ClassroomVideo-camparams.txt';
-vsrs_config_pathfmt = 'ClassroomVideo/ClassroomVideo-VSRS-%s.cfg';
-svs_config_pathfmt = 'ClassroomVideo/ClassroomVideo-SVS-%s.cfg';
-depth_range_path = 'ClassroomVideo/depth_range.txt';
-texture_bitdepth = 10;
-depth_bitdepth = 10;
-texture_pathfmt = 'ClassroomVideo/%s_%d_%d_420_10b.yuv';
-depth_pathfmt = 'ClassroomVideo/%s_%d_%d_%s_%s_420_10b.yuv';
-output_pathfmt = '%svs_%d_%d_420_10b.yuv';
-input_view_indices = [7 8]; % Just an example, zero-based
-output_view_indices = 0; % Just an example, also zero-based
+function JSON_to_SVS_and_VSRS(...
+    input_view_metadata_path, ...
+    output_view_metadata_path, ...
+    camparams_path, ...
+    vsrs_config_pathfmt, ...
+    svs_config_path, ...
+    depth_range_path, ...
+    texture_bitdepth, ...
+    depth_bitdepth, ...
+    texture_pathfmt, ...
+    depth_pathfmt, ...
+    output_pathfmt, ...
+    input_view_indices, ...
+    output_view_indices)
 
 % Naming convention of CTC 10-bit streams
 
@@ -52,6 +51,12 @@ fclose(file);
 file = fopen(output_view_metadata_path);
 output_view_metadata = jsondecode(fread(file, '*char')');
 fclose(file);
+
+% Fix format differences
+if isfield(output_view_metadata, 'metadata')
+    output_view_metadata = output_view_metadata.metadata;
+    output_view_metadata.cameras = rmfield(output_view_metadata.cameras, 'closest_view');
+end
 
 % Shorthands
 Ci = input_view_metadata.cameras;
@@ -105,7 +110,7 @@ for m = 1:No
         end
     end
     if ~have
-        C(end + 1,1) = Co(m); %#ok<SAGROW>
+        C(end + 1,1) = Co(m); %#ok<AGROW>
     end
 end
 
@@ -156,13 +161,13 @@ end
 % VSRS
 %
 
+if isequal('format', 'final')
+    
 % Generate configuration files per output view and frame
 for m = 1:length(output_view_indices)
     oi = 1 + output_view_indices(m);
 
-    description = sprintf('%s_to_%s', sprintf('%s', Ci(1 + input_view_indices).Name), Co(oi).Name);
-
-    vsrs_config_path = sprintf(vsrs_config_pathfmt, description);
+    vsrs_config_path = sprintf(vsrs_config_pathfmt, Co(oi).Name);
     vsrs_file = fopen(vsrs_config_path, 'w');
 
     fprintf(vsrs_file, 'DepthType 1\n');
@@ -197,15 +202,12 @@ for m = 1:length(output_view_indices)
     fclose(vsrs_file);
 end
 
+end
+
 %
 % SVS
 %
 
-description = sprintf('%s_to_%s', ...
-    sprintf('%s', Ci(1 + input_view_indices).Name), ...
-    sprintf('%s', Co(1 + output_view_indices).Name));
-
-svs_config_path = sprintf(svs_config_pathfmt, description);
 svs_file = fopen(svs_config_path, 'w');
 
 fprintf(svs_file, 'SVSFile 1\n\n');
