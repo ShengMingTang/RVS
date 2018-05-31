@@ -85,15 +85,16 @@ void BlendedViewSimple::blend(View const& view)
 { 
 	if (is_empty) {
 		is_empty = false;
-		assign(view.get_color(), view.get_depth(), view.get_quality());
+		assign(view.get_color(), cv::Mat1b(), view.get_quality());
+		_depth_mask = view.get_depth_mask();
 	}
 	else {
 		std::vector<cv::Mat> colors = { get_color(), view.get_color() };
 		std::vector<cv::Mat> qualities = { get_quality(), view.get_quality() };
-		std::vector<cv::Mat> depth_masks = { get_depth_mask(), view.get_depth_mask() };
+		std::vector<cv::Mat> depth_masks = { _depth_mask, view.get_depth_mask() };
 
 		cv::Mat quality;
-		cv::Mat depth_prolongation_mask; // don't care
+		cv::Mat depth_prolongation_mask;
 		cv::Mat inpaint_mask; // don't care
 		
 		auto color = blend_img(
@@ -105,5 +106,6 @@ void BlendedViewSimple::blend(View const& view)
 			blending_exp);
 
 		assign(color, cv::Mat1f(), quality);
+		_depth_mask = depth_prolongation_mask;
 	}
 }

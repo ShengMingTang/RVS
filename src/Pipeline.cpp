@@ -78,7 +78,7 @@ void Pipeline::execute()
 
 	for (int frame = config.start_frame; frame < config.start_frame + config.number_of_frames; ++frame) {
 		if (config.number_of_frames > 1) {
-			std::clog << std::string(5, '=') << " FRAME " << frame << std::string(80, '=') << std::endl;
+			std::clog << std::string(5, '=') << " FRAME " << frame << ' ' << std::string(80, '=') << std::endl;
 		}
 
 		load_images(frame);
@@ -129,7 +129,8 @@ void Pipeline::compute_views(int frame) {
             projector.reset(new erp::Projector(config.params_virtual[virtual_idx]));
 
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
-			
+			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
+
             // Select type of un-projection 
 			std::unique_ptr<Unprojector> unprojector;
             if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
