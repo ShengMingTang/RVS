@@ -59,9 +59,7 @@ public:
 	// world_pos in OMAF Referential: x forward, y left, z up
 	// depth [out] increases with distance from virtual camera
 	// result in image coordinates: u right, v down
-	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth) const = 0;
-
-    virtual WrappingMethod get_wrapping_method() const = 0;  
+	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const = 0;
 
 	// Virtual view rotation matrix (like in VSRS camparams)
 	cv::Matx33f const& get_rotation() const;

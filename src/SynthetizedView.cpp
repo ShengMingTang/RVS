@@ -108,7 +108,8 @@ void SynthetizedView::compute(View& input)
 
 	// Project: output view world to output view image coordinates
 	cv::Mat1f virtual_depth; // Depth 
-	auto virtual_uv = projector->project(virtual_xyz, /*out*/ virtual_depth);
+	WrappingMethod wrapping_method;
+	auto virtual_uv = projector->project(virtual_xyz, /*out*/ virtual_depth, /*out*/ wrapping_method);
 
 	// Resize: rasterize with oversampling
 	auto output_size = cv::Size(
@@ -121,7 +122,7 @@ void SynthetizedView::compute(View& input)
 
 
     // Rasterization results in a color, depth and quality map
-	transform(input.get_color(), scaled_uv, virtual_depth, output_size, projector->get_wrapping_method());
+	transform(input.get_color(), scaled_uv, virtual_depth, output_size, wrapping_method);
 
 #if DUMP_VALUES
 	std::clog << "(i, j) == (" << DUMP_I << ", " << DUMP_J << ")" << '\n';

@@ -89,12 +89,7 @@ public:
     Projector();
     Projector(Parameters const& parameters);
 
-    cv::Mat2f project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius) const override;
-
-    WrappingMethod get_wrapping_method() const  override
-    { 
-        return WrappingMethod::HORIZONTAL; 
-    }      
+    cv::Mat2f project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, WrappingMethod& wrapping_method) const override;
 };
 
 

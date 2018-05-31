@@ -38,7 +38,7 @@ PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
 {
 }
 
-cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth) const
+cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
 {
 	if (world_pos.cols != parameters.get_sensor())
 		throw std::runtime_error("Situation where sensor size is different from input view width is currently not supported");
@@ -68,5 +68,6 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 		}
 	}
 
+	wrapping_method = WrappingMethod::NONE;
 	return image_pos;
 }

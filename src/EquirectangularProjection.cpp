@@ -74,18 +74,22 @@ void erp::Unprojector::create(cv::Size size)
     int H = size.height;
     int W = size.width;
 
+	// Expand horizontally or vertically to 360deg x 180deg
+	auto full_H = std::max(H, W / 2);
+	auto full_W = std::max(W, 2 * H);
+	auto hOffset = (full_H - H) / 2;
+	auto wOffset = (full_W - W) / 2;
+
     verticesXYZNormalized.create(size);
     for (int i = 0; i < H; ++i)
     {
         float vPos  = 0.5f + i;
-        float theta = erp::calculate_theta(vPos, H );
+        float theta = erp::calculate_theta( wOffset + vPos, full_H );
 
         for (int j = 0; j < W; ++j)
         {
             float hPos = 0.5f + j;
-            float phi  = erp::calculate_phi( hPos, W);
-
-            //phi -= float(CV_PI / 4.0);                
+            float phi  = erp::calculate_phi( hOffset + hPos, full_W );
 
             phiTheta(i,j) = cv::Vec2f(phi, theta);
             
@@ -133,7 +137,7 @@ erp::Projector::Projector(Parameters const& parameters)
 }
 
 
-cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius ) const
+cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, WrappingMethod& wrapping_method ) const
 {
     auto size = vecticesXYZ.size();
 
@@ -153,6 +157,10 @@ cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius ) 
             imUV(i,j)[0] = erp::calculate_horizontal_image_coordinate(phiTheta[0], size.width );
             imUV(i,j)[1] = erp::calculate_vertical_image_coordinate(phiTheta[1], size.height );
         }
+
+	wrapping_method = size.width == 2 * size.height
+		? WrappingMethod::HORIZONTAL
+		: WrappingMethod::NONE;
 
     return imUV;
 }

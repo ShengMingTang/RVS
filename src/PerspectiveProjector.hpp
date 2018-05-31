@@ -51,9 +51,7 @@ public:
 	// world_pos in OMAF Referential: x forward, y left, z up
 	// depth [out] is equal to x
 	// result in image coordinates: u right, v down
-	virtual cv::Mat2f project(cv::Mat3f world_pos,  /*out*/ cv::Mat1f& depth) const;
-
-    virtual WrappingMethod get_wrapping_method() const  { return WrappingMethod::NONE; }
+	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
 
 private:
 	Parameters parameters;
