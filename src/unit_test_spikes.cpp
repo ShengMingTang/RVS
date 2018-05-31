@@ -162,7 +162,10 @@ FUNC( Spike_ErpViewSynthesisRaw )
 
     erp::Projector projector;
     cv::Mat1f imRadiusNew;
-    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew );
+    //cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew );
+    WrappingMethod wrapping_method;
+    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew, wrapping_method );
+    CHECK(wrapping_method == WrappingMethod::HORIZONTAL);
 
     bool wrapHorizontal = true;
 
