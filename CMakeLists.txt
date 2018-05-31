@@ -96,7 +96,8 @@ set(PROJECT_SOURCES
 	src/Unprojector.cpp
 	src/Projector.cpp
 	src/PerspectiveUnprojector.cpp
-	src/PerspectiveProjector.cpp)
+	src/PerspectiveProjector.cpp
+	src/PoseTraces.cpp)
 
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
@@ -117,7 +118,8 @@ set(PROJECT_HEADERS
 	src/Unprojector.hpp
 	src/Projector.hpp
 	src/PerspectiveUnprojector.hpp
-	src/PerspectiveProjector.hpp)
+	src/PerspectiveProjector.hpp
+	src/PoseTraces.hpp)
 
 set(CONFIGURATION_FILES
 	config_files/example_config_file.cfg
