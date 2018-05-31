@@ -1,0 +1,40 @@
+TechnicolorHijack/v0_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v1_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v2_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v3_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v4_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v5_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v6_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v7_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v8_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+
+TechnicolorHijack/v9_4096_4096_0_5_25_0_420_16b.yuv
+NearestDepthValue 0.500000
+FarthestDepthValue 25.000000
+

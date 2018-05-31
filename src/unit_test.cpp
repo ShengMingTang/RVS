@@ -164,7 +164,9 @@ FUNC( TestERP_Project)
 
     erp::Projector projector;
     cv::Mat1f imRadiusActual;
-    cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual);
+	WrappingMethod wrapping_method;
+    cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual, wrapping_method);
+	CHECK(wrapping_method == WrappingMethod::NONE);
 
 
     eps *= size.area();
@@ -230,7 +232,9 @@ FUNC(Test_PerspectiveProjector)
 
 	// Project
 	cv::Mat1f actual_depth;
-	auto actual_image_pos = projector.project(world_pos, actual_depth);
+	WrappingMethod wrapping_method;
+	auto actual_image_pos = projector.project(world_pos, actual_depth, wrapping_method);
+	CHECK(wrapping_method == WrappingMethod::NONE);
 
 	// Check projections results against reference
 	auto image_pos_error = norm(reference_image_pos, actual_image_pos);

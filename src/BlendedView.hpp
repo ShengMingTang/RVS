@@ -82,6 +82,9 @@ private:
 
 	/** The value of a in the formula \f$color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)}\f$ if a<0 */
 	float blending_exp;
+
+	// Depth mask
+	cv::Mat1b _depth_mask;
 };
 
 /**

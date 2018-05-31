@@ -1,0 +1,122 @@
+SVSFile 1
+
+InputCameraParameterFile
+config_files/TechnicolorMuseum/B3-sv-camparams.txt
+
+InputProjectionType Equirectangular
+
+InputCameraNumber 5
+
+ViewImagesNames
+TechnicolorMuseum/v0_2048_2048_420_10b.yuv
+TechnicolorMuseum/v2_2048_2048_420_10b.yuv
+TechnicolorMuseum/v13_2048_2048_420_10b.yuv
+TechnicolorMuseum/v17_2048_2048_420_10b.yuv
+TechnicolorMuseum/v19_2048_2048_420_10b.yuv
+
+DepthMapsNames
+TechnicolorMuseum/v0_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v2_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v13_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v17_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v19_2048_2048_0_5_25_0_420_10b.yuv
+
+ZValues
+config_files/TechnicolorMuseum/B3-sv-depthrange.txt
+
+CamerasNames
+v0
+v2
+v13
+v17
+v19
+
+VirtualCameraParamaterFile
+config_files/TechnicolorMuseum/B3-sv-camparams.txt
+
+VirtualProjectionType Equirectangular
+
+VirtualCameraNumber 24
+
+VirtualCamerasNames
+v0
+v1
+v2
+v3
+v4
+v5
+v6
+v7
+v8
+v9
+v10
+v11
+v12
+v13
+v14
+v15
+v16
+v17
+v18
+v19
+v20
+v21
+v22
+v23
+
+OuputDir
+./
+
+OutputFiles
+output/TechnicolorMuseum/B3/B3_v0_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v1_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v2_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v3_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v4_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v5_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v6_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v7_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v8_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v9_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v10_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v11_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v12_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v13_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v14_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v15_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v16_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v17_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v18_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v19_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v20_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v21_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v22_2048_2048_420_10b.yuv
+output/TechnicolorMuseum/B3/B3_v23_2048_2048_420_10b.yuv
+
+Extension
+yuv
+
+BitDepthColor 10
+
+BitDepthDepth 10
+
+StartFrame 0
+
+NumberOfFrames 10
+
+Width 2048
+
+Height 2048
+
+Precision 2.0
+
+ColorSpace YUV
+
+ViewSynthesisMethod Triangles
+
+BlendingMethod Simple
+
+BlendingFactor 5.0
+
+SensorSize 1.0
+

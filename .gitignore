@@ -1,6 +1,9 @@
 build
+output
 Plane_B'_Kinect.zip
 SVS
 *.yuv
 *.png
+*.log
 Plane_B'
+SVS-o*
