@@ -38,7 +38,8 @@ function JSON_to_SVS_and_VSRS(...
     depth_pathfmt, ...
     output_pathfmt, ...
     input_view_indices, ...
-    output_view_indices)
+    output_view_indices, ...
+    max_frames)
 
 % Naming convention of CTC 10-bit streams
 
@@ -174,7 +175,7 @@ for m = 1:length(output_view_indices)
     fprintf(vsrs_file, 'SourceWidth %d\n', resolution(1));
     fprintf(vsrs_file, 'SourceHeight %d\n', resolution(2));
     fprintf(vsrs_file, 'StartFrame 0\n');
-    fprintf(vsrs_file, 'TotalNumberOfFrames %d\n', input_view_metadata.Frames_number);
+    fprintf(vsrs_file, 'TotalNumberOfFrames %d\n', min(max_frames, input_view_metadata.Frames_number));
     fprintf(vsrs_file, 'NumberOfInputs %d\n', length(input_view_indices));
     fprintf(vsrs_file, '\n');
    
@@ -232,7 +233,7 @@ fprintf(svs_file, '\nExtension\nyuv\n\n');
 fprintf(svs_file, 'BitDepthColor %d\n\n', texture_bitdepth);
 fprintf(svs_file, 'BitDepthDepth %d\n\n', depth_bitdepth);
 fprintf(svs_file, 'StartFrame 0\n\n');
-fprintf(svs_file, 'NumberOfFrames %d\n\n', input_view_metadata.Frames_number);
+fprintf(svs_file, 'NumberOfFrames %d\n\n', min(max_frames, input_view_metadata.Frames_number));
 fprintf(svs_file, 'Width %d\n\n', resolution(1));
 fprintf(svs_file, 'Height %d\n\n', resolution(2));
 fprintf(svs_file, 'Precision 2.0\n\n');

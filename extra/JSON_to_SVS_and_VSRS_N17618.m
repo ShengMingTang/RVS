@@ -1,6 +1,6 @@
 % ------------------------------------------------------------------------------ -
 % 
-% Copyright ? 2018 Koninklijke Philips N.V.
+% Copyright (c) 2018 Koninklijke Philips N.V.
 % 
 % Authors : Bart Kroon, Bart Sonneveldt
 % Contact : bart.kroon@philips.com
@@ -26,6 +26,7 @@
 
 % TODO: 16-bit depth inputs
 
+max_frames = 10; % Put this to infinity to disable this funcitonality
 sequences = {...
 	'ClassroomVideo'
 	'TechnicolorMuseum'
@@ -84,7 +85,8 @@ for i = 1:length(sequences)
 			sprintf('%s/%%s_%%d_%%d_%%s_%%s_420_10b.yuv', sequences{i}), ...
 			sprintf('output/%s/%s/%s_%%s_%%d_%%d_420_10b.yuv', sequences{i}, test_classes{i}{j}, test_classes{i}{j}), ...
 			anchor_coded_views{i}{j}, ...
-			source_views{i});
+			source_views{i}, ...
+            max_frames);
 	end
 end
 
@@ -103,7 +105,8 @@ for i = 1:length(sequences)
 			sprintf('%s/%%s_%%d_%%d_%%s_%%s_420_16b.yuv', sequences{i}), ...
 			sprintf('output/%s/ref/ref_%%s_%%d_%%d_420_10b.yuv', sequences{i}), ...
 			source_views{i}, ...
-			intermediate_views{i});
+			intermediate_views{i}, ...
+            max_frames);
 	end
 end
 
@@ -122,6 +125,7 @@ for i = 1:length(sequences)
 			sprintf('%s/%%s_%%d_%%d_%%s_%%s_420_10b.yuv', sequences{i}), ...
 			sprintf('output/%s/%s/%s_%%s_%%d_%%d_420_10b.yuv', sequences{i}, test_classes{i}{j}, test_classes{i}{j}), ...
 			anchor_coded_views{i}{j}, ...
-			intermediate_views{i});
+			intermediate_views{i}, ...
+            max_frames);
 	end
 end
