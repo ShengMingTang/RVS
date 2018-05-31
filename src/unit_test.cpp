@@ -32,6 +32,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include "EquirectangularProjection.hpp"
 #include "PerspectiveProjector.hpp"
+#include "PoseTraces.hpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -46,6 +47,16 @@ namespace testing
     {
         return cv::norm( cv::Vec2f( std::sin(a), std::cos(a) ) - cv::Vec2f(std::sin(b), std::cos(b) ) );
     }
+
+    cv::Vec3d DistanceOnUnitCircle( cv::Vec3f a, cv::Vec3f b)
+    {
+        return cv::Vec3d(
+            DistanceOnUnitCircle(a[0], b[0] ),
+            DistanceOnUnitCircle(a[1], b[1] ),
+            DistanceOnUnitCircle(a[2], b[2] ) );
+
+    }
+
 
 } // namespace
 
@@ -227,4 +238,39 @@ FUNC(Test_PerspectiveProjector)
 
 	ALMOST(image_pos_error, 0, 1e-12);
 	ALMOST(depth_error, 0, 1e-12);
+}
+
+
+
+FUNC( TestRotationMatrixToFromEulerAngles )
+{
+    using namespace pose_traces::detail;
+    
+    const double eps = 1e-7;
+
+    int N = 16;
+    
+    for( int i0 = 0; i0 <= N; ++i0 )                // closed interval
+        for( int i1 = 1; i1 <  N; ++i1 )            // open interval
+            for( int i2 = 0; i2 <= N; ++i2 )        // closed interval
+            {
+
+                float yaw   = float( i0 * CV_2PI / N - CV_PI  );
+                float pitch = float( i1 * CV_PI  / N - CV_PI/2);
+                float roll  = float( i2 * CV_2PI / N - CV_PI  );
+
+                auto eulerExpected  = cv::Vec3f(yaw, pitch, roll );
+                auto R              = EulerAnglesToRotationMatrix( eulerExpected );
+                auto eulerActual    = RotationMatrixToEulerAngles(R);
+
+                double err = cv::norm( testing::DistanceOnUnitCircle(eulerExpected, eulerActual) );
+                if( err > eps )
+                {
+                    cout << i0 << " "<< i1 << " "<< i2 << " " << err << endl ;
+                    CHECK(false);
+                }
+
+            }
+
+
 }

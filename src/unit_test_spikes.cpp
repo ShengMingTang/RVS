@@ -29,6 +29,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include "yaffut.hpp"
 #include "EquirectangularProjection.hpp"
+#include "PoseTraces.hpp"
 #include "Pipeline.hpp"
 #include "image_loading.hpp"
 #include "Parser.hpp"
@@ -44,6 +45,26 @@ using namespace std;
 using namespace cv;
 
 
+namespace 
+{
+    // for testing if two angles are the same. resolves modulo 2pi
+    double DistanceOnUnitCircle( float a, float b)
+    {
+        return cv::norm( cv::Vec2f( std::sin(a), std::cos(a) ) - cv::Vec2f(std::sin(b), std::cos(b) ) );
+    }
+
+    Vec3d DistanceOnUnitCircle( cv::Vec3f a, cv::Vec3f b)
+    {
+        return cv::Vec3d(
+            DistanceOnUnitCircle(a[0], b[0] ),
+            DistanceOnUnitCircle(a[1], b[1] ),
+            DistanceOnUnitCircle(a[2], b[2] ) );
+        
+    }
+
+
+} // namespace
+
 cv::Mat ScaleDown(cv::Mat im, double scale)
 {
     cv::Mat imScaled;
@@ -52,13 +73,6 @@ cv::Mat ScaleDown(cv::Mat im, double scale)
 }
 
 
-
-
-FUNC(Spike_Unicorn_Example)
-{
-    Pipeline p("./config_files/example_config_file.cfg");
-    p.execute();
-}
 
 
 FUNC(Spike_ReadImageAndDepth)
@@ -85,191 +99,6 @@ FUNC(Spike_ReadImageAndDepth)
 
 }
 
-#if 0
-FUNC(Spike_ViewSynthSingle)
-{
-    const int bit_depth_color = 8;
-    const int bit_depth_depth = 16;
-    
-    cout << endl;
-
-    Parser parser("./config_files/example_config_file.cfg");
-
-    auto config = parser.get_config();
-
-    std::vector<View> input_images;
-
-    int numInputs = int( config.params_real.size() );
-    cout << "numInputs " << numInputs << endl;
-
-    for( int idx = 0; idx <numInputs; ++idx)
-    {
-        auto nameImg   = config.texture_names[idx];
-        auto nameDepth = config.depth_names[idx];
-        auto& params    = config.params_real[idx];
-
-        cout << nameImg << endl;
-        cout << nameDepth << endl;
-        //cout << params.camera_matrix << endl;
-
-        View image = View(nameImg, nameDepth, params, config.size, bit_depth_color, bit_depth_depth);
-        //if (config.znear.size() > 0) image.set_z(config.znear[idx], config.zfar[idx]);
-
-        image.load();
-
-        SynthetizedViewTriangle renderer( config.params_virtual[0], image.get_size() );
-
-        renderer.compute(image);
-        cv::Mat imOut = renderer.get_color();
-        cv::Mat imDepth = renderer.get_depth();
-        imDepth.convertTo( imDepth, -1, 1.0 / 2000);
-
-        cv::imshow( cv::format("img%d",idx),   ScaleDown(imOut, 0.25)    );
-        cv::imshow( cv::format("depth%d",idx), ScaleDown(imDepth, 0.25)    );
-
-        cv::waitKey(1);
-        cout << endl;
-    }
-
-    cv::waitKey(0);
-}
-
-#endif
-
-
-cv::Mat imreadThrow( const std::string& filename, int flags = cv::IMREAD_COLOR )
-{
-    auto im = cv::imread(filename, flags );
-    if( im.empty() )
-        throw std::runtime_error( "Can't read " + filename );
-    return im;
-}
-
-template< class T, int cn>
-auto  SelectChannel(const cv::Mat_<cv::Vec<T,cn>>& imN, int ch) -> cv::Mat_<cv::Vec<T,1>>
-{
-    cv::Mat_<cv::Vec<T,1>> im1( imN.size() ) ;
-    auto vnIt = imN.begin();
-    for (auto& v : im1)
-    {
-        const auto& vn = *vnIt;
-        v = vn[ch];
-        vnIt++;
-    }
-    return im1;
-}
-
-template <class T>
-inline const T& Clip(const T& val, const T& minVal, const T& maxVal)
-{
-    return std::min(maxVal, std::max(minVal, val));
-}
-
-uchar RadiusTo8u(float radius, float minimumCodingDistance , float maximumCodingDistance)
-{
-
-    float radiusBounded = Clip( radius, minimumCodingDistance, maximumCodingDistance);
-    auto disparity = minimumCodingDistance / radiusBounded;
-    uchar depth = cv::saturate_cast<uchar>(255.0 * disparity);
-
-    return depth;
-}
-
-cv::Mat1b EncodeRadiusTo8u( cv::Mat1f imRadius, float minimumCodingDistance = 0.25f, float maximumCodingDistance = 40.f )
-{
-    cv::Mat1b depthEnc( imRadius.size() );
-
-    auto radius = imRadius.begin();
-    for( auto& depth : depthEnc )
-        depth = ::RadiusTo8u(*radius++, minimumCodingDistance, maximumCodingDistance );
-
-    return depthEnc;
-}
-
-
-
-struct ErpReader
-{
-    std::string nameImgT   = "./classroom/img%04d.png";
-    std::string nameDepthT = "./classroom/depth%04d.exr";
-
-    void read( int num )
-    {
-        image          = cv::imread( cv::format(nameImgT.c_str(), num) );
-        imRadius3f     = cv::imread( cv::format(nameDepthT.c_str(), num), cv::IMREAD_UNCHANGED );
-        
-        CV_Assert( !image.empty() && !imRadius3f.empty() );
-        
-        image.convertTo( image3f, image3f.type() );
-        imRadius       = SelectChannel( imRadius3f, 0 );
-        imRadius.convertTo( imRadius8u, imRadius8u.type(), -255.0/ 10.0, 255.0 );
-        size = imRadius.size();
-    }
-
-    cv::Size  size; 
-    cv::Mat3b image; 
-    cv::Mat3f image3f;
-    cv::Mat3f imRadius3f;
-    cv::Mat1f imRadius;
-    cv::Mat1b imRadius8u;
-};
-
-
-
-
-FUNC( Spike_ErpViewSynthesis )
-{
-    ErpReader erpz1;
-    erpz1.read(1);
-
-    ErpReader erpz2;
-    erpz2.read(2);
-
-    auto size = erpz1.size;
-
-    cv::imshow( "img_2",   ScaleDown(erpz2.image, 0.25)    );
-    cv::imshow( "imRadius8u_2", ScaleDown(erpz2.imRadius8u, 0.25) );
-    cv::waitKey(100);
-
-
-    erp::Unprojector unprojector;
-    unprojector.create(size);
-    auto verticesXyz = unprojector.unproject(erpz1.imRadius);
-
-    const auto translation = cv::Vec3f(0.f, 0.05f, 0.f );
-    cv::Mat3f verticesXyzNew = verticesXyz + translation;
-
-    rescale = 1.f;
-    cv::Size sizeOut = size;
-
-    erp::Projector projector;
-    cv::Mat1f imRadiusNew;
-    cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew );
-
-    bool wrapHorizontal = true;
-
-    cv::Mat1f depth, quality;
-    cv::Mat3f imResult3f = transform_trianglesMethod(erpz1.image3f, imRadiusNew, imUVnew, sizeOut, depth, quality, wrapHorizontal);
-
-
-    cv::Mat3b imResult;
-    imResult3f.convertTo(imResult, imResult.type() );
-
-    cv::imshow( "imResult",   ScaleDown(imResult, 0.25)    );
-
-    cv::Mat3b imDiff;
-    cv::absdiff(imResult, erpz2.image, imDiff );
-    cv::imshow( "imDiff",   ScaleDown(imDiff, 0.25)    );
-
-    cv::Mat3b imDiffRef;
-    cv::absdiff(erpz1.image, erpz2.image, imDiffRef );
-    cv::imshow( "imDiffRef",   ScaleDown(imDiffRef, 0.25)    );
-
-
-    cv::waitKey(0);
-
-
-}
 
 
 struct ErpReaderRaw
@@ -311,8 +140,6 @@ FUNC( Spike_ErpViewSynthesisRaw )
 
     ::ErpReaderRaw erpzV1;
     erpzV1.read(1);
-
-
 
     cv::Mat3b imBGR;
     cv::cvtColor(erpzV0.image, imBGR, cv::COLOR_YUV2BGR  );
@@ -368,32 +195,43 @@ FUNC( Spike_ErpViewSynthesisRaw )
 }
 
 
-
-FUNC(Spike_ULB_Unicorn_Triangles_Simple_Erp)
-{
-    Pipeline p("./config_files/Unicorn_Triangles_Simple_ToErp.cfg");
-    p.execute();
-
-}
-
 FUNC(Spike_ClassRoomVideo )
 {
-    //Pipeline p("./config_files/ClassroomVideo-SVS-v0v4v7v9v13_to_i2i3.cfg");
     Pipeline p("./ClassroomVideo/ClassroomVideo-SVS-v7v8_to_i0.cfg");
 
     p.execute();
 }
 
-FUNC( Spike_ParseJSON )
+
+
+
+
+FUNC( SpikePoseTraces )
 {
-    //std::string name   = "./ClassRoomVideo/ClassroomVideo.json";
-    std::string name   = "./ClassRoomVideo/example.json";
+    using namespace pose_traces;
+    
+    cout << endl;
 
-    cv::FileStorage fs(name.c_str(), cv::FileStorage::READ);
+    std::string name      = "./PoseTraces/tracker_data.rt.csv";
+    std::string nameEuler = "./PoseTraces/tracker_data.euler.csv";
+    std::string nameEuler2 = "./PoseTraces/tracker_data.euler2.csv";
 
-    //string Content_name = static_cast<std::string>( fs["Content_name"] );
+    //auto poseTrace = ReadPoseTrace( name );
+    //WritePoseTrace( nameEuler, poseTrace, true );
 
-    //std::cout << endl;
-    //std::cout << Content_name << endl;
+    auto poseTrace2 = ReadPoseTrace( nameEuler );
+    WritePoseTrace( nameEuler2, poseTrace2, true );
+
+    //auto pose = poseTrace[1];
+    //cout << pose.rotation << endl << endl;
+    //cout << pose.translation << endl;
+    //cout << pose.ToCsv(false) << endl;
+
+
+
+    
+    
+    
+
 
 }
