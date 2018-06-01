@@ -63,6 +63,5 @@ public:
 	cv::Vec3f get_translation() const;
 
 private:
-	cv::Matx33f rotation;
-	cv::Vec3f translation;
+	Parameters parameters;
 };
