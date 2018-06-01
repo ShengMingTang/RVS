@@ -134,8 +134,10 @@ for n = 1:length(C)
     fprintf(file, '%g %g %g\n', fake');
     fprintf(file, '0\n');
     fprintf(file, '0\n');
-    R_VSRS = eye(3); % TODO: rotation matrix
+        
+    R_VSRS = P' * EulerAnglesToRotationMatrix(C(n).Rotation) * P;
     t_VSRS = P' * C(n).Position;
+    
     M = [R_VSRS t_VSRS]; 
     fprintf(file, '%g %g %g %g\n', M');
     fprintf(file, '\n');
