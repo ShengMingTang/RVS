@@ -46,7 +46,7 @@ Contact : bart.kroon@philips.com
 class PerspectiveProjector : public Projector
 {
 public:
-	PerspectiveProjector(Parameters const& parameters);
+	PerspectiveProjector(Parameters const& parameters, cv::Size size);
 
 	// world_pos in OMAF Referential: x forward, y left, z up
 	// depth [out] is equal to x

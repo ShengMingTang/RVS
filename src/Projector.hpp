@@ -53,7 +53,7 @@ class Projector
 {
 public:
     Projector();
-    Projector(Parameters const&);
+    Projector(Parameters const&, cv::Size);
 	virtual ~Projector();
 
 	// world_pos in OMAF Referential: x forward, y left, z up
@@ -67,7 +67,11 @@ public:
 	// Virtual view translation vector (like in VSRS camparams)
 	cv::Vec3f get_translation() const;
 
+	// Size of the virtual view in pixels
+	cv::Size get_size() const;
+
 private:
 	cv::Matx33f rotation;
 	cv::Vec3f translation;
+	cv::Size size;
 };

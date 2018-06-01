@@ -149,8 +149,8 @@ FUNC( Spike_ViewSynthesisFromErpRaw )
     cv::waitKey(200);
 
 
-
-    erp::Unprojector unprojector;
+	Parameters const parameters;
+    erp::Unprojector unprojector(parameters, size);
     unprojector.create(size);
     auto verticesXyz = unprojector.unproject(erpzV0.imRadius);
 
@@ -161,7 +161,7 @@ FUNC( Spike_ViewSynthesisFromErpRaw )
     rescale = 1.f;
     cv::Size sizeOut = size;
 
-    erp::Projector projector;
+    erp::Projector projector(parameters, sizeOut);
     cv::Mat1f imRadiusNew;
     WrappingMethod wrapping_method;
     cv::Mat2f imUVnew     = projector.project( verticesXyzNew, imRadiusNew, wrapping_method );
