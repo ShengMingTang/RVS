@@ -217,8 +217,8 @@ FUNC( Spike_ViewSynthesisErpToPerspective )
     cv::imshow( "depth", ScaleDown(erpzV0.imRadius8u, 0.25)    );
     cv::waitKey(200);
 
-
-    erp::Unprojector unprojector;
+	Parameters const dummy_parameters;
+    erp::Unprojector unprojector(dummy_parameters, size);
     unprojector.create(size);
     auto verticesXyz = unprojector.unproject(erpzV0.imRadius);
 
@@ -242,7 +242,7 @@ FUNC( Spike_ViewSynthesisErpToPerspective )
     
     Parameters parameters( cv::Matx33f::eye(), cv::Vec3f::all(0), camera_matrix, w, CoordinateSystem::MPEG_I_OMAF );
 
-    PerspectiveProjector projector(parameters);
+    PerspectiveProjector projector(parameters, sizeOut);
 
     cv::Mat1f depthNew;
     WrappingMethod wrappingMethod;
