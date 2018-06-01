@@ -469,6 +469,6 @@ void Parser::print_results(
 		printf("%s\n", config.outfilenames[i].c_str());
 	}
 	printf("%d %d\n", config.size.width, config.size.height);
-	printf("%d\n", config.virtual_size.width, config.virtual_size.height);
+	printf("%d %d\n", config.virtual_size.width, config.virtual_size.height);
 	printf("%db color, %db depth\n", config.bit_depth_color, config.bit_depth_depth);
 }
