@@ -248,6 +248,16 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 		cv::Size(2048, 2048), 10, 100, 100);
 }
 
+FUNC(TechnicolorMuseum_v0_to_v0)
+{
+	Pipeline p("./config_files/TechnicoloMuseum-SVS-v0_to_v0.cfg");
+	p.execute();
+	testing::compareWithReferenceView<std::uint16_t>(
+		"TechnicolorMuseum_v0vs_from_v0_2048_2048_420_10b.yuv",
+		"TechnicolorMuseum/v0_2048_2048_420_10b.yuv",
+		cv::Size(2048, 2048), 10, 38.32, 39.01); // VC14 + OpenCV 3.1.0: 38.3778, 39.06
+}
+
 int main(int argc, const char* argv[])
 {
 	cv::setBreakOnError(true);
