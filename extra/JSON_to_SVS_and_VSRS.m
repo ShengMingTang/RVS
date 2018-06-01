@@ -136,7 +136,7 @@ for n = 1:length(C)
     fprintf(file, '0\n');
     fprintf(file, '0\n');
         
-    R_VSRS = P' * EulerAnglesToRotationMatrix(C(n).Rotation) * P;
+    R_VSRS = P' * EulerAnglesToRotationMatrix(degtorad(C(n).Rotation)) * P;
     t_VSRS = P' * C(n).Position;
     
     M = [R_VSRS t_VSRS]; 
