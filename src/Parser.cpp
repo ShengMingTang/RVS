@@ -192,9 +192,6 @@ std::string camera_parameter(cv::Mat R, cv::Vec3f t, cv::Mat camMat, std::string
 Parser::Parser(const std::string & filename)
 	: filename_parameter_file(filename)
 {
-	//this->config.size.width = size.width;
-	//this->config.size.height = size.height;
-	
 	if (is_SVS_file(filename))
 	{
 		read_SVS_config_file();
@@ -205,6 +202,10 @@ Parser::Parser(const std::string & filename)
 		read_vsrs_config_file();
 	}
 
+	// Intelligent default for backwards compatibility
+	if (config.virtual_size == cv::Size(0, 0)) {
+		config.virtual_size = config.size;
+	}
 
 	//get input cameras parameters
 	read_cameras_paramaters(config.camerasParameters_in, config.InputCameraNames, config.params_real, config.sensor_size);
@@ -345,6 +346,9 @@ void Parser::read_SVS_config_file() {
 	int w, h;
 	if (seek_int(filename_parameter_file, w, "Width", "") && seek_int(filename_parameter_file, h, "Height", ""))
 		config.size = cv::Size(w, h);
+	//seek w,h (default = 1920x1080)
+	if (seek_int(filename_parameter_file, w, "VirtualWidth", "") && seek_int(filename_parameter_file, h, "VirtualHeight", ""))
+		config.virtual_size = cv::Size(w, h);
 	//seek extension (default = .png)
 	std::vector<std::string> exts;
 	if (seek_string(filename_parameter_file, 1, exts, "Extension", ""))
@@ -464,7 +468,7 @@ void Parser::print_results(
 	for (int i = 0; i < static_cast<int>(config.outfilenames.size()); ++i) {
 		printf("%s\n", config.outfilenames[i].c_str());
 	}
-	printf("%d\n", config.size.width);
-	printf("%d\n", config.size.height);
+	printf("%d %d\n", config.size.width, config.size.height);
+	printf("%d\n", config.virtual_size.width, config.virtual_size.height);
 	printf("%db color, %db depth\n", config.bit_depth_color, config.bit_depth_depth);
 }

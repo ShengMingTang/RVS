@@ -125,9 +125,10 @@ FUNC( TestERP_CoordinateTransform )
 FUNC( TestERP_BackProject)
 {
     const double eps = 1e-7;
+	Parameters parameters;
     cv::Size size(30,30);
     
-    erp::Unprojector unprojector;
+    erp::Unprojector unprojector(parameters, size);
     unprojector.create(size);
     
     cv::Mat1f radiusMap = cv::Mat1f::ones(size);
@@ -149,9 +150,10 @@ FUNC( TestERP_Project)
     //const float rescale = 1.f;
     rescale = 1.f;
 
+	Parameters const parameters;
     const cv::Size size(5, 5);
     
-    erp::Unprojector unprojector;
+    erp::Unprojector unprojector(parameters, size);
     unprojector.create(size);
     
     cv::Mat1f imRadius = cv::Mat1f::ones(size);
@@ -162,7 +164,7 @@ FUNC( TestERP_Project)
     
     cv::Mat3f imXYZnew = imXYZ * radiusExpected;
 
-    erp::Projector projector;
+	erp::Projector projector(parameters, size);
     cv::Mat1f imRadiusActual;
 	WrappingMethod wrapping_method;
     cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual, wrapping_method);
@@ -204,7 +206,7 @@ FUNC(Test_PerspectiveProjector)
 	auto const parameters = Parameters(R, t, M, w, CoordinateSystem::MPEG_I_OMAF);
 
 	// Construct projector
-	PerspectiveProjector projector(parameters);
+	PerspectiveProjector projector(parameters, cv::Size(13, 17));
 	
 	// Check that extrinsics can be obtained
 	EQUAL(R, projector.get_rotation());

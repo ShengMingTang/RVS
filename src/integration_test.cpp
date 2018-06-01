@@ -40,6 +40,8 @@ copies, substantial portions or derivative works of the Software.
 #include <array>
 #include <fstream>
 
+#define INCLUDE_SLOW_TESTS false
+
 namespace testing
 {
 	template<typename T> std::array<cv::Mat_<T>, 3> readYUV420(char const *filepath, cv::Size size)
@@ -171,6 +173,7 @@ FUNC(ULB_Unicorn_Same_View)
 		cv::Size(1920, 1080), 8, 19.80, 34.03); // VC14 + OpenCV 3.1.0: 19.8503, 34.0891											
 }
 
+#if INCLUDE_SLOW_TESTS
 FUNC(ClassroomVideo_10frames)
 {
 	Pipeline p("./config_files/ClassroomVideo-SVS-v0_to_v0.cfg");
@@ -180,6 +183,7 @@ FUNC(ClassroomVideo_10frames)
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
 		cv::Size(4096, 2048), 10, 42.95, 41.81); // VC14 + OpenCV 3.1.0: 43.0071, 41.8697
 }
+#endif
 
 FUNC(ClassroomVideo_v7v8_to_v0)
 {
@@ -190,10 +194,6 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
 		cv::Size(4096, 2048), 10, 35.31, 35.94); // VC14 + OpenCV 3.1.0: 35.366, 35.9966
 }
-
-// Need test cases to cover:
-//   Load/write PNG
-//   YUV and RGB
 
 int main(int argc, const char* argv[])
 {

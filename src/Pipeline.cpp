@@ -124,9 +124,9 @@ void Pipeline::compute_views(int frame) {
 		// Project according to parameters of the virtual view
         std::unique_ptr<Projector> projector;
 		if( config.input_projection_type == PROJECTION_PERSPECTIVE )
-            projector.reset(new PerspectiveProjector(config.params_virtual[virtual_idx]));
+            projector.reset(new PerspectiveProjector(config.params_virtual[virtual_idx], config.virtual_size));
         else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
-            projector.reset(new erp::Projector(config.params_virtual[virtual_idx]));
+            projector.reset(new erp::Projector(config.params_virtual[virtual_idx], config.virtual_size));
 
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
@@ -163,7 +163,7 @@ void Pipeline::compute_views(int frame) {
 		PROF_END("inpainting");
 
 		PROF_START("downscale");
-		resize(color, color, config.size);
+		resize(color, color, config.virtual_size);
 		PROF_END("downscale");
 
 		PROF_START("write");

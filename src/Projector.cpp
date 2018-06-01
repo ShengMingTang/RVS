@@ -48,9 +48,10 @@ Projector::Projector()
 }
 
 
-Projector::Projector(Parameters const& parameters)
+Projector::Projector(Parameters const& parameters, cv::Size size)
 	: rotation(parameters.get_rotation())
 	, translation(parameters.get_translation())
+	, size(size)
 {
 }
 
@@ -64,4 +65,9 @@ cv::Matx33f const& Projector::get_rotation() const
 cv::Vec3f Projector::get_translation() const
 {
 	return translation;
+}
+
+cv::Size Projector::get_size() const
+{
+	return size;
 }

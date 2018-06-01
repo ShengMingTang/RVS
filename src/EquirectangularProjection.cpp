@@ -53,11 +53,6 @@ cv::Vec2f erp::calculate_sperical_coordinates( const cv::Vec3f& xyz_norm )
     return cv::Vec2f(phi, theta);
 }
 
-erp::Unprojector::Unprojector()
-    : ::Unprojector()
-{
-}
-
 erp::Unprojector::Unprojector(Parameters const& parameters, const cv::Size& size)
     : ::Unprojector(parameters)
 {
@@ -126,35 +121,26 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat2f image_pos, cv::Mat1f radiusMap)
 
 
 
-erp::Projector::Projector()
-    : ::Projector()
-{
-}
-
-erp::Projector::Projector(Parameters const& parameters)
-    : ::Projector(parameters)
+erp::Projector::Projector(Parameters const& parameters, cv::Size size)
+    : ::Projector(parameters, size)
 {
 }
 
 
 cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, WrappingMethod& wrapping_method ) const
 {
-    auto size = vecticesXYZ.size();
-
-	auto H = size.height;
-	auto W = size.width;
+	auto height = get_size().height;
+	auto width = get_size().width;
 
 	// Expand horizontally or vertically to 360deg x 180deg
-	auto full_H = std::max(H, W / 2);
-	auto full_W = std::max(W, 2 * H);
-	auto hOffset = (full_H - H) / 2;
-	auto wOffset = (full_W - W) / 2;
+	auto full_width = std::max(width, 2 * height);
+	auto offset = (full_width - width) / 2;
 
-	cv::Mat2f imUV(size);
-    imRadius.create(size);
+	cv::Mat2f imUV(get_size());
+    imRadius.create(get_size());
 
-    for(int i = 0; i < H; ++i )
-        for( int j = 0; j < W; ++j )
+    for(int i = 0; i < height; ++i )
+        for( int j = 0; j < width; ++j )
         {
             cv::Vec3f xyz      = vecticesXYZ(i,j);
             float radius       = static_cast<float>( cv::norm(xyz) );
@@ -163,11 +149,11 @@ cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, W
             cv::Vec3f xyzNorm  = xyz / radius;
             cv::Vec2f phiTheta = erp::calculate_sperical_coordinates(xyzNorm);
 
-            imUV(i,j)[0] = erp::calculate_horizontal_image_coordinate(phiTheta[0], full_W ) - wOffset;
-            imUV(i,j)[1] = erp::calculate_vertical_image_coordinate(phiTheta[1], full_H ) - hOffset;
+            imUV(i,j)[0] = erp::calculate_horizontal_image_coordinate(phiTheta[0], full_width) - offset;
+            imUV(i,j)[1] = erp::calculate_vertical_image_coordinate(phiTheta[1], height);
         }
 
-	wrapping_method = W == full_W
+	wrapping_method = width == full_width
 		? WrappingMethod::HORIZONTAL
 		: WrappingMethod::NONE;
 
