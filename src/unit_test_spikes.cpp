@@ -204,12 +204,6 @@ FUNC( Spike_ViewSynthesisErpToPerspective )
 
     auto size = erpzV0.size;
 
-    auto on_image = [size](const cv::Vec2f& uv)->bool
-    {
-        return uv[0] >= 0.f && uv[0] <= float(size.width) && uv[1] >= 0.f && uv[1] <= float(size.height);
-    };
-
-
 
     cv::Mat3b imBGR;
     cv::cvtColor(erpzV0.image, imBGR, cv::COLOR_YUV2BGR  );
@@ -222,9 +216,19 @@ FUNC( Spike_ViewSynthesisErpToPerspective )
     unprojector.create(size);
     auto verticesXyz = unprojector.unproject(erpzV0.imRadius);
 
-    cv::Mat3f verticesXyzNew = verticesXyz.clone();
 
-    //for( auto& v : verticesXyzNew )    v[0] = -v[0];
+    std::string nameEuler = "./ClassroomVideo/posetrace.test.csv";
+    auto poseTrace        = pose_traces::ReadPoseTrace( nameEuler );
+    EQUAL( 3u, poseTrace.size() );
+
+    auto R = poseTrace[2].rotation;
+    auto T = poseTrace[2].translation;
+
+
+    cv::Mat3f verticesXyzNew =  verticesXyz.clone();
+    for( auto& v : verticesXyzNew )
+        v = R * v + T;
+
 
     rescale = 1.f;
     cv::Size sizeOut = size;
@@ -287,7 +291,15 @@ FUNC(Spike_ClassRoomVideo )
 }
 
 
+FUNC( SpikeRotationMatrixFromAngle )
+{
+    float pi = float(CV_PI);
+    
+    auto R = pose_traces::detail::RotationMatrixFromRotationAroundY( pi/2 );
 
+    cout << endl;
+    cout << R << endl;
+}
 
 
 FUNC( SpikePoseTraces )
@@ -310,12 +322,6 @@ FUNC( SpikePoseTraces )
     //cout << pose.rotation << endl << endl;
     //cout << pose.translation << endl;
     //cout << pose.ToCsv(false) << endl;
-
-
-
-    
-    
-    
 
 
 }
