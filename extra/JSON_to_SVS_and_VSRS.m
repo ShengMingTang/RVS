@@ -39,7 +39,8 @@ function JSON_to_SVS_and_VSRS(...
     output_pathfmt, ...
     input_view_indices, ...
     output_view_indices, ...
-    max_frames)
+    max_frames, ...
+    virtual_size)
 
 % Naming convention of CTC 10-bit streams
 
@@ -238,6 +239,10 @@ fprintf(svs_file, 'StartFrame 0\n\n');
 fprintf(svs_file, 'NumberOfFrames %d\n\n', min(max_frames, input_view_metadata.Frames_number));
 fprintf(svs_file, 'Width %d\n\n', resolution(1));
 fprintf(svs_file, 'Height %d\n\n', resolution(2));
+if ~isequal(resolution, virtual_size')
+    fprintf(svs_file, 'VirtualWidth %d\n\n', virtual_size(1));
+    fprintf(svs_file, 'VirtualHeight %d\n\n', virtual_size(2));
+end
 fprintf(svs_file, 'Precision 2.0\n\n');
 fprintf(svs_file, 'ColorSpace YUV\n\n');
 fprintf(svs_file, 'ViewSynthesisMethod Triangles\n\n');
