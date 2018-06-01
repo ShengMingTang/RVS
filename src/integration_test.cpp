@@ -238,6 +238,16 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 		cv::Size(4096, 4096), 10, 40.70, 33.99); // VC14 + OpenCV 3.1.0: 40.7565, 34.0432
 }
 
+FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
+{
+	Pipeline p("./config_files/TechnicoloMuseum-SVS-v0v2v13v17v19_to_v1.cfg");
+	p.execute();
+	testing::compareWithReferenceView<std::uint16_t>(
+		"TechnicolorMuseum_v1vs_from_v0v2v13v17v19_2048_2048_420_10b.yuv",
+		"TechnicolorMuseum/v1_2048_2048_420_10b.yuv",
+		cv::Size(2048, 2048), 10, 100, 100);
+}
+
 int main(int argc, const char* argv[])
 {
 	cv::setBreakOnError(true);
