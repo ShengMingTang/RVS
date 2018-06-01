@@ -204,12 +204,6 @@ FUNC( Spike_ViewSynthesisErpToPerspective )
 
     auto size = erpzV0.size;
 
-    auto on_image = [size](const cv::Vec2f& uv)->bool
-    {
-        return uv[0] >= 0.f && uv[0] <= float(size.width) && uv[1] >= 0.f && uv[1] <= float(size.height);
-    };
-
-
 
     cv::Mat3b imBGR;
     cv::cvtColor(erpzV0.image, imBGR, cv::COLOR_YUV2BGR  );
@@ -287,7 +281,16 @@ FUNC(Spike_ClassRoomVideo )
 }
 
 
+FUNC( SpikeRotation90AroundY )
+{
+    float pi = float(CV_PI);
+    
+    auto R = pose_traces::detail::RotationMatrixFromRotationAroundY( -pi/2 );
 
+    cout << endl;
+    cout << R << endl;
+    
+}
 
 
 FUNC( SpikePoseTraces )
@@ -310,12 +313,6 @@ FUNC( SpikePoseTraces )
     //cout << pose.rotation << endl << endl;
     //cout << pose.translation << endl;
     //cout << pose.ToCsv(false) << endl;
-
-
-
-    
-    
-    
 
 
 }
