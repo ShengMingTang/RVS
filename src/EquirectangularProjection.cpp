@@ -77,7 +77,7 @@ void erp::Unprojector::create(cv::Size size)
     for (int i = 0; i < height; ++i)
     {
         float vPos  = 0.5f + i;
-        float theta = erp::calculate_theta( offset + vPos, height );
+        float theta = erp::calculate_theta( vPos, height );
 
         for (int j = 0; j < width; ++j)
         {

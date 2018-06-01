@@ -225,7 +225,17 @@ FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 	reference[1] = reference[1].colRange(192, 1344);
 	reference[2] = reference[2].colRange(192, 1344);
 
-	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 35.31, 35.94); // VC14 + OpenCV 3.1.0: ..., ...
+	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 37.52, 38.02); // VC14 + OpenCV 3.1.0: 37.5704, 38.0789
+}
+
+FUNC(TechnicolorHijack_v1v4_to_v9)
+{
+	Pipeline p("./config_files/TechnicolorHijack-SVS-v1v4_to_v9.cfg");
+	p.execute();
+	testing::compareWithReferenceView<std::uint16_t>(
+		"TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv",
+		"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
+		cv::Size(4096, 4096), 10, 40.70, 33.99); // VC14 + OpenCV 3.1.0: 40.7565, 34.0432
 }
 
 int main(int argc, const char* argv[])
