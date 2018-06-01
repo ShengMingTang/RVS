@@ -112,14 +112,14 @@ void SynthetizedView::compute(View& input)
 	auto virtual_uv = projector->project(virtual_xyz, /*out*/ virtual_depth, /*out*/ wrapping_method);
 
 	// Resize: rasterize with oversampling
+	auto virtual_size = projector->get_size();
 	auto output_size = cv::Size(
-		int(0.5f + input_size.width * rescale),
-		int(0.5f + input_size.height * rescale));
+		int(0.5f + virtual_size.width * rescale),
+		int(0.5f + virtual_size.height * rescale));
 	cv::Mat2f scaled_uv;
 	cv::transform(virtual_uv, scaled_uv, cv::Matx22f(
-		float(output_size.width) / input_size.width, 0.f,
-		0.f, float(output_size.height) / input_size.height));
-
+		float(output_size.width) / virtual_size.width, 0.f,
+		0.f, float(output_size.height) / virtual_size.height));
 
     // Rasterization results in a color, depth and quality map
 	transform(input.get_color(), scaled_uv, virtual_depth, output_size, wrapping_method);

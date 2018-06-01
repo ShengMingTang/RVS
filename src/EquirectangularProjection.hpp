@@ -70,10 +70,9 @@ cv::Vec2f calculate_sperical_coordinates( const cv::Vec3f& xyz_norm );
 class Unprojector : public ::Unprojector
 {
 public:
-    Unprojector();
     Unprojector(Parameters const& parameters, const cv::Size& size);
     
-    void      create(cv::Size size);
+    void create(cv::Size size);
     
     cv::Mat3f unproject( cv::Mat2f image_pos, cv::Mat1f radiusMap) const override;
     cv::Mat3f unproject( cv::Mat1f radiusMap) const;
@@ -86,8 +85,7 @@ public:
 class Projector : public ::Projector
 {
 public:
-    Projector();
-    Projector(Parameters const& parameters);
+    Projector(Parameters const& parameters, cv::Size size);
 
     cv::Mat2f project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, WrappingMethod& wrapping_method) const override;
 };

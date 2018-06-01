@@ -133,9 +133,11 @@ public:
 	/** The element bit depth of raw input and output depth streams */
 	int bit_depth_depth = 16;
 
-	/** Size of input and output image (multiply by rescale to get the working size)*/
+	/** Size of input image*/
 	cv::Size size = cv::Size(1920, 1080);
 
+	/** Size of output image (multiply by rescale to get the working size)*/
+	cv::Size virtual_size = cv::Size(0, 0);
 
 	BlendingMethod blending_method = BLENDING_SIMPLE;
 	float blending_low_freq_factor = 1.0f;

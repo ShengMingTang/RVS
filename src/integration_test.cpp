@@ -40,6 +40,10 @@ copies, substantial portions or derivative works of the Software.
 #include <array>
 #include <fstream>
 
+#include <opencv2/imgproc.hpp>
+
+#define INCLUDE_SLOW_TESTS false
+
 namespace testing
 {
 	template<typename T> std::array<cv::Mat_<T>, 3> readYUV420(char const *filepath, cv::Size size)
@@ -73,13 +77,15 @@ namespace testing
 	// Compare two YUV420 frames and check PSNR is below a threshold	
 	// Two regions are taken because errors are large at the image borders
 	template<typename T> void compareWithReferenceView(
-		char const *filepath_actual,
-		char const *filepath_reference,
-		cv::Size size, int bits,
-		double threshold0, double threshold1)
+		std::array<cv::Mat_<T>, 3> const& actual,
+		std::array<cv::Mat_<T>, 3> const& reference,
+		int bits, double threshold0, double threshold1)
 	{
-		auto actual = readYUV420<T>(filepath_actual, size);
-		auto reference = readYUV420<T>(filepath_reference, size);
+		YAFFUT_CHECK(actual[0].size() == reference[0].size());
+		YAFFUT_CHECK(actual[1].size() == reference[1].size());
+		YAFFUT_CHECK(actual[2].size() == reference[2].size());
+
+		auto size = actual[0].size();
 		double psnr[2];
 
 		for (int i_region = 0; i_region != 2; ++i_region) {
@@ -115,10 +121,21 @@ namespace testing
 			psnr[i_region] = 10. * std::log10(max_level * max_level / mean_sq_error);
 		}
 
-		std::clog << "compareWithReferenceView(" << filepath_actual << ", " << filepath_reference << ", "
-			<< threshold0 << ", " << threshold1 << "): " << psnr[0] << ", " << psnr[1] << std::endl;
+		std::clog << "PSNRs: " << psnr[0] << ", " << psnr[1] << std::endl;
 		YAFFUT_CHECK(psnr[0] > threshold0);
 		YAFFUT_CHECK(psnr[1] > threshold1);
+	}
+
+	template<typename T> void compareWithReferenceView(
+		char const *filepath_actual,
+		char const *filepath_reference,
+		cv::Size size, int bits,
+		double threshold0, double threshold1)
+	{
+		std::clog << "Comparing \"" << filepath_actual << "\" " << size << " with \"" << filepath_reference << "\" " << size << std::endl;
+		auto actual = readYUV420<T>(filepath_actual, size);
+		auto reference = readYUV420<T>(filepath_reference, size);
+		compareWithReferenceView(actual, reference, bits, threshold0, threshold1);
 	}
 }
 
@@ -171,6 +188,7 @@ FUNC(ULB_Unicorn_Same_View)
 		cv::Size(1920, 1080), 8, 19.80, 34.03); // VC14 + OpenCV 3.1.0: 19.8503, 34.0891											
 }
 
+#if INCLUDE_SLOW_TESTS
 FUNC(ClassroomVideo_10frames)
 {
 	Pipeline p("./config_files/ClassroomVideo-SVS-v0_to_v0.cfg");
@@ -180,6 +198,7 @@ FUNC(ClassroomVideo_10frames)
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
 		cv::Size(4096, 2048), 10, 42.95, 41.81); // VC14 + OpenCV 3.1.0: 43.0071, 41.8697
 }
+#endif
 
 FUNC(ClassroomVideo_v7v8_to_v0)
 {
@@ -191,9 +210,23 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 		cv::Size(4096, 2048), 10, 35.31, 35.94); // VC14 + OpenCV 3.1.0: 35.366, 35.9966
 }
 
-// Need test cases to cover:
-//   Load/write PNG
-//   YUV and RGB
+FUNC(ClassroomVideo_v7v8_to_v0_270deg)
+{
+	Pipeline p("./config_files/ClassroomVideo-SVS-v7v8_to_v0_270deg.cfg");
+	p.execute();
+
+	auto actual = testing::readYUV420<std::uint16_t>("v0_270deg_from_v7v8_2304_1536_420_10b.yuv", cv::Size(2304, 1536));
+
+	auto reference = testing::readYUV420<std::uint16_t>("ClassroomVideo/v0_4096_2048_420_10b.yuv", cv::Size(4096, 2048));
+	cv::resize(reference[0], reference[0], cv::Size(3072, 1536));
+	cv::resize(reference[1], reference[1], cv::Size(1536, 768));
+	cv::resize(reference[2], reference[2], cv::Size(1536, 768));
+	reference[0] = reference[0].colRange(384, 2688);
+	reference[1] = reference[1].colRange(192, 1344);
+	reference[2] = reference[2].colRange(192, 1344);
+
+	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 35.31, 35.94); // VC14 + OpenCV 3.1.0: ..., ...
+}
 
 int main(int argc, const char* argv[])
 {
