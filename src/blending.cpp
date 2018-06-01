@@ -269,46 +269,52 @@ void calcBlurringBilateral(cv::Mat img, cv::Mat &blr, cv::Mat /*msk*/, int bil_r
 	}
 }
 cv::Mat blend_img_by_max(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& qualities, const std::vector<cv::Mat>& depth_prolongations, cv::Vec3f empty_color, cv::Mat& quality, cv::Mat& depth_prolongation_mask, cv::Mat& inpaint_mask) {
-	cv::Mat res = cv::Mat::zeros(imgs[0].size(), CV_32FC3);
-	cv::Mat quality_res = cv::Mat::zeros(imgs[0].size(), CV_32F);
-	cv::Mat depth_prolongation_mask_res = cv::Mat::zeros(imgs[0].size(), depth_prolongation_mask.type());
-	cv::Mat inpaint_mask_res = (quality_res < -1.0);
-	res.setTo(empty_color);
-	for (int x = 0; x < res.cols; ++x)
-		for (int y = 0; y < res.rows; ++y) {
-			int best_i = -1;
+	cv::Mat3f color_res = cv::Mat3f::zeros(imgs[0].size());
+	cv::Mat1f quality_res = cv::Mat1f::zeros(imgs[0].size());
+	cv::Mat1b depth_prolongation_mask_res = cv::Mat1b::zeros(imgs[0].size());
+	cv::Mat1b inpaint_mask_res = cv::Mat1b::zeros(imgs[0].size());
+	color_res.setTo(empty_color);
+	for (int y = 0; y < color_res.rows; ++y)
+		for (int x = 0; x < color_res.cols; ++x) {
+			auto dump = y == 2000 && x == 2000;
+			auto const invalid = std::size_t(-1);
+			auto best_i = invalid;
 			bool best_depth_prolongated = true;
 			float max = -1;
 			//choose best pixel amoung the input images
-			for (int i = 0; i < static_cast<int>(imgs.size()); ++i) {
-				bool d_prolongated = depth_prolongations[i].at<bool>(y, x);
+			for (std::size_t i = 0; i != imgs.size(); ++i) {
+				if (dump) std::clog << __FUNCTION__ << "@" << __LINE__ << ": i == "  << i << std::endl;
+				bool d_prolongated = depth_prolongations[i].at<std::uint8_t>(y, x) > 0;
 				bool valid_d = qualities[i].at<float>(y, x) > 0;
 				float a = qualities[i].at<float>(y, x);
 				if ((valid_d && (best_depth_prolongated == d_prolongated && a > max)) || (best_depth_prolongated && !d_prolongated)) {
+					if (dump) std::clog << __FUNCTION__ << "@" << __LINE__ << ": i == " << i << std::endl;
 					max = a;
 					best_i = i;
 					best_depth_prolongated = d_prolongated;
 				}
 			}
-			//no candidate found : fill with empty color
-			if (best_i > -1) {
-				res.at<cv::Vec3f>(y, x) = imgs[best_i].at<cv::Vec3f>(y, x);
-				depth_prolongation_mask_res.at<float>(y, x) = best_depth_prolongated;
-				inpaint_mask_res.at<bool>(y, x) = false;
-				quality_res.at<float>(y, x) = max;
-			}
 			//else take the best available color
+			if (best_i != invalid) {
+				if (dump) std::clog << __FUNCTION__ << "@" << __LINE__ << std::endl;
+				color_res(y, x) = imgs[best_i].at<cv::Vec3f>(y, x);
+				depth_prolongation_mask_res(y, x) = best_depth_prolongated;
+				inpaint_mask_res(y, x) = false;
+				quality_res(y, x) = max;
+			}
+			//no candidate found : fill with empty color
 			else {
-				res.at<cv::Vec3f>(y, x) = empty_color;
-				depth_prolongation_mask_res.at<float>(y, x) = true;
-				inpaint_mask_res.at<bool>(y, x) = true;
-				quality_res.at<float>(y, x) = 0;
+				if (dump) std::clog << __FUNCTION__ << "@" << __LINE__ << std::endl;
+				color_res(y, x) = empty_color;
+				depth_prolongation_mask_res(y, x) = true;
+				inpaint_mask_res(y, x) = true;
+				quality_res(y, x) = 0;
 			}
 		}
 	inpaint_mask = inpaint_mask_res;
 	depth_prolongation_mask = depth_prolongation_mask_res;
 	quality = quality_res;
-	return res;
+	return color_res;
 }
 cv::Mat blend_depth_by_max(const std::vector<cv::Mat>&  imgs, const std::vector<cv::Mat>&  depth_invs) {
 	cv::Mat res = cv::Mat::zeros(imgs[0].size(), CV_32F);
