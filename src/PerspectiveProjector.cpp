@@ -30,6 +30,7 @@ copies, substantial portions or derivative works of the Software.
 #include "PerspectiveProjector.hpp"
 
 #include <limits>
+#include <iostream>
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
@@ -49,6 +50,12 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 	auto px = M(0, 2);
 	auto py = M(1, 2);
 
+    std::cout << "M R T" << std::endl;
+    std::cout << M << std::endl;
+    std::cout << this->get_rotation() << std::endl;
+    std::cout << this->get_translation() << std::endl;
+    
+
 	cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
 	depth = cv::Mat1f(world_pos.size(), NaN);
 
@@ -60,10 +67,14 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 			// Image plane: x right, y down
 
 			if (xyz[0] > 0.f) {
-				image_pos(i, j) = cv::Vec2f(
+                auto uv = cv::Vec2f(
 					-fx * xyz[1] / xyz[0] + px,
 					-fy * xyz[2] / xyz[0] + py);
-				depth(i, j) = xyz[0];
+
+				image_pos(i, j) = uv;
+				
+                if( uv[0] >= 0.f && uv[1] >=0 && uv[0] <= image_pos.cols && uv[1] <= image_pos.rows )
+                    depth(i, j) = xyz[0];
 			}
 		}
 	}

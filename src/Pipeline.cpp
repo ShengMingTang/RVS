@@ -123,9 +123,9 @@ void Pipeline::compute_views(int frame) {
 
 		// Project according to parameters of the virtual view
         std::unique_ptr<Projector> projector;
-		if( config.input_projection_type == PROJECTION_PERSPECTIVE )
+		if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
             projector.reset(new PerspectiveProjector(config.params_virtual[virtual_idx]));
-        else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
+        else if ( config.virtual_projection_type == PROJECTION_EQUIRECTANGULAR )
             projector.reset(new erp::Projector(config.params_virtual[virtual_idx]));
 
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
@@ -133,7 +133,7 @@ void Pipeline::compute_views(int frame) {
 
             // Select type of un-projection 
 			std::unique_ptr<Unprojector> unprojector;
-            if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
+            if( config.input_projection_type == PROJECTION_PERSPECTIVE )
                 unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
             else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
                 unprojector.reset(new erp::Unprojector(config.params_real[input_idx], config.size ));
