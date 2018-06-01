@@ -418,6 +418,20 @@ void Parser::read_SVS_config_file() {
 		config.number_of_frames = 1;
 	}
 
+    //Read pose trace file
+    std::vector<std::string> name_pose_trace_file;
+    if (seek_string(filename_parameter_file, 1, name_pose_trace_file, "VirtualPoseTraceName", "Name of pose trace file")) {
+        config.pose_trace = pose_traces::ReadPoseTrace(name_pose_trace_file[0] );
+
+        if( config.number_of_frames > config.pose_trace.size() )
+            throw std::runtime_error("Error: Number of frames to process is larger then number of entries in pose trace file");
+
+        std::cout << std::endl << "using pose trace with " << config.pose_trace.size() << " entries" << std::endl;
+        config.use_pose_trace = true;
+    }
+    else
+        config.use_pose_trace = false;
+
 	print_results(InputCameraParameterFile, config.texture_names, config.depth_names, VirtualCameraParameterFile, number_input_cameras, number_output_cameras);
 
 	config.camerasParameters_in = InputCameraParameterFile[0];

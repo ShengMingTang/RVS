@@ -42,6 +42,7 @@ Contact : bart.kroon@philips.com
 #pragma once
 
 #include "Parameters.hpp"
+#include "PoseTraces.hpp"
 
 #include <string>
 #include <vector>
@@ -155,4 +156,9 @@ public:
 
 	/** Number of frames to process */
 	int number_of_frames = 1;
+
+    /** filename of the pose trace file*/
+    std::string name_pose_trace;
+    bool use_pose_trace;
+    std::vector<pose_traces::Pose> pose_trace;
 };

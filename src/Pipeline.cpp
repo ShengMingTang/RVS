@@ -123,10 +123,18 @@ void Pipeline::compute_views(int frame) {
 
 		// Project according to parameters of the virtual view
         std::unique_ptr<Projector> projector;
-		if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
-            projector.reset(new PerspectiveProjector(config.params_virtual[virtual_idx], config.virtual_size));
+		
+        Parameters& params_virtual = config.params_virtual[virtual_idx];
+        if( config.use_pose_trace)
+        {
+            params_virtual.set_rotation( config.pose_trace[frame].rotation );
+            params_virtual.set_translation( config.pose_trace[frame].translation );
+        }
+
+        if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
+            projector.reset(new PerspectiveProjector(params_virtual, config.virtual_size));
         else if ( config.virtual_projection_type == PROJECTION_EQUIRECTANGULAR )
-            projector.reset(new erp::Projector(config.params_virtual[virtual_idx], config.virtual_size));
+            projector.reset(new erp::Projector(params_virtual, config.virtual_size));
 
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
