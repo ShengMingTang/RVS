@@ -245,7 +245,7 @@ FUNC(TechnicolorHijack_BlendByMax)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorHijack_BlendByMax.yuv",
 		"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
-		cv::Size(4096, 4096), 10, 40.70, 33.99); // VC14 + OpenCV 3.1.0: ..., ...
+		cv::Size(4096, 4096), 10, 40.32, 33.32); // VC14 + OpenCV 3.1.0: 40.3723, 33.3717
 }
 
 FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
