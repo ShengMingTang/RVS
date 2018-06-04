@@ -100,8 +100,8 @@ void SynthetizedView::compute(View& input)
 	auto input_xyz = unprojector->unproject(input_uv, input.get_depth());
 
 	// Combine rotations and translations of input and virtual views
-	auto rotation = projector->get_rotation().t() * unprojector->get_rotation();
-	auto translation = unprojector->get_rotation() * (projector->get_translation() - unprojector->get_translation());
+	auto rotation = unprojector->get_rotation().t() * projector->get_rotation();
+	auto translation = unprojector->get_rotation().t() * (projector->get_translation() - unprojector->get_translation());
 
 	// Rotate and translate from input (real) to output (virtual) view
 	auto virtual_xyz = affine_transform(input_xyz, rotation, translation);
