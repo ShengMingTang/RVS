@@ -51,6 +51,8 @@ for n = 1:24
                 0                    sind(rotation(n,3))  cosd(rotation(n,3)) ];
 
     R = R_yaw * R_pitch * R_roll;
+    R_BartS = EulerAnglesToRotationMatrix(degtorad(rotation(n,:)));
+    fprintf('n=%d, error is %s\n', n, norm(R*R_BartS' - eye(3)));
     x_dir = [1 0 0]';
     v = R*x_dir;
     quiver3(1e3*position(n,1), 1e3*position(n,2), 1e3*position(n,3), v(1), v(2), v(3), 100, 'k');
