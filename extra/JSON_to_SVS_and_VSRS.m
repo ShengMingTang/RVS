@@ -195,7 +195,7 @@ for m = 1:length(output_view_indices)
     
     fprintf(vsrs_file, 'CameraParameterFile %s\n', camparams_path);
     fprintf(vsrs_file, 'VirtualCameraName %s\n', Co(oi).Name);
-    output_texture_path = sprintf(output_pathfmt, Co(oi).Name, resolution);
+    output_texture_path = sprintf(output_pathfmt, Co(oi).Name, virtual_size);
     fprintf(vsrs_file, 'OutputVirtualViewImageName %s\n', output_texture_path);
     fprintf(vsrs_file, 'ColorSpace 0\n');
     fprintf(vsrs_file, 'Precision 4\n');
