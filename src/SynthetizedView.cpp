@@ -68,14 +68,14 @@ namespace
 		return result;
 	}
 
-	// Affine transformation: x -> R.t()*(x + t)
+	// Affine transformation: x -> Rx + t
 	cv::Mat3f affine_transform(cv::Mat3f x, cv::Matx33f R, cv::Vec3f t)
 	{
 		auto y = cv::Mat3f(x.size());
 
 		for (int i = 0; i != y.rows; ++i) {
 			for (int j = 0; j != y.cols; ++j) {
-				y(i, j) = R.t() * (x(i, j) - t);
+				y(i, j) = R * x(i, j) + t;
 			}
 		}
 
@@ -100,11 +100,16 @@ void SynthetizedView::compute(View& input)
 	auto input_xyz = unprojector->unproject(input_uv, input.get_depth());
 
 	// Combine rotations and translations of input and virtual views
-	auto rotation = unprojector->get_rotation().t() * projector->get_rotation();
-	auto translation = unprojector->get_rotation().t() * (projector->get_translation() - unprojector->get_translation());
+	auto R_from = unprojector->get_rotation();
+	auto t_from = unprojector->get_translation();
+	auto R_to = projector->get_rotation();
+	auto t_to = projector->get_translation();
+
+	auto R = R_to.t()*R_from;
+	auto t = -R_to.t()*(t_to - t_from);
 
 	// Rotate and translate from input (real) to output (virtual) view
-	auto virtual_xyz = affine_transform(input_xyz, rotation, translation);
+	auto virtual_xyz = affine_transform(input_xyz, R, t);
 
 	// Project: output view world to output view image coordinates
 	cv::Mat1f virtual_depth; // Depth 
