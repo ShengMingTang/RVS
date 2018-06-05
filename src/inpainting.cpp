@@ -98,8 +98,8 @@ void compute_nearest(cv::Mat & map) { // map : 3 channels : x of the nearest,y o
 				cv::Vec3i pos = map.at<cv::Vec3i>(y, x);
 				if (pos[2] > 0)
 				{
-					for (int i = MAX(x - 1, 0); i < MIN(x + 2, map.cols); ++i)
-						for (int j = MAX(y - 1, 0); j < MIN(y + 2, map.rows); ++j)
+					for (int i = std::max(x - 1, 0); i < std::min(x + 2, map.cols); ++i)
+						for (int j = std::max(y - 1, 0); j < std::min(y + 2, map.rows); ++j)
 						{
 							if (abs(x-i) + abs(y-j) == 1) {
 								cv::Vec3i path = map.at<cv::Vec3i>(j, i);

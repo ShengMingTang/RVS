@@ -343,8 +343,8 @@ cv::Mat blend_img(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& 
 	cv::Mat quality_res = cv::Mat::zeros(imgs[0].size(), CV_32F);
 	cv::Mat depth_prolongation_mask_res = cv::Mat::zeros(imgs[0].size(), depth_prolongation_mask.type());
 	cv::Mat inpaint_mask_res = (quality_res < -1.0);
-	for (int x = 0; x < res.cols; ++x)
-		for (int y = 0; y < res.rows; ++y) {
+	for (int y = 0; y < res.rows; ++y)
+		for (int x = 0; x < res.cols; ++x) {
 			//computed from original depth
 			float s = 0.0; 
 			//computed from prolongation of the depth map
