@@ -56,17 +56,14 @@ namespace
 		cv::Vec2f C = new_pos.at<cv::Vec2f>((int)c[1], (int)c[0]);
 		if ((B - A)[0] * (C - B)[1] - (B - A)[1] * (C - B)[0] < 0)
 			return 0.0;
-		std::vector<float> dst;
-		dst.push_back((A - B).dot(A - B));
-		dst.push_back((A - C).dot(A - C));
-		dst.push_back((B - C).dot(B - C));
-		std::sort(dst.begin(), dst.end());
-		//return std::powf(dst[0] / dst[2],1.0/8.0); 
-		//return std::powf(MIN(MIN(dst[0], dst[1]), dst[2]), 1.0 / 8.0)*std::powf(den / (MAX(MAX((A - B).dot(A - B), (A - C).dot(A - C)), (B - C).dot(B - C))), 1.0 / 8.0);
-		//if (MAX(MAX((A - B).dot(A - B), (A - C).dot(A - C)), (B - C).dot(B - C)) > 10.0)
-		//	return 0;
-		//return 1;
-		//return std::powf(den / (MAX(MAX((A - B).dot(A - B), (A - C).dot(A - C)), (B - C).dot(B - C))), 1.0 / 8.0); //hauteur/plus long coté
+		float dst[] = {
+			(A - B).dot(A - B),
+			(A - C).dot(A - C),
+			(B - C).dot(B - C)
+		};
+		if (dst[0] > dst[1]) std::swap(dst[0], dst[1]);
+		if (dst[1] > dst[2]) std::swap(dst[1], dst[2]);
+		if (dst[0] > dst[1]) std::swap(dst[0], dst[1]);
 		float w = 2.0f*den / dst[1];//aire/aire du triangle rectangle généré par le coté médian
 		return std::pow(MIN(w, 1.0f / w)*MIN(dst[2] / rescale, rescale / dst[2]), 1.0f / 8.0f);
 	}
