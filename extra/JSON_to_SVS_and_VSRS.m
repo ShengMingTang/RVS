@@ -239,10 +239,8 @@ fprintf(svs_file, 'StartFrame 0\n\n');
 fprintf(svs_file, 'NumberOfFrames %d\n\n', min(max_frames, input_view_metadata.Frames_number));
 fprintf(svs_file, 'Width %d\n\n', resolution(1));
 fprintf(svs_file, 'Height %d\n\n', resolution(2));
-if ~isequal(resolution, virtual_size')
-    fprintf(svs_file, 'VirtualWidth %d\n\n', virtual_size(1));
-    fprintf(svs_file, 'VirtualHeight %d\n\n', virtual_size(2));
-end
+fprintf(svs_file, 'VirtualWidth %d\n\n', virtual_size(1));
+fprintf(svs_file, 'VirtualHeight %d\n\n', virtual_size(2));
 fprintf(svs_file, 'Precision 2.0\n\n');
 fprintf(svs_file, 'ColorSpace YUV\n\n');
 fprintf(svs_file, 'ViewSynthesisMethod Triangles\n\n');
