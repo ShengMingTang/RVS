@@ -99,11 +99,15 @@ BitDepthDepth 10
 
 StartFrame 0
 
-NumberOfFrames 10
+NumberOfFrames 16
 
 Width 4096
 
 Height 4096
+
+VirtualWidth 4096
+
+VirtualHeight 4096
 
 Precision 2.0
 

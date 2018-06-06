@@ -56,19 +56,16 @@ namespace
 		cv::Vec2f C = new_pos.at<cv::Vec2f>((int)c[1], (int)c[0]);
 		if ((B - A)[0] * (C - B)[1] - (B - A)[1] * (C - B)[0] < 0)
 			return 0.0;
-		std::vector<float> dst;
-		dst.push_back((A - B).dot(A - B));
-		dst.push_back((A - C).dot(A - C));
-		dst.push_back((B - C).dot(B - C));
-		std::sort(dst.begin(), dst.end());
-		//return std::powf(dst[0] / dst[2],1.0/8.0); 
-		//return std::powf(MIN(MIN(dst[0], dst[1]), dst[2]), 1.0 / 8.0)*std::powf(den / (MAX(MAX((A - B).dot(A - B), (A - C).dot(A - C)), (B - C).dot(B - C))), 1.0 / 8.0);
-		//if (MAX(MAX((A - B).dot(A - B), (A - C).dot(A - C)), (B - C).dot(B - C)) > 10.0)
-		//	return 0;
-		//return 1;
-		//return std::powf(den / (MAX(MAX((A - B).dot(A - B), (A - C).dot(A - C)), (B - C).dot(B - C))), 1.0 / 8.0); //hauteur/plus long coté
+		float dst[] = {
+			(A - B).dot(A - B),
+			(A - C).dot(A - C),
+			(B - C).dot(B - C)
+		};
+		if (dst[0] > dst[1]) std::swap(dst[0], dst[1]);
+		if (dst[1] > dst[2]) std::swap(dst[1], dst[2]);
+		if (dst[0] > dst[1]) std::swap(dst[0], dst[1]);
 		float w = 2.0f*den / dst[1];//aire/aire du triangle rectangle généré par le coté médian
-		return std::pow(MIN(w, 1.0f / w)*MIN(dst[2] / rescale, rescale / dst[2]), 1.0f / 8.0f);
+		return std::pow(std::min(w, 1.0f / w) * std::min(dst[2] / rescale, rescale / dst[2]), 1.0f / 8.0f);
 	}
 
 	void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat& depth_prologation_mask, const cv::Mat & new_pos, cv::Mat& res, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, cv::Vec2i a, cv::Vec2i b, cv::Vec2i c) {
@@ -91,14 +88,13 @@ namespace
 			return;
 		//triangle_validity /= std::powf(MAX(MAX(dA, dB), dC) - MIN(MIN(dA, dB), dC), 1.0 / 8.0) / 1000.0;
 		triangle_validity *= 100.0;
-		float Xmin, Xmax, Ymin, Ymax;
 		float offset = 0.5;
-		Xmin = MIN(MIN(A[0], B[0]), C[0]);
-		Ymin = MIN(MIN(A[1], B[1]), C[1]);
-		Xmax = MAX(MAX(A[0], B[0]), C[0]);
-		Ymax = MAX(MAX(A[1], B[1]), C[1]);
-		for (int x = (int)std::floor(Xmin); x <= std::ceil(Xmax); x++)
-			for (int y = (int)std::floor(Ymin); y <= std::ceil(Ymax); y++)
+		auto Xmin = std::max(0, static_cast<int>(std::floor(std::min(std::min(A[0], B[0]), C[0]))));
+		auto Ymin = std::max(0, static_cast<int>(std::floor(std::min(std::min(A[1], B[1]), C[1]))));
+		auto Xmax = std::min(res.cols - 1, static_cast<int>(std::ceil(std::max(std::max(A[0], B[0]), C[0]))));
+		auto Ymax = std::min(res.rows - 1, static_cast<int>(std::ceil(std::max(std::max(A[1], B[1]), C[1]))));
+		for (int y = Ymin; y <= Ymax; ++y)
+			for (int x = Xmin; x <= Xmax; ++x)
 				if (x > 0 && x < res.cols && y>0 && y < res.rows) {
 
 					float lambda_1 = ((B[1] - C[1]) * ((float)x + offset - C[0]) + (C[0] - B[0]) * ((float)y + offset - C[1])) / den;
@@ -134,7 +130,6 @@ namespace
 						}
 					}
 				}
-		return;
 	}
 } // namespace
 

@@ -195,7 +195,7 @@ for m = 1:length(output_view_indices)
     
     fprintf(vsrs_file, 'CameraParameterFile %s\n', camparams_path);
     fprintf(vsrs_file, 'VirtualCameraName %s\n', Co(oi).Name);
-    output_texture_path = sprintf(output_pathfmt, Co(oi).Name, resolution);
+    output_texture_path = sprintf(output_pathfmt, Co(oi).Name, virtual_size);
     fprintf(vsrs_file, 'OutputVirtualViewImageName %s\n', output_texture_path);
     fprintf(vsrs_file, 'ColorSpace 0\n');
     fprintf(vsrs_file, 'Precision 4\n');
@@ -239,10 +239,8 @@ fprintf(svs_file, 'StartFrame 0\n\n');
 fprintf(svs_file, 'NumberOfFrames %d\n\n', min(max_frames, input_view_metadata.Frames_number));
 fprintf(svs_file, 'Width %d\n\n', resolution(1));
 fprintf(svs_file, 'Height %d\n\n', resolution(2));
-if ~isequal(resolution, virtual_size')
-    fprintf(svs_file, 'VirtualWidth %d\n\n', virtual_size(1));
-    fprintf(svs_file, 'VirtualHeight %d\n\n', virtual_size(2));
-end
+fprintf(svs_file, 'VirtualWidth %d\n\n', virtual_size(1));
+fprintf(svs_file, 'VirtualHeight %d\n\n', virtual_size(2));
 fprintf(svs_file, 'Precision 2.0\n\n');
 fprintf(svs_file, 'ColorSpace YUV\n\n');
 fprintf(svs_file, 'ViewSynthesisMethod Triangles\n\n');
