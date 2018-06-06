@@ -86,3 +86,4 @@ private:
 
 };
 
+void read_cameras_paramaters(std::string filename, std::vector<std::string>& camnames, std::vector<Parameters>& params, float& sensor_size);

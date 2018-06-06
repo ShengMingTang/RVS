@@ -81,22 +81,22 @@ public:
 	/**Size of the sensor, in the same unit as camera_matrix*/
 	float get_sensor() const;
 
-    void set_rotation( const cv::Matx33f& new_rotation )
+    void adapt_initial_rotation( const cv::Matx33f& relative_rotation )
     {
-        rotation = new_rotation;
+        rotation = relative_rotation * rotation0;
     }
     
-    void set_translation( const cv::Vec3f& new_translation )
+    void adapt_initial_translation( const cv::Vec3f& relative_translation )
     {
-        translation = new_translation;
+        translation = relative_translation + translation0;
     }
 
 private:
 	/**External parameter of rotation*/
-	cv::Matx33f rotation;
+	cv::Matx33f rotation0, rotation;
 
 	/**External parameter of translation*/
-	cv::Vec3f translation;
+	cv::Vec3f translation0, translation;
 
 	/**Internal parameters*/
 	cv::Matx33f camera_matrix;

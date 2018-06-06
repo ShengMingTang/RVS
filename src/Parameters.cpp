@@ -74,8 +74,10 @@ Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::M
 			 -1.f,   0.f,    0.f,   // left
 			  0.f,  -1.f,    0.f);  // up
 
-		this->rotation = P * rotation * P.t();
-		this->translation = P * translation;
+		this->rotation     = P * rotation * P.t();
+		this->translation  = P * translation;
+        this->rotation0    = this->rotation;
+        this->translation0 = this->translation;
 	}
 	else throw std::logic_error("Unknown coordinate system");
 }

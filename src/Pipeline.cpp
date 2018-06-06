@@ -127,8 +127,8 @@ void Pipeline::compute_views(int frame) {
         Parameters& params_virtual = config.params_virtual[virtual_idx];
         if( config.use_pose_trace)
         {
-            params_virtual.set_rotation( config.pose_trace[frame].rotation );
-            params_virtual.set_translation( config.pose_trace[frame].translation );
+            params_virtual.adapt_initial_rotation( config.pose_trace[frame].rotation );
+            params_virtual.adapt_initial_translation( config.pose_trace[frame].translation );
         }
 
         if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )

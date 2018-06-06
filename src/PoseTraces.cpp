@@ -43,11 +43,18 @@ void Pose::FromCsv( std::string rowCsv )
 
     auto numExpectedForRotationAndTranslation     = 12u;
     auto numExpectedForTranslationAndEulerAngles  = 6u;
+    auto numExpectedForTimeStampAndModelMatrix    = 17u;
 
     if( vec.size() == numExpectedForRotationAndTranslation )
     {
         rotation     = cv::Matx33f( &vec[0] );
         translation  = cv::Vec3f(vec[9], vec[10], vec[11] );
+    }
+    else if( vec.size() == numExpectedForTimeStampAndModelMatrix )
+    {
+        // vec[0] = timestamp
+        rotation     = cv::Matx33f( vec[1], vec[2], vec[3],   vec[5], vec[6], vec[7],   vec[9], vec[10], vec[11] );
+        translation  = cv::Vec3f(vec[4], vec[8], vec[12] );
     }
     else if( vec.size() == numExpectedForTranslationAndEulerAngles )
     {
@@ -58,13 +65,15 @@ void Pose::FromCsv( std::string rowCsv )
         rotation          = detail::EulerAnglesToRotationMatrix(euler);
         translation       = cv::Vec3f( vec[0], vec[1], vec[2] );
 
+#if 0
         // convert to global
         Pose poseInv      = Invert();
         rotation          = poseInv.rotation;
         translation       = poseInv.translation;
+#endif
     }
     else
-        throw std::runtime_error( "Error: expected 6 or 12 comma separated values " + rowCsv );
+        throw std::runtime_error( "Error: expected 6 or 12 or 17 comma separated values \n" + rowCsv );
 }
 
 std::string Pose::ToCsv(bool eulerAngles) const
@@ -73,11 +82,15 @@ std::string Pose::ToCsv(bool eulerAngles) const
     
     if( eulerAngles )
     {
+#if 0
         auto poseInv = Invert();
         auto euler = detail::RotationMatrixToEulerAngles(poseInv.rotation);
-        auto eulerDegrees = euler * float( 180.0 / CV_PI );
-
         auto T = poseInv.translation;
+#endif   
+        auto euler = detail::RotationMatrixToEulerAngles(rotation);
+        auto eulerDegrees = euler * float( 180.0 / CV_PI );
+        
+        auto T = translation;
         auto E = eulerDegrees;
         
         oss << T[0] << ", " << T[1] << ", " << T[2] << ", " << E[0] << ", " << E[1] << ", " << E[2];
@@ -134,7 +147,11 @@ void pose_traces::WritePoseTrace( std::string fileNameCsv, const std::vector<Pos
     if( !os.is_open() )
         throw std::runtime_error( "Error: write to: "+  fileNameCsv ) ;
 
-    os << std::endl;    // skip information line
+    if( useEulerAngles)
+        os << "X,Y,Z,Yaw,Pitch,Roll" << std::endl;
+    else
+        os << std::endl;    // skip information line
+
 
     for( const auto& pose : poseTrace )
         os << pose.ToCsv(useEulerAngles) << std::endl;
