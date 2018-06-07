@@ -42,6 +42,8 @@ Contact : bart.kroon@philips.com
 
 #include "Parameters.hpp"
 
+#include <stdexcept>
+
 Parameters::Parameters()
 	: sensor(std::numeric_limits<float>::quiet_NaN()) 
 {}

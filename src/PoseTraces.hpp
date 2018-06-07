@@ -33,7 +33,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include <vector>
 #include <string>
-
+#include <stdexcept>
 
 namespace pose_traces
 {
