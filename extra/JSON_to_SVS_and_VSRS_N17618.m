@@ -24,8 +24,6 @@
 % 
 % ------------------------------------------------------------------------------ -
 
-% TODO: 16-bit depth inputs
-
 max_frames = 16; % Put this to infinity to disable this funcitonality
 sequences = {...
 	'ClassroomVideo'
