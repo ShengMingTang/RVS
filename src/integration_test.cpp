@@ -42,7 +42,7 @@ copies, substantial portions or derivative works of the Software.
 
 #include <opencv2/imgproc.hpp>
 
-#define INCLUDE_SLOW_TESTS false
+#define PSNR_ONLY_Y false
 
 namespace testing
 {
@@ -91,8 +91,13 @@ namespace testing
 		for (int i_region = 0; i_region != 2; ++i_region) {
 			auto sum_sq_error = 0.;
 			std::size_t num_values = 0;
+#if PSNR_ONLY_Y
+			auto num_planes = 1;
+#else
+			auto num_planes = 3;
+#endif
 
-			for (int i_plane = 0; i_plane != 3; ++i_plane) {
+			for (int i_plane = 0; i_plane != num_planes; ++i_plane) {
 				auto plane_size = i_plane ? size / 2 : size;
 
 				cv::Range cols, rows;
@@ -186,17 +191,15 @@ FUNC(ULB_Unicorn_Same_View)
 		cv::Size(1920, 1080), 8, 19.80, 34.03); // VC14 + OpenCV 3.1.0: 19.8518, 34.0898
 }
 
-#if INCLUDE_SLOW_TESTS
-FUNC(ClassroomVideo_10frames)
+FUNC(ClassroomVideo_v0_to_v0)
 {
 	Pipeline p("./config_files/ClassroomVideo-SVS-v0_to_v0.cfg");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 42.95, 41.81); // VC14 + OpenCV 3.1.0: 43.0071, 41.8697
+		cv::Size(4096, 2048), 10, 42.95, 41.81); // VC14 + OpenCV 3.1.0: 43.0071, 41.8697 (only Y: 41.2605, 40.1261)
 }
-#endif
 
 FUNC(ClassroomVideo_v7v8_to_v0)
 {

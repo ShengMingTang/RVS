@@ -138,8 +138,8 @@ void SynthetizedView::compute(View& input)
 	std::clog << "unprojector->get_rotation() == " << unprojector->get_rotation() << '\n';
 	std::clog << "projector->get_translation() == " << projector->get_translation() << '\n';
 	std::clog << "projector->get_rotation() == " << projector->get_rotation() << '\n';
-	std::clog << "rotation == " << rotation << '\n';
-	std::clog << "translation == " << translation << '\n';
+	std::clog << "R == " << R << '\n';
+	std::clog << "t == " << t << '\n';
 	std::clog << "virtual_xyz(i, j) == " << virtual_xyz(DUMP_I, DUMP_J) << '\n';
 	std::clog << "virtual_uv(i, j) == " << virtual_uv(DUMP_I, DUMP_J) << '\n';
 	std::clog << "virtual_depth(i, j) == " << virtual_depth(DUMP_I, DUMP_J) << '\n';
