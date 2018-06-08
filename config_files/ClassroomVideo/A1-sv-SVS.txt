@@ -124,7 +124,7 @@ VirtualWidth 4096
 
 VirtualHeight 2048
 
-Precision 2.0
+Precision 3.0
 
 ColorSpace YUV
 
