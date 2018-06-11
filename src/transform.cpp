@@ -50,22 +50,23 @@ extern float rescale; // Config.hpp
 
 namespace
 {
-	float valid_tri(const cv::Mat & new_pos, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c, float den) {
+	float valid_tri(const cv::Mat & new_pos, cv::Vec2f a, cv::Vec2f b, cv::Vec2f c, float /*den*/) {
 		cv::Vec2f A = new_pos.at<cv::Vec2f>((int)a[1], (int)a[0]);
 		cv::Vec2f B = new_pos.at<cv::Vec2f>((int)b[1], (int)b[0]);
 		cv::Vec2f C = new_pos.at<cv::Vec2f>((int)c[1], (int)c[0]);
-		if ((B - A)[0] * (C - B)[1] - (B - A)[1] * (C - B)[0] < 0)
-			return 0.0;
-		float dst[] = {
-			(A - B).dot(A - B),
-			(A - C).dot(A - C),
-			(B - C).dot(B - C)
-		};
-		if (dst[0] > dst[1]) std::swap(dst[0], dst[1]);
-		if (dst[1] > dst[2]) std::swap(dst[1], dst[2]);
-		if (dst[0] > dst[1]) std::swap(dst[0], dst[1]);
-		float w = 2.0f*den / dst[1];//aire/aire du triangle rectangle généré par le coté médian
-		return std::pow(std::min(w, 1.0f / w) * std::min(dst[2] / rescale, rescale / dst[2]), 1.0f / 8.0f);
+
+		double dab = cv::norm(A, B);
+		double dac = cv::norm(A, C);
+		double dbc = cv::norm(B, C);
+
+		double stretch = std::max(dbc, std::max(dab, dac));
+
+		float quality = float(1.0 - 0.1 * stretch);
+		quality = std::max(0.f, quality);
+		quality = std::min(1.f, quality);
+
+		//std::pow(std::min(w, 1.0f / w) * std::min(dst[2] / rescale, rescale / dst[2]), 1.0f / 8.0f);
+		return quality;
 	}
 
 	void colorize_triangle(const cv::Mat & img, const cv::Mat & depth, const cv::Mat& depth_prologation_mask, const cv::Mat & new_pos, cv::Mat& res, cv::Mat& depth_inv, cv::Mat& new_depth_prologation_mask, cv::Mat& triangle_shape, cv::Vec2i a, cv::Vec2i b, cv::Vec2i c) {
