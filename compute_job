@@ -12,5 +12,4 @@ cd $PBS_O_WORKDIR
 config_files=`find config_files -name \*SVS\*.txt`
 list=($config_files)
 config_file=${list[$PBS_ARRAYID]}
-./SVS $config_file 2>&1 > $config_file.log
-
+./SVS $config_file
