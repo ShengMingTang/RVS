@@ -1,0 +1,95 @@
+SVSFile 1
+
+InputCameraParameterFile
+config_files/TechnicolorHijack/ref-camparams.txt
+
+InputProjectionType Equirectangular
+
+InputCameraNumber 10
+
+ViewImagesNames
+TechnicolorHijack/v0_4096_4096_420_10b.yuv
+TechnicolorHijack/v1_4096_4096_420_10b.yuv
+TechnicolorHijack/v2_4096_4096_420_10b.yuv
+TechnicolorHijack/v3_4096_4096_420_10b.yuv
+TechnicolorHijack/v4_4096_4096_420_10b.yuv
+TechnicolorHijack/v5_4096_4096_420_10b.yuv
+TechnicolorHijack/v6_4096_4096_420_10b.yuv
+TechnicolorHijack/v7_4096_4096_420_10b.yuv
+TechnicolorHijack/v8_4096_4096_420_10b.yuv
+TechnicolorHijack/v9_4096_4096_420_10b.yuv
+
+DepthMapsNames
+TechnicolorHijack/v0_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v1_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v2_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v3_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v4_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v5_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v6_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v7_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v8_4096_4096_0_5_25_0_420_16b.yuv
+TechnicolorHijack/v9_4096_4096_0_5_25_0_420_16b.yuv
+
+ZValues
+config_files/TechnicolorHijack/ref-depthrange.txt
+
+CamerasNames
+v0
+v1
+v2
+v3
+v4
+v5
+v6
+v7
+v8
+v9
+
+VirtualCameraParamaterFile
+config_files/TechnicolorHijack/ref-camparams.txt
+
+VirtualProjectionType Equirectangular
+
+VirtualCameraNumber 1
+
+VirtualCamerasNames
+i0
+
+OuputDir
+./
+
+OutputFiles
+output/TechnicolorHijack/ref/ref_i0_4096_4096_420_10b.yuv
+
+Extension
+yuv
+
+BitDepthColor 16
+
+BitDepthDepth 10
+
+StartFrame 0
+
+NumberOfFrames 1
+
+Width 4096
+
+Height 4096
+
+VirtualWidth 4096
+
+VirtualHeight 4096
+
+Precision 3.0
+
+ColorSpace YUV
+
+ViewSynthesisMethod Triangles
+
+BlendingMethod Simple
+
+BlendingFactor 5.0
+
+SensorSize 1.0
+

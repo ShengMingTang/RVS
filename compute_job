@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -N SVS
-#PBS -l nodes=1:ppn=8
+#PBS -l nodes=1:ppn=1
 #PBS -j oe
 #PBS -m ae
 #PBS -M bart.kroon@philips.com
@@ -9,7 +9,7 @@ trap exit ERR
 
 cd $PBS_O_WORKDIR
 
-config_files=`find config_files -name \*\-SVS.txt`
+config_files=`find config_files -name \*SVS\*.txt`
 list=($config_files)
 config_file=${list[$PBS_ARRAYID]}
 ./SVS $config_file 2>&1 > $config_file.log

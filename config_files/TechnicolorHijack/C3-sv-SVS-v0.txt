@@ -1,0 +1,71 @@
+SVSFile 1
+
+InputCameraParameterFile
+config_files/TechnicolorHijack/C3-sv-camparams.txt
+
+InputProjectionType Equirectangular
+
+InputCameraNumber 2
+
+ViewImagesNames
+TechnicolorHijack/v1_4096_4096_420_10b.yuv
+TechnicolorHijack/v4_4096_4096_420_10b.yuv
+
+DepthMapsNames
+TechnicolorHijack/v1_4096_4096_0_5_25_0_420_10b.yuv
+TechnicolorHijack/v4_4096_4096_0_5_25_0_420_10b.yuv
+
+ZValues
+config_files/TechnicolorHijack/C3-sv-depthrange.txt
+
+CamerasNames
+v1
+v4
+
+VirtualCameraParamaterFile
+config_files/TechnicolorHijack/C3-sv-camparams.txt
+
+VirtualProjectionType Equirectangular
+
+VirtualCameraNumber 1
+
+VirtualCamerasNames
+v0
+
+OuputDir
+./
+
+OutputFiles
+output/TechnicolorHijack/C3/C3_v0_4096_4096_420_10b.yuv
+
+Extension
+yuv
+
+BitDepthColor 10
+
+BitDepthDepth 10
+
+StartFrame 0
+
+NumberOfFrames 1
+
+Width 4096
+
+Height 4096
+
+VirtualWidth 4096
+
+VirtualHeight 4096
+
+Precision 3.0
+
+ColorSpace YUV
+
+ViewSynthesisMethod Triangles
+
+BlendingMethod Simple
+
+BlendingFactor 5.0
+
+SensorSize 1.0
+

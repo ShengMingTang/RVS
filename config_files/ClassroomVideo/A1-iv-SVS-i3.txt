@@ -1,0 +1,110 @@
+SVSFile 1
+
+InputCameraParameterFile
+config_files/ClassroomVideo/A1-iv-camparams.txt
+
+InputProjectionType Equirectangular
+
+InputCameraNumber 15
+
+ViewImagesNames
+ClassroomVideo/v0_4096_2048_420_10b.yuv
+ClassroomVideo/v1_4096_2048_420_10b.yuv
+ClassroomVideo/v2_4096_2048_420_10b.yuv
+ClassroomVideo/v3_4096_2048_420_10b.yuv
+ClassroomVideo/v4_4096_2048_420_10b.yuv
+ClassroomVideo/v5_4096_2048_420_10b.yuv
+ClassroomVideo/v6_4096_2048_420_10b.yuv
+ClassroomVideo/v7_4096_2048_420_10b.yuv
+ClassroomVideo/v8_4096_2048_420_10b.yuv
+ClassroomVideo/v9_4096_2048_420_10b.yuv
+ClassroomVideo/v10_4096_2048_420_10b.yuv
+ClassroomVideo/v11_4096_2048_420_10b.yuv
+ClassroomVideo/v12_4096_2048_420_10b.yuv
+ClassroomVideo/v13_4096_2048_420_10b.yuv
+ClassroomVideo/v14_4096_2048_420_10b.yuv
+
+DepthMapsNames
+ClassroomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v1_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v2_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v3_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v4_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v5_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v6_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v7_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v8_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v9_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v10_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v11_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v12_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v13_4096_2048_0_8_1000_0_420_10b.yuv
+ClassroomVideo/v14_4096_2048_0_8_1000_0_420_10b.yuv
+
+ZValues
+config_files/ClassroomVideo/A1-iv-depthrange.txt
+
+CamerasNames
+v0
+v1
+v2
+v3
+v4
+v5
+v6
+v7
+v8
+v9
+v10
+v11
+v12
+v13
+v14
+
+VirtualCameraParamaterFile
+config_files/ClassroomVideo/A1-iv-camparams.txt
+
+VirtualProjectionType Equirectangular
+
+VirtualCameraNumber 1
+
+VirtualCamerasNames
+i3
+
+OuputDir
+./
+
+OutputFiles
+output/ClassroomVideo/A1/A1_i3_4096_2048_420_10b.yuv
+
+Extension
+yuv
+
+BitDepthColor 10
+
+BitDepthDepth 10
+
+StartFrame 0
+
+NumberOfFrames 1
+
+Width 4096
+
+Height 2048
+
+VirtualWidth 4096
+
+VirtualHeight 2048
+
+Precision 3.0
+
+ColorSpace YUV
+
+ViewSynthesisMethod Triangles
+
+BlendingMethod Simple
+
+BlendingFactor 5.0
+
+SensorSize 1.0
+

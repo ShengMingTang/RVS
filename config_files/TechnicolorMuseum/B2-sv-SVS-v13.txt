@@ -1,0 +1,89 @@
+SVSFile 1
+
+InputCameraParameterFile
+config_files/TechnicolorMuseum/B2-sv-camparams.txt
+
+InputProjectionType Equirectangular
+
+InputCameraNumber 8
+
+ViewImagesNames
+TechnicolorMuseum/v0_2048_2048_420_10b.yuv
+TechnicolorMuseum/v1_2048_2048_420_10b.yuv
+TechnicolorMuseum/v4_2048_2048_420_10b.yuv
+TechnicolorMuseum/v8_2048_2048_420_10b.yuv
+TechnicolorMuseum/v11_2048_2048_420_10b.yuv
+TechnicolorMuseum/v12_2048_2048_420_10b.yuv
+TechnicolorMuseum/v13_2048_2048_420_10b.yuv
+TechnicolorMuseum/v17_2048_2048_420_10b.yuv
+
+DepthMapsNames
+TechnicolorMuseum/v0_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v1_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v4_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v8_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v11_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v12_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v13_2048_2048_0_5_25_0_420_10b.yuv
+TechnicolorMuseum/v17_2048_2048_0_5_25_0_420_10b.yuv
+
+ZValues
+config_files/TechnicolorMuseum/B2-sv-depthrange.txt
+
+CamerasNames
+v0
+v1
+v4
+v8
+v11
+v12
+v13
+v17
+
+VirtualCameraParamaterFile
+config_files/TechnicolorMuseum/B2-sv-camparams.txt
+
+VirtualProjectionType Equirectangular
+
+VirtualCameraNumber 1
+
+VirtualCamerasNames
+v13
+
+OuputDir
+./
+
+OutputFiles
+output/TechnicolorMuseum/B2/B2_v13_2048_2048_420_10b.yuv
+
+Extension
+yuv
+
+BitDepthColor 10
+
+BitDepthDepth 10
+
+StartFrame 0
+
+NumberOfFrames 1
+
+Width 2048
+
+Height 2048
+
+VirtualWidth 2048
+
+VirtualHeight 2048
+
+Precision 3.0
+
+ColorSpace YUV
+
+ViewSynthesisMethod Triangles
+
+BlendingMethod Simple
+
+BlendingFactor 5.0
+
+SensorSize 1.0
+
