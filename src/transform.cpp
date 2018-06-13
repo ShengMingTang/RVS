@@ -107,7 +107,7 @@ namespace
 						float d = dA*lambda_1 + dB*lambda_2 + dC*lambda_3;
 
 						//if the pixel comes from original depth map and is in foreground
-						if ((depth_inv.at<float>(y, x) * triangle_shape.at<float>(y, x) < 1.0 /	std::max(dA, std::max(dB, dC)) * triangle_validity
+						if ((depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)* triangle_shape.at<float>(y, x) < 1.0 / d / d / d * triangle_validity
 							|| new_depth_prologation_mask.at<bool>(y, x)) && !depth_prologation_mask.at<bool>((int)a[1], (int)a[0])
 							&& !depth_prologation_mask.at<bool>((int)b[1], (int)b[0])
 							&& !depth_prologation_mask.at<bool>((int)c[1], (int)c[0]))
@@ -118,7 +118,7 @@ namespace
 							res.at<cv::Vec3f>(y, x) = col;
 						}
 						//if the pixel comes from inpainted depth map and is in foreground and there is no pixel from the original depth map
-						else if (depth_inv.at<float>(y, x) * triangle_shape.at<float>(y, x) < 1.0 /	std::max(dA, std::max(dB, dC)) * triangle_validity
+						else if (depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)* triangle_shape.at<float>(y, x) < 1.0 / d / d / d * triangle_validity
 							&& new_depth_prologation_mask.at<bool>(y, x)
 							&& (depth_prologation_mask.at<bool>((int)a[1], (int)a[0])
 								|| depth_prologation_mask.at<bool>((int)b[1], (int)b[0])
