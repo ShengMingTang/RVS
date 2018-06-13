@@ -86,7 +86,7 @@ ViewSynthesisMethod Triangles
 
 BlendingMethod Simple
 
-BlendingFactor 5.0
+BlendingFactor -1.0
 
 SensorSize 1.0
 

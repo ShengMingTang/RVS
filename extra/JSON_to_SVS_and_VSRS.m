@@ -245,7 +245,7 @@ fprintf(svs_file, 'Precision 3.0\n\n');
 fprintf(svs_file, 'ColorSpace YUV\n\n');
 fprintf(svs_file, 'ViewSynthesisMethod Triangles\n\n');
 fprintf(svs_file, 'BlendingMethod Simple\n\n');
-fprintf(svs_file, 'BlendingFactor 5.0\n\n'); % suggested by Sarah
+fprintf(svs_file, 'BlendingFactor -1.0\n\n'); % suggested by Sarah
 fprintf(svs_file, 'SensorSize 1.0\n\n');
 fclose(svs_file);
 
