@@ -100,7 +100,8 @@ namespace
 					float lambda_1 = ((B[1] - C[1]) * ((float)x + offset - C[0]) + (C[0] - B[0]) * ((float)y + offset - C[1])) / den;
 					float lambda_2 = ((C[1] - A[1]) * ((float)x + offset - C[0]) + (A[0] - C[0]) * ((float)y + offset - C[1])) / den;
 					float lambda_3 = 1.0f - lambda_1 - lambda_2;
-					if (lambda_1 >= 0.0f && lambda_1 <= 1.0f &&lambda_2 >= 0.0f && lambda_2 <= 1.0f && lambda_3 >= 0.0f && lambda_3 <= 1.0f)
+					float const eps = 1e-6f;
+					if (lambda_1 >= -eps && lambda_2 >= -eps && lambda_3 >= -eps)
 					{
 						cv::Vec3f col = colA*lambda_1 + colB*lambda_2 + colC*lambda_3;
 						float d = dA*lambda_1 + dB*lambda_2 + dC*lambda_3;

@@ -100,7 +100,7 @@ void write_color(std::string filename, cv::Mat3f image, int bit_depth, int frame
 	if (filename.find("yuv") != std::string::npos)
 		write_color_YUV(filename, image, bit_depth, frame);
 	else if (frame == 0)
-		write_color_RGB(filename, image, bit_depth);
+		write_color_RGB(filename, image, bit_depth <= 8 ? 8 : 16);
 	else
 		throw std::runtime_error("Writing multiple frames as images not (yet) supported");
 }
