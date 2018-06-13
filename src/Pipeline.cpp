@@ -140,7 +140,22 @@ void Pipeline::compute_views(int frame) {
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
 
-            // Select type of un-projection 
+#if DUMP_MAPS
+			cv::Mat3f rgb;
+			cv::cvtColor(input_images[input_idx].get_color(), rgb, cv::COLOR_YCrCb2BGR);
+			cv::Mat3b color;
+			rgb.convertTo(color, CV_8U, 255.);
+			cv::Mat1w depth;
+			input_images[input_idx].get_depth().convertTo(depth, CV_16U, 2000.);
+
+			std::ostringstream filepath;
+
+			filepath.str(""); filepath << "dump-input-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
+			filepath.str(""); filepath << "dump-input-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
+			filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), input_images[input_idx].get_depth_mask());
+#endif
+
+			// Select type of un-projection 
 			std::unique_ptr<Unprojector> unprojector;
             if( config.input_projection_type == PROJECTION_PERSPECTIVE )
                 unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
@@ -162,18 +177,13 @@ void Pipeline::compute_views(int frame) {
 			synthesizer->compute(input_images[input_idx]);
 
 #if DUMP_MAPS
-			cv::Mat3f rgb;
 			cv::cvtColor(synthesizer->get_color(), rgb, cv::COLOR_YCrCb2BGR);
-			cv::Mat3b color;
 			rgb.convertTo(color, CV_8U, 255.);
 			cv::Mat1w quality;
 			synthesizer->get_quality().convertTo(quality, CV_16U, 4.);
-			cv::Mat1w depth;
 			synthesizer->get_depth().convertTo(depth, CV_16U, 2000.);
 			cv::Mat1w triangle_shape;
 			dynamic_cast<SynthetizedViewTriangle*>(synthesizer.get())->get_triangle_shape().convertTo(triangle_shape, CV_16U, 6.);
-
-			std::ostringstream filepath;
 
 			filepath.str(""); filepath << "dump-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
 			filepath.str(""); filepath << "dump-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
@@ -193,7 +203,7 @@ void Pipeline::compute_views(int frame) {
 			blender->get_quality().convertTo(quality, CV_16U, 4.);
 
 			filepath.str(""); filepath << "dump-blended-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
-			filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), quality);
+			filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
 #endif
 		}
 
