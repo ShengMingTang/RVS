@@ -155,11 +155,11 @@ void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_p
     cv::Size output_size, WrappingMethod wrapping_method)
 {
 	cv::Mat1f depth;
-	cv::Mat1f quality;
+	cv::Mat1f triangle_shape;
 	
     bool wrapHorizontal = wrapping_method == WrappingMethod::HORIZONTAL ? true : false; 
 
-    auto color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ quality, wrapHorizontal);
+    auto color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ triangle_shape, wrapHorizontal);
 	
-	assign(color, depth, quality);
+	assign(color, depth, triangle_shape / depth);
 }

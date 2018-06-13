@@ -62,9 +62,9 @@ namespace
 		float stretch = static_cast<float>(std::max(dbc, std::max(dab, dac)));
 		stretch /= rescale;
 
-		float quality = 1.f - 0.1f * stretch;
-		quality = std::max(0.f, quality);
-		quality = std::min(1.f, quality);
+		float quality = 10000.f - 1000.f * stretch;
+		quality = std::max(1.f, quality); // always > 0
+		quality = std::min(10000.f, quality);
 
 		return quality;
 	}
@@ -88,7 +88,6 @@ namespace
 		if (triangle_validity == 0.0)
 			return;
 		//triangle_validity /= std::powf(MAX(MAX(dA, dB), dC) - MIN(MIN(dA, dB), dC), 1.0 / 8.0) / 1000.0;
-		triangle_validity *= 100.0;
 		float offset = 0.5;
 		auto Xmin = std::max(0, static_cast<int>(std::floor(std::min(std::min(A[0], B[0]), C[0]))));
 		auto Ymin = std::max(0, static_cast<int>(std::floor(std::min(std::min(A[1], B[1]), C[1]))));
@@ -103,30 +102,29 @@ namespace
 					float lambda_3 = 1.0f - lambda_1 - lambda_2;
 					if (lambda_1 >= 0.0f && lambda_1 <= 1.0f &&lambda_2 >= 0.0f && lambda_2 <= 1.0f && lambda_3 >= 0.0f && lambda_3 <= 1.0f)
 					{
-						float quality_inside_triangle = 1.0;// MAX(lambda_1, MAX(lambda_2, lambda_3));
 						cv::Vec3f col = colA*lambda_1 + colB*lambda_2 + colC*lambda_3;
 						float d = dA*lambda_1 + dB*lambda_2 + dC*lambda_3;
 
 						//if the pixel comes from original depth map and is in foreground
-						if ((depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)* triangle_shape.at<float>(y, x) < 1.0 / d / d / d * triangle_validity*quality_inside_triangle
+						if ((depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)* triangle_shape.at<float>(y, x) < 1.0 / d / d / d * triangle_validity
 							|| new_depth_prologation_mask.at<bool>(y, x)) && !depth_prologation_mask.at<bool>((int)a[1], (int)a[0])
 							&& !depth_prologation_mask.at<bool>((int)b[1], (int)b[0])
 							&& !depth_prologation_mask.at<bool>((int)c[1], (int)c[0]))
 						{
 							depth_inv.at<float>(y, x) = 1.0f / d;
 							new_depth_prologation_mask.at<bool>(y, x) = false;
-							triangle_shape.at<float>(y, x) = triangle_validity * quality_inside_triangle;
+							triangle_shape.at<float>(y, x) = triangle_validity;
 							res.at<cv::Vec3f>(y, x) = col;
 						}
 						//if the pixel comes from inpainted depth map and is in foreground and there is no pixel from the original depth map
-						else if (depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)* triangle_shape.at<float>(y, x) < 1.0 / d / d / d * triangle_validity*quality_inside_triangle
+						else if (depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)*depth_inv.at<float>(y, x)* triangle_shape.at<float>(y, x) < 1.0 / d / d / d * triangle_validity
 							&& new_depth_prologation_mask.at<bool>(y, x)
 							&& (depth_prologation_mask.at<bool>((int)a[1], (int)a[0])
 								|| depth_prologation_mask.at<bool>((int)b[1], (int)b[0])
 								|| depth_prologation_mask.at<bool>((int)c[1], (int)c[0])))
 						{
 							depth_inv.at<float>(y, x) = 1.0f / d;
-							triangle_shape.at<float>(y, x) = triangle_validity * quality_inside_triangle;
+							triangle_shape.at<float>(y, x) = triangle_validity;
 							res.at<cv::Vec3f>(y, x) = col;
 						}
 					}
@@ -134,14 +132,14 @@ namespace
 	}
 } // namespace
 
-cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality, bool horizontalWrap)
+cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& triangle_shape, bool horizontalWrap)
 {
 	auto input_size = input_color.size();
     int w = input_size.width;
 	cv::Mat1b input_depth_mask = input_depth > 0.f;
 	cv::Mat3f color = cv::Mat3f::zeros(output_size);
 	cv::Mat1f depth_inv = cv::Mat1f::zeros(output_size);
-	quality = cv::Mat1f::zeros(output_size);
+	triangle_shape = cv::Mat1f::zeros(output_size);
 	cv::Mat1b new_depth_prologation_mask = cv::Mat1b::ones(output_size);
 
 	// Compute triangulation
@@ -149,17 +147,17 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 		for (int j = 0; j < input_size.width - 1; ++j) {
 			if (input_depth(i, j + 1) > 0.f && input_depth(i + 1, j) > 0.f && /*why?*/ input_positions(i, j + 1)[0] > 0.f && /*why?*/ input_positions(i + 1, j)[0] > 0.f) {
 				if (input_depth(i, j) > 0.f && /*why?*/ input_positions(i, j)[0] > 0.f)
-					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality,
+					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, triangle_shape,
 						/*why float?*/ cv::Vec2i(j, i), cv::Vec2i(j + 1, i), cv::Vec2i(j, i + 1));
 				if (input_depth(i + 1, j + 1) > 0.f && input_positions(i + 1, j + 1)[0] > 0.f)
-					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality,
+					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, triangle_shape,
 						/*why float?*/ cv::Vec2i(j + 1, i + 1), cv::Vec2i(j, i + 1), cv::Vec2i(j + 1, i));
 			
                 // stitch left and right borders with triangles (e.g. for equirectangular projection)
                 if( horizontalWrap && j == 0 ) { 
-                    colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality, 
+                    colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, triangle_shape,
                         cv::Vec2i(w-1, i), cv::Vec2i( 0, i), cv::Vec2i(w-1, i + 1));
-                    colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, quality, 
+                    colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth_inv, new_depth_prologation_mask, triangle_shape, 
                         cv::Vec2i(0, i + 1),   cv::Vec2i(w-1, i + 1), cv::Vec2i(0, i));
                 }
             }
@@ -167,7 +165,6 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 	}
 
 	depth = 1.f / depth_inv;
-	cv::multiply(quality, depth_inv, quality, /*why?*/ 100.f);
 
 	return color;
 }
