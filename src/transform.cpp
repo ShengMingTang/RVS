@@ -59,13 +59,13 @@ namespace
 		double dac = cv::norm(A, C);
 		double dbc = cv::norm(B, C);
 
-		double stretch = std::max(dbc, std::max(dab, dac));
+		float stretch = static_cast<float>(std::max(dbc, std::max(dab, dac)));
+		stretch /= rescale;
 
-		float quality = float(1.0 - 0.1 * stretch);
+		float quality = 1.f - 0.1f * stretch;
 		quality = std::max(0.f, quality);
 		quality = std::min(1.f, quality);
 
-		//std::pow(std::min(w, 1.0f / w) * std::min(dst[2] / rescale, rescale / dst[2]), 1.0f / 8.0f);
 		return quality;
 	}
 
