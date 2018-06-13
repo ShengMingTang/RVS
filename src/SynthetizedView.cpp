@@ -155,7 +155,6 @@ void SynthetizedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_p
     cv::Size output_size, WrappingMethod wrapping_method)
 {
 	cv::Mat1f depth;
-	cv::Mat1f triangle_shape;
 	
     bool wrapHorizontal = wrapping_method == WrappingMethod::HORIZONTAL ? true : false; 
 

@@ -58,6 +58,7 @@ Contact : bart.kroon@philips.com
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
+#define DUMP_MAPS false
 
 Pipeline::Pipeline(std::string filename)
 {
@@ -160,10 +161,40 @@ void Pipeline::compute_views(int frame) {
 			// Synthesize view
 			synthesizer->compute(input_images[input_idx]);
 
+#if DUMP_MAPS
+			cv::Mat3f rgb;
+			cv::cvtColor(synthesizer->get_color(), rgb, cv::COLOR_YCrCb2BGR);
+			cv::Mat3b color;
+			rgb.convertTo(color, CV_8U, 255.);
+			cv::Mat1w quality;
+			synthesizer->get_quality().convertTo(quality, CV_16U, 4.);
+			cv::Mat1w depth;
+			synthesizer->get_depth().convertTo(depth, CV_16U, 2000.);
+			cv::Mat1w triangle_shape;
+			dynamic_cast<SynthetizedViewTriangle*>(synthesizer.get())->get_triangle_shape().convertTo(triangle_shape, CV_16U, 6.);
+
+			std::ostringstream filepath;
+
+			filepath.str(""); filepath << "dump-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
+			filepath.str(""); filepath << "dump-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
+			filepath.str(""); filepath << "dump-triangle_shape-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), triangle_shape);
+			filepath.str(""); filepath << "dump-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
+			filepath.str(""); filepath << "dump-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), synthesizer->get_depth_mask());
+#endif
+
 			// Blend with previous results
 			PROF_START("blending");
 			blender->blend(*synthesizer);
 			PROF_END("blending");
+
+#if DUMP_MAPS
+			cv::cvtColor(blender->get_color(), rgb, cv::COLOR_YCrCb2BGR);
+			rgb.convertTo(color, CV_8U, 255.);
+			blender->get_quality().convertTo(quality, CV_16U, 4.);
+
+			filepath.str(""); filepath << "dump-blended-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
+			filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), quality);
+#endif
 		}
 
 		PROF_START("inpainting");
