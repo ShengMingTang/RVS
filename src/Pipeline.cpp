@@ -113,8 +113,8 @@ void Pipeline::load_images(int frame) {
 void Pipeline::compute_views(int frame) {
 	for (std::size_t virtual_idx = 0; virtual_idx != config.params_virtual.size(); ++virtual_idx) {
 		std::unique_ptr<BlendedView> blender;
-		
-        if (config.blending_method == BLENDING_SIMPLE)
+
+		if (config.blending_method == BLENDING_SIMPLE)
 			blender.reset(new BlendedViewSimple(config.blending_factor));
 		else if (config.blending_method == BLENDING_MULTISPEC)
 			blender.reset(new BlendedViewMultiSpec(
@@ -123,19 +123,19 @@ void Pipeline::compute_views(int frame) {
 		else throw std::logic_error("Unknown blending method");
 
 		// Project according to parameters of the virtual view
-        std::unique_ptr<Projector> projector;
-		
-        Parameters& params_virtual = config.params_virtual[virtual_idx];
-        if( config.use_pose_trace)
-        {
-            params_virtual.adapt_initial_rotation( config.pose_trace[frame].rotation );
-            params_virtual.adapt_initial_translation( config.pose_trace[frame].translation );
-        }
+		std::unique_ptr<Projector> projector;
 
-        if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
-            projector.reset(new PerspectiveProjector(params_virtual, config.virtual_size));
-        else if ( config.virtual_projection_type == PROJECTION_EQUIRECTANGULAR )
-            projector.reset(new erp::Projector(params_virtual, config.virtual_size));
+		Parameters& params_virtual = config.params_virtual[virtual_idx];
+		if( config.use_pose_trace)
+		{
+			params_virtual.adapt_initial_rotation( config.pose_trace[frame].rotation );
+			params_virtual.adapt_initial_translation( config.pose_trace[frame].translation );
+		}
+
+		if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
+			projector.reset(new PerspectiveProjector(params_virtual, config.virtual_size));
+		else if ( config.virtual_projection_type == PROJECTION_EQUIRECTANGULAR )
+			projector.reset(new erp::Projector(params_virtual, config.virtual_size));
 
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
@@ -157,12 +157,12 @@ void Pipeline::compute_views(int frame) {
 
 			// Select type of un-projection 
 			std::unique_ptr<Unprojector> unprojector;
-            if( config.input_projection_type == PROJECTION_PERSPECTIVE )
-                unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
-            else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
-                unprojector.reset(new erp::Unprojector(config.params_real[input_idx], config.size ));
+			if( config.input_projection_type == PROJECTION_PERSPECTIVE )
+				unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
+			else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
+				unprojector.reset(new erp::Unprojector(config.params_real[input_idx], config.size ));
 
-            // Select view synthesis method
+			// Select view synthesis method
 			std::unique_ptr<SynthetizedView> synthesizer;
 			if (vs_method == SYNTHESIS_TRIANGLE)
 				synthesizer.reset(new SynthetizedViewTriangle);
@@ -182,12 +182,12 @@ void Pipeline::compute_views(int frame) {
 			cv::Mat1w quality;
 			synthesizer->get_quality().convertTo(quality, CV_16U, 4.);
 			synthesizer->get_depth().convertTo(depth, CV_16U, 2000.);
-			cv::Mat1w triangle_shape;
-			dynamic_cast<SynthetizedViewTriangle*>(synthesizer.get())->get_triangle_shape().convertTo(triangle_shape, CV_16U, 6.);
+			cv::Mat1w validity; // triangle shape
+			synthesizer.get()->get_validity().convertTo(validity, CV_16U, 6.);
 
 			filepath.str(""); filepath << "dump-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
 			filepath.str(""); filepath << "dump-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
-			filepath.str(""); filepath << "dump-triangle_shape-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), triangle_shape);
+			filepath.str(""); filepath << "dump-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity);
 			filepath.str(""); filepath << "dump-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
 			filepath.str(""); filepath << "dump-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), synthesizer->get_depth_mask());
 #endif
@@ -201,9 +201,11 @@ void Pipeline::compute_views(int frame) {
 			cv::cvtColor(blender->get_color(), rgb, cv::COLOR_YCrCb2BGR);
 			rgb.convertTo(color, CV_8U, 255.);
 			blender->get_quality().convertTo(quality, CV_16U, 4.);
+			blender->get_validity().convertTo(validity, CV_16U, 6.);
 
 			filepath.str(""); filepath << "dump-blended-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
 			filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
+			filepath.str(""); filepath << "dump-blended-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity); 
 #endif
 		}
 
@@ -215,9 +217,20 @@ void Pipeline::compute_views(int frame) {
 		resize(color, color, config.virtual_size);
 		PROF_END("downscale");
 
-		PROF_START("write");
-		write_color(config.outfilenames[virtual_idx], color, config.bit_depth_color, frame);
-		PROF_END("write");
+		if (!config.outfilenames.empty()) {
+			PROF_START("write");
+			write_color(config.outfilenames[virtual_idx], color, config.bit_depth_color, frame);
+			PROF_END("write");
+		}
+
+		if (!config.outmaskedfilenames.empty()) {
+			PROF_START("masking");
+			auto mask = blender->get_validity_mask(config.validity_threshold);
+			resize(mask, mask, config.virtual_size, cv::INTER_NEAREST);
+			color.setTo(cv::Vec3f::all(0.5f), mask);
+			write_color(config.outmaskedfilenames[virtual_idx], color, config.bit_depth_color, frame);
+			PROF_END("masking");
+		}
 	}
 }
 

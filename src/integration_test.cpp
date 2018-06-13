@@ -276,7 +276,7 @@ FUNC(TechnicolorMuseum_v5_to_v5)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v5vs_from_v5_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v5_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 58.37, 73.73); // VC14 + OpenCV 3.1.0: 58.4276, 73.7879
+		cv::Size(2048, 2048), 10, 58.51, 73.73); // VC14 + OpenCV 3.1.0: 58.5664, 73.7879
 }
 
 FUNC(TechnicolorMuseum_v5_to_v6)

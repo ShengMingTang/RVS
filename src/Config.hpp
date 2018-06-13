@@ -125,6 +125,10 @@ public:
 	/** "ALL" to Synthesized all the views of the config file or the name of each output filename */
 	std::vector<std::string> outfilenames;
 
+	std::vector<std::string> outmaskedfilenames;
+
+	float validity_threshold = 5000.f;
+
 	/** What is the extension of the files to use if not specified in configuration file */
 	std::string extension = "png";
 

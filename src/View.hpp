@@ -53,10 +53,10 @@ public:
 	View() = default;
 
 	// Initialize all maps at once
-	View(cv::Mat3f, cv::Mat1f, cv::Mat1f);
+	View(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
 
 	// Assign all maps at once
-	void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f);
+	void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
 
 	// Return the texture
 	cv::Mat3f get_color() const;
@@ -67,6 +67,9 @@ public:
 	// Return the quality map (same size as texture)
 	cv::Mat1f get_quality() const;
 
+	// Return the validity map (same size as texture)
+	cv::Mat1f get_validity() const;
+
 	// Return the size of the texture and depth map
 	cv::Size get_size() const;
 
@@ -76,12 +79,16 @@ public:
 	// Return a mask for inpainting
 	cv::Mat1b get_inpaint_mask() const;
 
+	// Return a mask for invalid masking
+	cv::Mat1b get_validity_mask(float threshold) const;
+
 private:
 	void validate() const;
 
 	cv::Mat3f _color;
 	cv::Mat1f _depth;
 	cv::Mat1f _quality;
+	cv::Mat1f _validity;
 };
 
 /**

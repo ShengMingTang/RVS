@@ -47,17 +47,18 @@ Contact : bart.kroon@philips.com
 #include <iostream>
 
 // Initialize all maps at once
-View::View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality)
+View::View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f validity)
 {
-	assign(color, depth, quality);
+	assign(color, depth, quality, validity);
 }
 
 // Initialize all maps at once
-void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality)
+void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f validity)
 {
 	_color = color;
 	_depth = depth;
 	_quality = quality;
+	_validity = validity;
 	validate();
 }
 
@@ -85,6 +86,14 @@ cv::Mat1f View::get_quality() const
 	return _quality;
 }
 
+// Return the validity map (same size as texture)
+cv::Mat1f View::get_validity() const
+{
+	validate();
+	CV_Assert(!_validity.empty());
+	return _validity;
+}
+
 // Return the size of the texture and depth map
 cv::Size View::get_size() const
 {
@@ -102,8 +111,16 @@ cv::Mat1b View::get_depth_mask() const
 cv::Mat1b View::get_inpaint_mask() const
 {
 	auto inpaint_mask = cv::Mat1b(get_size(), 255);
-	inpaint_mask.setTo(0, get_quality() > 0); // excludes NaN's
+	inpaint_mask.setTo(0, get_quality() > 0.f); // excludes NaN's
 	return inpaint_mask;
+}
+
+// Calculate a mask with valid pixels for masked output
+cv::Mat1b View::get_validity_mask(float threshold) const
+{
+	auto validity_mask = cv::Mat1b(get_size(), 255);
+	validity_mask.setTo(0, get_validity() > threshold); // excludes NaN's
+	return validity_mask;
 }
 
 void View::validate() const
@@ -111,6 +128,7 @@ void View::validate() const
 	auto size = _color.size();
 	CV_Assert(_depth.empty() || _depth.size() == size);
 	CV_Assert(_quality.empty() || _quality.size() == size);
+	CV_Assert(_validity.size() == _quality.size());
 }
 
 InputView::InputView() {}
@@ -129,5 +147,6 @@ InputView::InputView(
 	assign(
 		read_color(filepath_color, size, bit_depth_color, frame),
 		read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far, frame),
+		cv::Mat1f(),
 		cv::Mat1f());
 }

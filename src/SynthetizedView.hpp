@@ -97,13 +97,8 @@ class SynthetizedViewTriangle : public SynthetizedView {
 public:
 	SynthetizedViewTriangle();
 
-	cv::Mat1f get_triangle_shape() const { return triangle_shape; }
-
 protected:
 	// Rasterize the warped image, resulting in updates of color, depth and quality maps
 	virtual void transform(cv::Mat3f input_color, cv::Mat2f input_positions, cv::Mat1f input_depth, 
         cv::Size output_size, WrappingMethod wrapping_method);
-
-private:
-	cv::Mat1f triangle_shape;
 };

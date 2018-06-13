@@ -63,15 +63,15 @@ void BlendedViewMultiSpec::blend(View const& view)
 	split_frequencies(view.get_color(), low_color, high_color, mask);
 
 	// Repack as views
-	auto low_view = View(low_color, view.get_depth(), view.get_quality());
-	auto high_view = View(high_color, view.get_depth(), view.get_quality());
+	auto low_view = View(low_color, view.get_depth(), view.get_quality(), view.get_validity());
+	auto high_view = View(high_color, view.get_depth(), view.get_quality(), view.get_validity());
 
 	// Blend low and high frequency separately
 	low_freq.blend(low_view);
 	high_freq.blend(high_view);
 
 	// Combine result
-	assign(low_freq.get_color() + high_freq.get_color(), cv::Mat1f(), low_freq.get_quality());
+	assign(low_freq.get_color() + high_freq.get_color(), cv::Mat1f(), low_freq.get_quality(), low_freq.get_validity());
 }
 
 BlendedViewSimple::BlendedViewSimple(float blending_exp)
@@ -85,7 +85,7 @@ void BlendedViewSimple::blend(View const& view)
 { 
 	if (is_empty) {
 		is_empty = false;
-		assign(view.get_color(), cv::Mat1b(), view.get_quality());
+		assign(view.get_color(), cv::Mat1b(), view.get_quality(), view.get_validity());
 		_depth_mask = view.get_depth_mask();
 	}
 	else {
@@ -105,7 +105,7 @@ void BlendedViewSimple::blend(View const& view)
 			/*out*/ inpaint_mask,
 			blending_exp);
 
-		assign(color, cv::Mat1f(), quality);
+		assign(color, cv::Mat1f(), quality, max(get_validity(), view.get_validity()));
 		_depth_mask = depth_prolongation_mask;
 	}
 }

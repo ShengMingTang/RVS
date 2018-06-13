@@ -225,7 +225,7 @@ Parser::~Parser()
 
 
 void Parser::generate_output_filenames() {
-	if (config.outfilenames.size() != config.VirtualCameraNames.size()) { // ALL?
+	if (config.outfilenames.size() != config.VirtualCameraNames.size() && config.outmaskedfilenames.empty()) { // ALL?
 		config.outfilenames = {};
 		for (int i = 0; i < static_cast<int>(config.VirtualCameraNames.size()); ++i) {
 			config.outfilenames.push_back(config.folder_out + config.VirtualCameraNames[i] + "." + config.extension);
@@ -274,6 +274,7 @@ void Parser::read_vsrs_config_file() {
 		config.folder_out = folders_out[0];
 	//seek filesnames for output
 	seek_string(filename_parameter_file, 1, config.outfilenames, "OutputVirtualViewImageName", "Output file names");
+	seek_string(filename_parameter_file, 1, config.outmaskedfilenames, "MaskedVirtualViewImageName", "Masked output file names");
 
 	//seek w,h (default = 1920x1080)
 	int w, h;
@@ -341,6 +342,9 @@ void Parser::read_SVS_config_file() {
 		config.folder_out = folders_out[0];
 	//seek filesnames for output
 	seek_string(filename_parameter_file, number_output_cameras, config.outfilenames, "OutputFiles", "Output file names");
+	seek_string(filename_parameter_file, number_output_cameras, config.outmaskedfilenames, "MaskedOutputFiles", "Masked output file names");
+	if (seek_float(filename_parameter_file, config.validity_threshold, "ValidityTheshold", "Validity threshold for masked output") == 0)
+		config.validity_threshold = 5000.f;
 
 	//seek w,h (default = 1920x1080)
 	int w, h;
@@ -481,6 +485,9 @@ void Parser::print_results(
 	printf("%s\n", config.folder_out.c_str());
 	for (int i = 0; i < static_cast<int>(config.outfilenames.size()); ++i) {
 		printf("%s\n", config.outfilenames[i].c_str());
+	}
+	for (int i = 0; i < static_cast<int>(config.outmaskedfilenames.size()); ++i) {
+		printf("%s\n", config.outmaskedfilenames[i].c_str());
 	}
 	printf("%d %d\n", config.size.width, config.size.height);
 	printf("%d %d\n", config.virtual_size.width, config.virtual_size.height);
