@@ -158,7 +158,7 @@ FUNC(ULB_Unicorn_Triangles_Simple)
 	testing::compareWithReferenceView<std::uint8_t>(
 		"030003250438_from_030003070370_030003430506_Triangles_Simple.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
-		cv::Size(1920, 1080), 8, 20.34, 24.51); // VC14 + OpenCV 3.1.0: 20.3999, 24.5674
+		cv::Size(1920, 1080), 8, 20.32, 24.54); // VC14 + OpenCV 3.1.0: 20.377, 24.5955
 }
 
 FUNC(ULB_Unicorn_Triangles_MultiSpectral)
@@ -168,7 +168,7 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 	testing::compareWithReferenceView<std::uint8_t>(
 		"030003250438_from_030003070370_030003430506_Triangles_MultiSpectral.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
-		cv::Size(1920, 1080), 8, 20.32, 24.43); // VC14 + OpenCV 3.1.0: 20.3767, 24.4852
+		cv::Size(1920, 1080), 8, 20.30, 24.35); // VC14 + OpenCV 3.1.0: 20.3568, 24.4012
 }
 
 FUNC(ULB_Unicorn_10b)
@@ -178,7 +178,7 @@ FUNC(ULB_Unicorn_10b)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"030003250438_from_030003070370_030003430506-10b.yuv",
 		"10bit/Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438-10b.yuv",
-		cv::Size(1920, 1080), 10, 20.52, 24.73); // VC14 + OpenCV 3.1.0: 20.5701, 24.7802
+		cv::Size(1920, 1080), 10, 20.49, 24.75); // VC14 + OpenCV 3.1.0: 20.5474, 24.8075
 }
 
 FUNC(ULB_Unicorn_Same_View)
@@ -198,7 +198,7 @@ FUNC(ClassroomVideo_v0_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 42.95, 41.81); // VC14 + OpenCV 3.1.0: 43.0071, 41.8697 (only Y: 41.2605, 40.1261)
+		cv::Size(4096, 2048), 10, 54.95, 53.71); // VC14 + OpenCV 3.1.0: 55.0009, 53.7675
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0)
@@ -208,7 +208,7 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_from_v7v8_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 35.31, 35.94); // VC14 + OpenCV 3.1.0: 35.366, 35.9966
+		cv::Size(4096, 2048), 10, 35.48, 35.95); // VC14 + OpenCV 3.1.0: 35.538, 36.0088
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0_270deg)
@@ -226,7 +226,7 @@ FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 	reference[1] = reference[1].colRange(192, 1344);
 	reference[2] = reference[2].colRange(192, 1344);
 
-	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 37.52, 38.02); // VC14 + OpenCV 3.1.0: 37.5704, 38.0789
+	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 37.90, 38.29); // VC14 + OpenCV 3.1.0: 37.9514, 38.3425
 }
 
 FUNC(TechnicolorHijack_v1v4_to_v9)
@@ -236,7 +236,7 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv",
 		"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
-		cv::Size(4096, 4096), 10, 40.70, 33.99); // VC14 + OpenCV 3.1.0: 40.7565, 34.0432
+		cv::Size(4096, 4096), 10, 43.71, 35.88); // VC14 + OpenCV 3.1.0: 43.7695, 35.9381
 }
 
 FUNC(TechnicolorHijack_BlendByMax)
@@ -246,7 +246,7 @@ FUNC(TechnicolorHijack_BlendByMax)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorHijack_BlendByMax.yuv",
 		"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
-		cv::Size(4096, 4096), 10, 40.32, 33.32); // VC14 + OpenCV 3.1.0: 40.3723, 33.3717
+		cv::Size(4096, 4096), 10, 43.19, 35.28); // VC14 + OpenCV 3.1.0: 43.2489, 35.3323
 }
 
 FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
@@ -256,7 +256,7 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v1vs_from_v0v2v13v17v19_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v1_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 31.75, 36.73); // VC14 + OpenCV 3.1.0: 31.8096, 36.7894
+		cv::Size(2048, 2048), 10, 31.76, 38.15); // VC14 + OpenCV 3.1.0: 31.8129, 38.2094
 }
 
 FUNC(TechnicolorMuseum_v0_to_v0)
@@ -266,7 +266,7 @@ FUNC(TechnicolorMuseum_v0_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v0vs_from_v0_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v0_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 38.32, 39.00); // VC14 + OpenCV 3.1.0: 38.3759, 39.0586
+		cv::Size(2048, 2048), 10, 38.30, 38.95); // VC14 + OpenCV 3.1.0: 38.358, 39.0078
 }
 
 FUNC(TechnicolorMuseum_v5_to_v5)
@@ -286,7 +286,7 @@ FUNC(TechnicolorMuseum_v5_to_v6)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v6vs_from_v5_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v6_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 22.36, 27.06); // VC14 + OpenCV 3.1.0: 22.4187, 27.1124
+		cv::Size(2048, 2048), 10, 22.37, 26.54); // VC14 + OpenCV 3.1.0: 22.4218, 26.5975
 }
 
 int main(int argc, const char* argv[])

@@ -71,6 +71,8 @@ namespace
 		cv::Mat cr_channel(size / 2, type);
 
 		std::ifstream stream(filename, std::ios::binary);
+		if (!stream.good())
+			throw std::runtime_error("Failed to read raw YUV color file");
 		stream.seekg(size.area() * y_channel.elemSize() * 3 / 2 * frame);
 		read_raw(stream, y_channel);
 		read_raw(stream, cb_channel);
@@ -98,6 +100,8 @@ namespace
 	cv::Mat1f read_depth_YUV(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, int frame) {
 		cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1));
 		std::ifstream stream(filename, std::ios_base::binary);
+		if (!stream.good())
+			throw std::runtime_error("Failed to read raw YUV depth file");
 		stream.seekg(size.area() * image.elemSize() * 3 / 2 * frame); // YUV 4:2:0 also for raw depth streams
 		read_raw(stream, image);
 
