@@ -37,6 +37,7 @@ function JSON_to_SVS_and_VSRS(...
     texture_pathfmt, ...
     depth_pathfmt, ...
     output_pathfmt, ...
+    masked_output_pathfmt, ...
     input_view_indices, ...
     output_view_indices, ...
     max_frames, ...
@@ -232,6 +233,11 @@ for n = 1:length(output_view_indices)
     oi = 1 + output_view_indices(n);
     fprintf(svs_file, '%s\n', sprintf(output_pathfmt, Co(oi).Name, resolution));
 end
+fprintf(svs_file, '\nMaskedOutputFiles\n');
+for n = 1:length(output_view_indices)
+    oi = 1 + output_view_indices(n);
+    fprintf(svs_file, '%s\n', sprintf(masked_output_pathfmt, Co(oi).Name, resolution));
+end
 fprintf(svs_file, '\nExtension\nyuv\n\n');
 fprintf(svs_file, 'BitDepthColor %d\n\n', texture_bitdepth);
 fprintf(svs_file, 'BitDepthDepth %d\n\n', depth_bitdepth);
@@ -245,8 +251,9 @@ fprintf(svs_file, 'Precision 3.0\n\n');
 fprintf(svs_file, 'ColorSpace YUV\n\n');
 fprintf(svs_file, 'ViewSynthesisMethod Triangles\n\n');
 fprintf(svs_file, 'BlendingMethod Simple\n\n');
-fprintf(svs_file, 'BlendingFactor -1.0\n\n'); % suggested by Sarah
+fprintf(svs_file, 'BlendingFactor 5.0\n\n'); % suggested by Sarah
 fprintf(svs_file, 'SensorSize 1.0\n\n');
+fprintf(svs_file, 'ValidityThreshold 5000.0\n\n'); % suggested by Sarah
 fclose(svs_file);
 
 %

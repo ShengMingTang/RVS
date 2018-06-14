@@ -26,3 +26,27 @@ do
     fi
 done
 
+for i in `find masked_output/ClassroomVideo -name \*.yuv`
+do
+    if [ ! -f ${i%.yuv}.png ]
+    then
+        ffmpeg -pixel_format yuv420p10le -video_size 4096x2048 -i ${i} -f image2 -vframes 1 ${i%.yuv}.png
+    fi
+done
+
+for i in `find masked_output/TechnicolorHijack -name \*.yuv`
+do
+    if [ ! -f ${i%.yuv}.png ]
+    then
+        ffmpeg -pixel_format yuv420p10le -video_size 4096x4096 -i ${i} -f image2 -vframes 1 ${i%.yuv}.png
+    fi
+done
+
+for i in `find masked_output/TechnicolorMuseum -name \*.yuv`
+do
+    if [ ! -f ${i%.yuv}.png ]
+    then
+        ffmpeg -pixel_format yuv420p10le -video_size 2048x2048 -i ${i} -f image2 -vframes 1 ${i%.yuv}.png
+    fi
+done
+
