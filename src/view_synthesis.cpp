@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 		// BK: As soon as we have the manual as input document (and when accepted as output document), then we add it to this statement
 		std::cout
 			<< " - -------------------------------------------------------------------------------------- -\n"
-			<< "|    Reference View Synthesizer (RVS), branch: master                                      |\n"
+			<< "|    Reference View Synthesizer (RVS), branch: v1.0-dev                                    |\n"
 			<< "|    MPEG2018/N17618 Common Test Conditions on 3DoF+ and Windowed 6DoF                     |\n"
 			<< "|    Based on ULB Several inputs View Synthesis (SVS) with 3DoF+ extensions by Philips     |\n"
 			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
