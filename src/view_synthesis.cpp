@@ -40,6 +40,14 @@ int main(int argc, char* argv[])
 	{
 		PROF_BEGIN();
 
+		// BK: As soon as we have the manual as input document (and when accepted as output document), then we add it to this statement
+		std::cout
+			<< " - -------------------------------------------------------------------------------------- -\n"
+			<< "|    Reference View Synthesizer (RVS), branch: master                                      |\n"
+			<< "|    MPEG2018/N17618 Common Test Conditions on 3DoF+ and Windowed 6DoF                     |\n"
+			<< "|    Based on ULB Several inputs View Synthesis (SVS) with 3DoF+ extensions by Philips     |\n"
+			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
+
 		PROF_START("parsing");
 
 		std::string filename = (argc > 1) ? argv[1] : "./config_files/parameter_file.txt";

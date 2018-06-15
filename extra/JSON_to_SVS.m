@@ -6,8 +6,7 @@
 % Contact : bart.kroon@philips.com
 % 
 % MATLAB script to convert 3DoF+ CfTM style metadata JSON's to the format 
-% used by the SVS extension (feature/3DoFp) and also something that 
-% somewhat resembles VSRS.
+% used by RVS, which is based on SVS configuration file format.
 % 
 % Permission is hereby granted, free of charge, to the members of the Moving Picture
 % Experts Group(MPEG) obtaining a copy of this software and associated documentation
@@ -25,11 +24,10 @@
 % ------------------------------------------------------------------------------ -
 
 
-function JSON_to_SVS_and_VSRS(...
+function JSON_to_SVS(...
     input_view_metadata_path, ...
     output_view_metadata_path, ...
     camparams_path, ...
-    vsrs_config_pathfmt, ...
     svs_config_path, ...
     depth_range_path, ...
     texture_bitdepth, ...
@@ -136,11 +134,17 @@ for n = 1:length(C)
     fprintf(file, '%g %g %g\n', fake');
     fprintf(file, '0\n');
     fprintf(file, '0\n');
-        
-    R_VSRS = P' * EulerAnglesToRotationMatrix(degtorad(C(n).Rotation)) * P;
-    t_VSRS = P' * C(n).Position;
-    
-    M = [R_VSRS t_VSRS]; 
+   
+	% There is an ongoing discussion among the authors of RVS whether M
+	% has the same definition as used by current VSRS camparams. It may
+	% be that VSRS is not following the definitions of
+	% MPEG2015/N15349 FTV Software Framework.
+	% RVS uses the FTV definition that refers back to MPEG2008/N9595
+
+    R = P' * EulerAnglesToRotationMatrix(degtorad(C(n).Rotation)) * P;
+    t = P' * C(n).Position;
+	M = [R t]; 
+	
     fprintf(file, '%g %g %g %g\n', M');
     fprintf(file, '\n');
 end
@@ -163,54 +167,7 @@ for k = 1:Ni
 end
 
 %
-% VSRS
-%
-
-if isequal('format', 'final')
-    
-% Generate configuration files per output view and frame
-for m = 1:length(output_view_indices)
-    oi = 1 + output_view_indices(m);
-
-    vsrs_config_path = sprintf(vsrs_config_pathfmt, Co(oi).Name);
-    vsrs_file = fopen(vsrs_config_path, 'w');
-
-    fprintf(vsrs_file, 'DepthType 1\n');
-    fprintf(vsrs_file, 'SourceWidth %d\n', resolution(1));
-    fprintf(vsrs_file, 'SourceHeight %d\n', resolution(2));
-    fprintf(vsrs_file, 'StartFrame 0\n');
-    fprintf(vsrs_file, 'TotalNumberOfFrames %d\n', min(max_frames, input_view_metadata.Frames_number));
-    fprintf(vsrs_file, 'NumberOfInputs %d\n', length(input_view_indices));
-    fprintf(vsrs_file, '\n');
-   
-    % NOTE: We need to decide on a naming system
-    %       This is a suggestion but it is not backwards compatible
-    for k = 1:length(input_view_indices)
-        ii = 1 + input_view_indices(k);
-        fprintf(vsrs_file, 'Input%dNearestDepthValue %g\n', k - 1, Ci(ii).Rmin);
-        fprintf(vsrs_file, 'Input%dFarthestDepthValue %g\n', k - 1, Ci(ii).Rmax);
-        fprintf(vsrs_file, 'Input%dImageName %s\n', k - 1, input_texture_path{ii});
-        fprintf(vsrs_file, 'Input%dDepthMapName %s\n', k - 1, input_depth_path{ii});
-        fprintf(vsrs_file, '\n');        
-    end
-    
-    fprintf(vsrs_file, 'CameraParameterFile %s\n', camparams_path);
-    fprintf(vsrs_file, 'VirtualCameraName %s\n', Co(oi).Name);
-    output_texture_path = sprintf(output_pathfmt, Co(oi).Name, virtual_size);
-    fprintf(vsrs_file, 'OutputVirtualViewImageName %s\n', output_texture_path);
-    fprintf(vsrs_file, 'ColorSpace 0\n');
-    fprintf(vsrs_file, 'Precision 4\n');
-    fprintf(vsrs_file, 'Filter 0\n');
-    fprintf(vsrs_file, 'BoundaryNoiseRemoval 0\n');
-    fprintf(vsrs_file, 'SynthesisMode 2 \n');
-    fprintf(vsrs_file, 'ViewBlending 0\n');
-    fclose(vsrs_file);
-end
-
-end
-
-%
-% SVS
+% SVS-derived configuration file format
 %
 
 svs_file = fopen(svs_config_path, 'w');

@@ -154,7 +154,6 @@ namespace
 		if (image.channels() != 1)
 			throw std::runtime_error("Depth file has the wrong number of channels");
 		
-		// BK: The original SVS appears not to scale cv::imread depth output.
 		image.convertTo(image, CV_32F);
 
 		return image;

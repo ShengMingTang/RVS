@@ -1,9 +1,11 @@
 build
 output
 Plane_B'_Kinect.zip
-SVS
+RVS
 *.yuv*
 *.png
 *.log
 Plane_B'
-SVS-o*
+RVS-o*
+html
+

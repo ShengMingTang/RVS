@@ -52,25 +52,16 @@ void Pose::FromCsv( std::string rowCsv )
     }
     else if( vec.size() == numExpectedForTimeStampAndModelMatrix )
     {
-        // vec[0] = timestamp
         rotation     = cv::Matx33f( vec[1], vec[2], vec[3],   vec[5], vec[6], vec[7],   vec[9], vec[10], vec[11] );
         translation  = cv::Vec3f(vec[4], vec[8], vec[12] );
     }
     else if( vec.size() == numExpectedForTranslationAndEulerAngles )
     {
-        cv::Vec3f eulerDegrees = cv::Vec3f(vec[3], vec[4], vec[5]);
         cv::Vec3f euler        = cv::Vec3f(vec[3], vec[4], vec[5]) * float( CV_PI / 180.0 );
         
         // local coordinates
         rotation          = detail::EulerAnglesToRotationMatrix(euler);
         translation       = cv::Vec3f( vec[0], vec[1], vec[2] );
-
-#if 0
-        // convert to global
-        Pose poseInv      = Invert();
-        rotation          = poseInv.rotation;
-        translation       = poseInv.translation;
-#endif
     }
     else
         throw std::runtime_error( "Error: expected 6 or 12 or 17 comma separated values \n" + rowCsv );
@@ -82,11 +73,6 @@ std::string Pose::ToCsv(bool eulerAngles) const
     
     if( eulerAngles )
     {
-#if 0
-        auto poseInv = Invert();
-        auto euler = detail::RotationMatrixToEulerAngles(poseInv.rotation);
-        auto T = poseInv.translation;
-#endif   
         auto euler = detail::RotationMatrixToEulerAngles(rotation);
         auto eulerDegrees = euler * float( 180.0 / CV_PI );
         
@@ -124,11 +110,11 @@ std::vector<Pose> pose_traces::ReadPoseTrace( std::string fileNameCsv )
 {
     auto lines = detail::GetTextLines(fileNameCsv);
 
-    auto N = lines.size();
+    auto N = static_cast<int>(lines.size());
 
     std::vector<Pose> poseTrace;
 
-    for( int i = 1; i<N; ++i)   // skip first line
+    for( int i = 1; i < N; ++i)   // skip first line
     {
         auto line = detail::Trim( lines[i] );
         if( !line.empty() )
@@ -192,9 +178,6 @@ cv::Vec3f detail::RotationMatrixToEulerAngles( const cv::Matx33f& R )
     return cv::Vec3f( yaw, pitch, roll);
 
 }
-
-
-
 
 
 // Calculates rotation matrix given Euler angles.

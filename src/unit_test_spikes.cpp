@@ -116,7 +116,7 @@ FUNC( SpikeConvertPoseTraceToEuler )
     
         // re-sample poses trace 1/3
         std::vector<Pose> poseTrace2;
-        for( int i=0u; i< poseTrace.size(); ++i)
+        for( auto i=0u; i< poseTrace.size(); ++i)
             if( i % 3u == 0 )
             {
                 poseTrace2.emplace_back();

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
-set(PROJECT_NAME "SVS")
+set(PROJECT_NAME "RVS")
 project(${PROJECT_NAME})
 
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")

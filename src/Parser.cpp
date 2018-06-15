@@ -427,7 +427,7 @@ void Parser::read_SVS_config_file() {
     if (seek_string(filename_parameter_file, 1, name_pose_trace_file, "VirtualPoseTraceName", "Name of pose trace file")) {
         config.pose_trace = pose_traces::ReadPoseTrace(name_pose_trace_file[0] );
 
-        if( config.number_of_frames > config.pose_trace.size() )
+        if( static_cast<unsigned>(config.number_of_frames) > config.pose_trace.size() )
             throw std::runtime_error("Error: Number of frames to process is larger then number of entries in pose trace file");
 
         std::cout << std::endl << "using pose trace with " << config.pose_trace.size() << " entries" << std::endl;

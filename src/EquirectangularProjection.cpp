@@ -111,9 +111,10 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat1f radiusMap) const
     return verticesXYZ;
 }
 
-cv::Mat3f erp::Unprojector::unproject( cv::Mat2f image_pos, cv::Mat1f radiusMap) const 
+cv::Mat3f erp::Unprojector::unproject( cv::Mat2f /*image_pos*/, cv::Mat1f radiusMap) const 
 {
-    image_pos; // ignore image pos, assume regular grid
+    // TODO: Use image_pos instead of calculating them again
+    
     return unproject(radiusMap);
 }
 

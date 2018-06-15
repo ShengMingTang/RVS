@@ -38,7 +38,7 @@ then
 fi
 
 # Verify that the executable is here
-if [ ! -f "SVS" ]
+if [ ! -f "RVS" ]
 then
 	echo "Build the project and make a symlink to the executable or copy it here"
 	# For example:
@@ -47,7 +47,7 @@ then
 	#   cmake-gui ../..
 	#   make
 	#   popd
-	#   ln -s build/linux/SVS/SVS .
+	#   ln -s build/linux/RVS/RVS .
 	exit 1
 fi
 
@@ -68,8 +68,5 @@ then
 fi
 
 # Run
-./SVS config_files/example_config_file.cfg
-
-# Bit-true check
-echo 681e96bb598cf47db89a2cbd3727b06a *055003250438_from_030003070370_030003430506.yuv | md5sum -c
+./RVS config_files/example_config_file.cfg
 
