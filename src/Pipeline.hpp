@@ -65,7 +65,7 @@ public:
 	*/
 	void execute();
 
-//private:
+private:
 	/**
 	\brief Parse the config file
 	*/
@@ -81,7 +81,11 @@ public:
 	*/
 	void compute_views(int frame);
 
-//private:
+	/**
+	\brief Dump maps for analysis purposes
+	*/
+	void dump_maps(std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender);
+
 	std::string filename;
 
 	Config config;

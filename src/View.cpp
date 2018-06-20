@@ -143,10 +143,27 @@ InputView::InputView(
 	float z_near,
 	float z_far,
 	int frame)
+	: filepath_color(filepath_color)
+	, filepath_depth(filepath_depth)
+	, size(size)
+	, bit_depth_color(bit_depth_color)
+	, bit_depth_depth(bit_depth_depth)
+	, z_near(z_near)
+	, z_far(z_far)
+	, frame(frame)
+{
+}
+
+void InputView::load()
 {
 	assign(
 		read_color(filepath_color, size, bit_depth_color, frame),
 		read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far, frame),
 		cv::Mat1f(),
 		cv::Mat1f());
+}
+
+void InputView::unload()
+{
+	assign(cv::Mat3f(), cv::Mat1f(), cv::Mat1f(), cv::Mat1f());
 }

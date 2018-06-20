@@ -94,7 +94,6 @@ void Pipeline::load_images(int frame) {
 		throw std::runtime_error("We lost compatibility with \"RGB\" depth maps. z_far and z_near are required.");
 	}
 
-	PROF_START("loading");
 	for (std::size_t idx = 0; idx != input_images.size(); ++idx)
 	{
 		input_images[idx] = InputView(
@@ -107,7 +106,6 @@ void Pipeline::load_images(int frame) {
 			config.zfar[idx],
 			frame);
 	}
-	PROF_END("loading");
 }
 
 void Pipeline::compute_views(int frame) {
@@ -140,21 +138,6 @@ void Pipeline::compute_views(int frame) {
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
 
-#if DUMP_MAPS
-			cv::Mat3f rgb;
-			cv::cvtColor(input_images[input_idx].get_color(), rgb, cv::COLOR_YCrCb2BGR);
-			cv::Mat3b color;
-			rgb.convertTo(color, CV_8U, 255.);
-			cv::Mat1w depth;
-			input_images[input_idx].get_depth().convertTo(depth, CV_16U, 2000.);
-
-			std::ostringstream filepath;
-
-			filepath.str(""); filepath << "dump-input-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
-			filepath.str(""); filepath << "dump-input-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
-			filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), input_images[input_idx].get_depth_mask());
-#endif
-
 			// Select type of un-projection 
 			std::unique_ptr<Unprojector> unprojector;
 			if( config.input_projection_type == PROJECTION_PERSPECTIVE )
@@ -173,24 +156,13 @@ void Pipeline::compute_views(int frame) {
 			synthesizer->setUnprojector(unprojector.get());
 			synthesizer->setProjector(projector.get());
 
+			// Memory optimization: Load the input image
+			PROF_START("loading");
+			input_images[input_idx].load();
+			PROF_END("loading");
+
 			// Synthesize view
 			synthesizer->compute(input_images[input_idx]);
-
-#if DUMP_MAPS
-			cv::cvtColor(synthesizer->get_color(), rgb, cv::COLOR_YCrCb2BGR);
-			rgb.convertTo(color, CV_8U, 255.);
-			cv::Mat1w quality;
-			synthesizer->get_quality().convertTo(quality, CV_16U, 4.);
-			synthesizer->get_depth().convertTo(depth, CV_16U, 2000.);
-			cv::Mat1w validity; // triangle shape
-			synthesizer.get()->get_validity().convertTo(validity, CV_16U, 6.);
-
-			filepath.str(""); filepath << "dump-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
-			filepath.str(""); filepath << "dump-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
-			filepath.str(""); filepath << "dump-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity);
-			filepath.str(""); filepath << "dump-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
-			filepath.str(""); filepath << "dump-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), synthesizer->get_depth_mask());
-#endif
 
 			// Blend with previous results
 			PROF_START("blending");
@@ -198,15 +170,12 @@ void Pipeline::compute_views(int frame) {
 			PROF_END("blending");
 
 #if DUMP_MAPS
-			cv::cvtColor(blender->get_color(), rgb, cv::COLOR_YCrCb2BGR);
-			rgb.convertTo(color, CV_8U, 255.);
-			blender->get_quality().convertTo(quality, CV_16U, 4.);
-			blender->get_validity().convertTo(validity, CV_16U, 6.);
-
-			filepath.str(""); filepath << "dump-blended-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
-			filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
-			filepath.str(""); filepath << "dump-blended-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity); 
+			// Dump texture, depth, quality and validity maps for analysis (with DUMP_MAPS enabled)
+			dump_maps(input_idx, virtual_idx, *synthesizer, *blender);
 #endif
+
+			// Memory optimization: Unload the input image 
+			input_images[input_idx].unload();
 		}
 
 		PROF_START("inpainting");
@@ -238,4 +207,43 @@ void Pipeline::parse()
 {
 	Parser p(filename);
 	this->config = p.get_config();
+}
+
+void Pipeline::dump_maps(std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender)
+{
+	cv::Mat3f rgb;
+	cv::Mat3b color;
+	cv::Mat1w depth;
+	cv::Mat1w quality;
+	cv::Mat1w validity; // triangle shape
+	std::ostringstream filepath;
+
+	cv::cvtColor(input_images[input_idx].get_color(), rgb, cv::COLOR_YCrCb2BGR);
+	rgb.convertTo(color, CV_8U, 255.);
+	input_images[input_idx].get_depth().convertTo(depth, CV_16U, 2000.);
+
+	filepath.str(""); filepath << "dump-input-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
+	filepath.str(""); filepath << "dump-input-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
+	filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), input_images[input_idx].get_depth_mask());
+
+	cv::cvtColor(synthesizer.get_color(), rgb, cv::COLOR_YCrCb2BGR);
+	rgb.convertTo(color, CV_8U, 255.);
+	synthesizer.get_quality().convertTo(quality, CV_16U, 4.);
+	synthesizer.get_depth().convertTo(depth, CV_16U, 2000.);
+	synthesizer.get_validity().convertTo(validity, CV_16U, 6.);
+
+	filepath.str(""); filepath << "dump-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
+	filepath.str(""); filepath << "dump-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
+	filepath.str(""); filepath << "dump-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity);
+	filepath.str(""); filepath << "dump-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
+	filepath.str(""); filepath << "dump-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), synthesizer.get_depth_mask());
+
+	cv::cvtColor(blender.get_color(), rgb, cv::COLOR_YCrCb2BGR);
+	rgb.convertTo(color, CV_8U, 255.);
+	blender.get_quality().convertTo(quality, CV_16U, 4.);
+	blender.get_validity().convertTo(validity, CV_16U, 6.);
+
+	filepath.str(""); filepath << "dump-blended-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
+	filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
+	filepath.str(""); filepath << "dump-blended-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity);
 }

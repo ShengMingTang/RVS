@@ -108,4 +108,17 @@ public:
 		float z_near,
 		float z_far,
 		int frame);
+
+	void load();
+	void unload();
+
+private:
+	std::string filepath_color;
+	std::string filepath_depth;
+	cv::Size size;
+	int bit_depth_color;
+	int bit_depth_depth;
+	float z_near;
+	float z_far;
+	int frame;
 };
