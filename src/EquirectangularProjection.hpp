@@ -90,7 +90,7 @@ cv::Vec3f calculate_euclidian_coordinates( const cv::Vec2f& phiTheta );
 @param xyz_norm Normalized vector in euclidian coordinates 
 @return phi theta, the sperical coordinates
 */
-cv::Vec2f calculate_sperical_coordinates( const cv::Vec3f& xyz_norm );
+cv::Vec2f calculate_spherical_coordinates( const cv::Vec3f& xyz_norm );
 
 /**\brief Equirectangular Unprojector*/
 class Unprojector : public ::Unprojector
@@ -144,7 +144,7 @@ public:
 	@param imRadius Output equirectangular radius map
 	@param wrapping_method
 	@return Map of the pixels in image coordinates
-	\see calculate_horizontal_image_coordinate(), calculate_vertical_image_coordinate(), calculate_sperical_coordinates()
+	\see calculate_horizontal_image_coordinate(), calculate_vertical_image_coordinate(), calculate_spherical_coordinates()
 	*/
     cv::Mat2f project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, WrappingMethod& wrapping_method) const override;
 };

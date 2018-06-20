@@ -105,7 +105,7 @@ FUNC( TestERP_CoordinateTransform )
             auto sphericalExpected = cv::Vec2f(phi, theta);
 
             auto xyzNorm           = erp::calculate_euclidian_coordinates( sphericalExpected );
-            auto sphericalActual   = erp::calculate_sperical_coordinates( xyzNorm);
+            auto sphericalActual   = erp::calculate_spherical_coordinates( xyzNorm);
 
             auto err0 = testing::DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] );
             auto err1 = testing::DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] );

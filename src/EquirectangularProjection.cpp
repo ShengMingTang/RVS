@@ -41,7 +41,7 @@ cv::Vec3f erp::calculate_euclidian_coordinates( const cv::Vec2f& phiTheta )
                        std::sin(theta) );
 }
 
-cv::Vec2f erp::calculate_sperical_coordinates( const cv::Vec3f& xyz_norm )
+cv::Vec2f erp::calculate_spherical_coordinates( const cv::Vec3f& xyz_norm )
 {
     const float& x = xyz_norm[0];
     const float& y = xyz_norm[1];
@@ -147,7 +147,7 @@ cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, W
             imRadius(i,j)      = radius;
 
             cv::Vec3f xyzNorm  = xyz / radius;
-            cv::Vec2f phiTheta = erp::calculate_sperical_coordinates(xyzNorm);
+            cv::Vec2f phiTheta = erp::calculate_spherical_coordinates(xyzNorm);
 
             imUV(i,j)[0] = erp::calculate_horizontal_image_coordinate(phiTheta[0], full_width) - offset;
             imUV(i,j)[1] = erp::calculate_vertical_image_coordinate(phiTheta[1], output_height);
