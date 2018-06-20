@@ -27,35 +27,54 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ - */
 
+/**
+@file Projector.hpp
+*/
+
 #pragma once
 #include "Parameters.hpp"
 
 #include <opencv2/core.hpp>
 
+/**\brief Wrapping method*/
 enum class WrappingMethod {
     NONE = 0,
     HORIZONTAL = 1
 };
 
+/**\brief Projector.
+
+Unroject the pixels from euclidian coordinate system to image space and depth map.*/
 class Projector
 {
 public:
+	/**\brief Constructor*/
     Projector();
+
+	/**\brief Constructor
+	@param parameters Parameters of the View
+	@param size Size of the View 
+	*/
     Projector(Parameters const&, cv::Size);
+
+	/**\brief Destructor*/
 	virtual ~Projector();
 
-	// world_pos in OMAF Referential: x forward, y left, z up
-	// depth [out] increases with distance from virtual camera
-	// result in image coordinates: u right, v down
+	/** 
+	@param world_pos in OMAF Referential: x forward, y left, z up
+	@param[out] depth increases with distance from virtual camera
+	@param[out] wrapping_method Equirectangular or Perspective
+	@return Result in image coordinates: u right, v down
+	 */
 	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const = 0;
 
-	// Virtual view rotation matrix (like in VSRS camparams)
+	/**@return Virtual view rotation matrix (like in VSRS camparams)*/
 	cv::Matx33f const& get_rotation() const;
 
-	// Virtual view translation vector (like in VSRS camparams)
+	/**@return Virtual view translation vector (like in VSRS camparams)*/
 	cv::Vec3f get_translation() const;
 
-	// Size of the virtual view in pixels
+	/**@return Size of the virtual view in pixels*/
 	cv::Size get_size() const;
 
 private:

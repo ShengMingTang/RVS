@@ -43,6 +43,9 @@ Contact : bart.kroon@philips.com
 #pragma once
 #include <opencv2/core.hpp>
 
+/**
+@file View.hpp
+*/
 
 /**
 Class representing an image, optionally a depth map, and optionally a quality map
@@ -52,34 +55,34 @@ class View
 public:
 	View() = default;
 
-	// Initialize all maps at once
+	/** Initialize all maps at once */
 	View(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
 
-	// Assign all maps at once
+	/** Assign all maps at once */
 	void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
 
-	// Return the texture
+	/** @return the texture */
 	cv::Mat3f get_color() const;
 
-	// Return the depth map (same size as texture)
+	/** @return the depth map (same size as texture) */
 	cv::Mat1f get_depth() const;
 
-	// Return the quality map (same size as texture)
+	/** @return the quality map (same size as texture) */
 	cv::Mat1f get_quality() const;
 
-	// Return the validity map (same size as texture)
+	/** @return the validity map (same size as texture) */
 	cv::Mat1f get_validity() const;
 
-	// Return the size of the texture and depth map
+	/** @return the size of the texture and depth map */
 	cv::Size get_size() const;
 
-	// Return a mask with all valid depth values
+	/** @return a mask with all valid depth values */
 	cv::Mat1b get_depth_mask() const;
 
-	// Return a mask for inpainting
+	/** @return a mask for inpainting */
 	cv::Mat1b get_inpaint_mask() const;
 
-	// Return a mask for invalid masking
+	/** @return a mask for invalid masking */
 	cv::Mat1b get_validity_mask(float threshold) const;
 
 private:
@@ -97,8 +100,21 @@ Class representing a loaded image and depth map
 class InputView : public View
 {
 public:
+	/** Empty input view */
 	InputView();
 
+	/** 
+	Constructor.
+	Loads an input view and its depth map.
+	@param filepath_color Color file to be loaded. The format can be png/jpeg or yuv
+	@param filepath_depth Depth map to be loaded. The format has to be yuv.
+	@param size Size of the image to be loaded.
+	@param bit_depth_color Depth of raw texture stream, if input files are in yuv format
+	@param bit_depth_depth Depth of raw depth stream, if input files are in yuv format
+	@param z_near Lowest depth value
+	@param z_far Highest depth value
+	@param frame Frame to load.
+	*/
 	InputView(
 		std::string filepath_color, 
 		std::string filepath_depth, 

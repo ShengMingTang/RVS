@@ -28,16 +28,32 @@ copies, substantial portions or derivative works of the Software.
 
 #pragma once
 
+/**
+@file Timer.hpp
+*/
+
 #ifdef WITH_EASY_PROFILER
 #include <easy/profiler.h>
 #else 
 #include <chrono>
 #include <map>
 #include <string>
+
+/**
+\brief Profiler class
+
+If WITH_EASY_PROFILER flag is on, saves the computation time wit a easy profiler file
+
+Else the computation time is displayed during the execution
+*/
 class Timer {
 public:
+	/**\brief Start the profiling here
+	@param timername Name of the profiled block*/
 	static void start(std::string timername, uint32_t opt_color = 0xfff080aa);
 
+	/**\brief End the profiling 
+	@param timername Name of the profiled block*/
 	static void end(std::string timername);
 
 	static void begin();

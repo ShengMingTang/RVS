@@ -47,8 +47,13 @@ Contact : bart.kroon@philips.com
 */
 
 /**
-Writes a color image in RGB or YUV fileformat
-@param filename name of the image file
-@param img image to write
+\brief Write a color image in RGB or YUV fileformat.
+
+Use opencv cv::imwrite() function to load non .YUV images.
+
+@param filename Name of the image file to write
+@param image Image to write
+@param bit_depth Bit depth of the image to write (for YUV)
+@param frame Frame number (for YUV)
 */
 void write_color(std::string filename, const cv::Mat3f image, int bit_depth, int frame);

@@ -27,27 +27,46 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ - */
 
+
+/**
+@file Unprojector.hpp
+\brief The file containing the Unprojector class
+*/
 #pragma once
 #include "Parameters.hpp"
 
 #include <opencv2/core.hpp>
 
+/**\brief Unprojector. 
+
+Project the pixels from image space and depth map to euclidian coordinate system.
+*/
 class Unprojector
 {
 public:
+	/**\brief Constructor*/
     Unprojector();
+
+	/**\brief Constructor
+	@param parameters Parameters of the view*/
     Unprojector(Parameters const& parameters);
+	
+	/**\brief Destructor*/
 	virtual ~Unprojector();
 
-	// image_pos in image coordinates: u right, v down
-	// depth increases with distance from virtual camera
-	// result in OMAF Referential: x forward, y left, z up
+	/** 
+	\brief Unproject points in the image space to 3D space
+	@param image_pos Position in image coordinates: u right, v down
+	@param depth The depth increases with distance from virtual camera
+	@return Result in OMAF Referential: x forward, y left, z up*/
 	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const = 0;
 
-	// Input view rotation matrix (like in VSRS camparams)
+	/** \brief Input view rotation matrix (like in VSRS camparams)
+	@return Rotation matrix*/
 	cv::Matx33f const& get_rotation() const;
 
-	// Input view translation vector (like in VSRS camparams)
+	/**\brief Input view translation vector (like in VSRS camparams)
+	@return Translation vector*/
 	cv::Vec3f get_translation() const;
 
 private:

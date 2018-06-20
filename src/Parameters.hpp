@@ -40,10 +40,12 @@ Contact : bart.kroon@philips.com
 
 ------------------------------------------------------------------------------ -*/
 
+
 #pragma once
 
 #include <opencv2/core.hpp>
 
+/**\brief Coordinate system of the cameras configuration file*/
 enum class CoordinateSystem
 {
 	VSRS,
@@ -65,7 +67,8 @@ public:
 	@param rotation External parameter of rotation
 	@param translation External parameter of translation
 	@param camera_matrix Internal parameters
-	@param sensor_size Size of the sensor, in the same unit as camera_matrix
+	@param sensor Size of the sensor, in the same unit as camera_matrix
+	@param system CoordinateSystem of those parameters
 	*/
 	Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor, CoordinateSystem system);
 
@@ -81,11 +84,16 @@ public:
 	/**Size of the sensor, in the same unit as camera_matrix*/
 	float get_sensor() const;
 
+	/**
+	@param relative_rotation
+	*/
     void adapt_initial_rotation( const cv::Matx33f& relative_rotation )
     {
         rotation = relative_rotation * rotation0;
     }
-    
+	/**
+	@param relative_translation
+	*/
     void adapt_initial_translation( const cv::Vec3f& relative_translation )
     {
         translation = relative_translation + translation0;

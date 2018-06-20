@@ -27,18 +27,35 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ - */
 
+/**
+@file PerspectiveProjector.hpp
+*/
 #pragma once
 #include "Projector.hpp"
 #include "Config.hpp"
 
+/**\brief PerspectiveProjector*/
 class PerspectiveProjector : public Projector
 {
 public:
+	/**\brief Constructor
+	@param parameters Parameters of the View
+	@param size Size of the View
+	*/
 	PerspectiveProjector(Parameters const& parameters, cv::Size size);
 
-	// world_pos in OMAF Referential: x forward, y left, z up
-	// depth [out] is equal to x
-	// result in image coordinates: u right, v down
+
+	/**\brief Project from 3D to images coordinates and outputs a depth map
+
+	world_pos in OMAF Referential: x forward, y left, z up
+	depth [out] is equal to x
+	result in image coordinates: u right, v down
+
+	@param world_pos 3D coordinates of the pixels
+	@param depth Output perpective depth map
+	@param wrapping_method
+	@return Map of the pixels in image coordinates
+	*/
 	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
 
 private:

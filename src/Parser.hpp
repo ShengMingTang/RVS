@@ -33,6 +33,9 @@ copies, substantial portions or derivative works of the Software.
 #include <vector>
 
 
+/**
+@file Parser.hpp
+*/
 
 /**
 Parsing of the config file
@@ -40,16 +43,32 @@ Parsing of the config file
 class Parser
 {
 public:
+	/**
+	\brief Parse the config file.
+	@param filename File to be parsed. 
+	*/
 	Parser(const std::string & filename);
+
+	/**
+	\brief Destructor.
+	*/
 	~Parser();
 
+	/**\brief Get the View number idx*/
 	View operator[](size_t idx) {
 		return real_images[idx];
 	}
 
+	/**
+	\brief Returns the input views
+	*/
 	std::vector<View>& get_images() {
 		return real_images;
 	}
+
+	/**
+	\brief Returns the configuration (see Config) 
+	*/
 	Config get_config() { return config; };
 
 
@@ -70,6 +89,9 @@ private:
 
 public:
 
+	/**
+	\brief Working color space
+	*/
 	enum {
 		RGB = 0,
 		DEPTH = 1
@@ -86,4 +108,11 @@ private:
 
 };
 
+/**
+\brief Reads the camera parameters for the cameras in the file filename
+@param filename Input file with the cameras parameters
+@param camnames Cameras to be read in the file
+@param params Output cameras parameters
+@param sensor_size Size of the sensor (should be the same as the input image size)
+*/
 void read_cameras_paramaters(std::string filename, std::vector<std::string>& camnames, std::vector<Parameters>& params, float& sensor_size);

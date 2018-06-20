@@ -40,7 +40,7 @@ copies, substantial portions or derivative works of the Software.
 	Inpaints the image following the mask
 	@param img Image to inpaint
 	@param mask Area to inpaint
-	@param color Tells if the image is color or grayscale
+	@param color True if the image is color, false if it is grayscale
 	@return inpainted image
 */
 cv::Mat inpaint(const cv::Mat& img, const cv::Mat& mask, bool color);

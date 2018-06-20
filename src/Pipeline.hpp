@@ -43,7 +43,20 @@ Contact : bart.kroon@philips.com
 #include "Config.hpp"
 
 /**
-The pipeline of view synthesis
+@file Pipeline.hpp
+\brief The file containing the pipeline functions
+*/
+
+/**
+\brief The pipeline of view synthesis
+
+The pipeline executes the following steps:
+	- Parsing the configuration file (see Parser)
+	- Loading the input reference views (see InputView, and load_images());
+	- View synthesis of the target view once for each input reference view (see SynthetizedView);
+	- Blending all the SynthetizedView together by assigning a per-pixel quality to each synthesized view (see BlendedView);
+	- Inpainting to fill the remaining holes (see inpaint());
+	- Writing the output (see write_color()).
 */
 class Pipeline
 {
@@ -61,7 +74,7 @@ public:
 	/**
 	\brief Execution of the view synthesis
 
-	Execution consist in parsing, image loading, view computation (warping, blending, inpainting), view writing
+	Execution consists in parsing, image loading, view computation (warping, blending, inpainting), view writing
 	*/
 	void execute();
 
@@ -72,12 +85,16 @@ private:
 	void parse();
 
 	/**
-	\brief Load all the input views
+	\brief Loads all the input views
+	@param frame Frame number to load (for YUV image)
 	*/
 	void load_images(int frame);
 
 	/**
-	\brief Compute all the virtual views
+	\brief Computes all the virtual views
+
+	Executes the view view computation (warping, blending, inpainting) and writing.
+	@param frame Frame number of the frame being computed (for YUV image)
 	*/
 	void compute_views(int frame);
 
@@ -86,9 +103,13 @@ private:
 	*/
 	void dump_maps(std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender);
 
+	/** File containing the parameters of the view synthesis*/
 	std::string filename;
 
+	/** Config of the view synthesis*/
 	Config config;
+
+	/** Input reference views */
 	std::vector<InputView> input_images;
 };
 

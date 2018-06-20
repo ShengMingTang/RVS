@@ -49,25 +49,45 @@ Contact : bart.kroon@philips.com
 
 #include <opencv2/core.hpp>
 
+/**
+@file Config.hpp
+\brief The file containing the configuration
+*/
 
+/**\brief Working color space
 
-
+Doesn't need to be the same as the input our output color space
+*/
 enum ColorSpace {
 	COLORSPACE_YUV = 0,
 	COLORSPACE_RGB = 1
 };
+/**\brief View synthesis method
+
+For now only the triangle method is available
+*/
 enum ViewSynthesisMethod {
 	SYNTHESIS_TRIANGLE = 0
 };
+
+/**\brief Blending method
+
+\see BlendedView
+*/
 enum BlendingMethod {
 	BLENDING_SIMPLE = 0,
 	BLENDING_MULTISPEC = 1
 };
+
+/**\brief Inpainting method*/
 enum InpaintingMethod {
 	INPAINTING_OFF = 0,
 	INPAINTING_LINES = 1
 };
 
+/**\brief Projection type
+
+\see Projector*/
 enum ProjectionType {
     PROJECTION_PERSPECTIVE = 0,
     PROJECTION_EQUIRECTANGULAR = 1
@@ -75,16 +95,32 @@ enum ProjectionType {
 
 /**Precision*/
 extern float rescale;
+
+/**\brief RGB color for empty pixel (when no inpainting)*/
 const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
+
+/**\brief YUV color for empty pixel (when no inpainting)*/
 const cv::Vec3f empty_yuv_color(0.0f, 0.0f, 0.0f);
+
 /**Working color space (RGB or YUV). Independent of the input or output formats*/
 extern ColorSpace color_space;
+
+/**\brief Method for view synthesis*/
 extern ViewSynthesisMethod vs_method;
 
-
+/**
+\brief Configuration parameters
+*/
 class Config {
 public:
+	/**
+	\brief Constructor
+	*/
 	Config() {};
+
+	/**
+	\brief Destructor
+	*/
 	~Config() {  };
 	/** Input camera names to lookup in the config file */
 	std::vector<std::string> InputCameraNames;
@@ -122,11 +158,21 @@ public:
 	/** zfar of every input view in case of disparity map yuv file */
 	std::vector<float> zfar;
 
-	/** "ALL" to Synthesized all the views of the config file or the name of each output filename */
+	/** 
+	Name of the output files
+	
+	Set to "ALL" to synthesize all the views of the config file or the name of each output filename */
 	std::vector<std::string> outfilenames;
 
+	/**
+	Name of the output masked files
+	*/
 	std::vector<std::string> outmaskedfilenames;
 
+
+	/**
+	Threshold for valid pixels
+	*/
 	float validity_threshold = 5000.f;
 
 	/** What is the extension of the files to use if not specified in configuration file */
@@ -144,12 +190,22 @@ public:
 	/** Size of output image (multiply by rescale to get the working size)*/
 	cv::Size virtual_size = cv::Size(0, 0);
 
+	/** Blending method (see BlendedView) */
 	BlendingMethod blending_method = BLENDING_SIMPLE;
+
+	/** Low frequency blending factor in BlendedViewMultiSpec */
 	float blending_low_freq_factor = 1.0f;
+
+	/** High frequency blending factor in BlendedViewMultiSpec */
 	float blending_high_freq_factor = 4.0f;
+
+	/** Blending factor in BlendedViewSimple */
 	float blending_factor = 1.0f;
 
+	/** Input projection type */
     ProjectionType input_projection_type   = PROJECTION_PERSPECTIVE;
+
+	/** Output projection type */
     ProjectionType virtual_projection_type = PROJECTION_PERSPECTIVE;
 
 	/**size of the cameras sensor, in the same unit as focal length*/
@@ -163,6 +219,10 @@ public:
 
     /** filename of the pose trace file*/
     std::string name_pose_trace;
+
+	/** true if using pose trace*/
     bool use_pose_trace;
+
+	/**Pose*/
     std::vector<pose_traces::Pose> pose_trace;
 };

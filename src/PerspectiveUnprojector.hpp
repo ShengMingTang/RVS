@@ -31,14 +31,29 @@ copies, substantial portions or derivative works of the Software.
 #include "Unprojector.hpp"
 #include "Config.hpp"
 
+/**
+@file PerspectiveUnprojector.hpp
+*/
+
+/**\brief PerspectiveUnprojector*/
 class PerspectiveUnprojector : public Unprojector
 {
 public:
+	/**\brief Constructor
+	@param parameters Parameters of the View
+	*/
 	PerspectiveUnprojector(Parameters const& parameters);
 
-	// image_pos in image coordinates: u right, v down
-	// depth is equal to x
-	// world_pos in OMAF Referential: x forward, y left, z up
+	/**\brief Project in 3D the normalized euclidian coordinates thanks to the depth map
+	
+	image_pos in image coordinates: u right, v down
+	depth is equal to x
+	world_pos in OMAF Referential: x forward, y left, z up
+
+	@param image_pos UV coordinate in the image
+	@param depth Perspective depth map
+	@return Map of the pixels in euclidian coordinates
+	*/
 	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const;
 
 private:

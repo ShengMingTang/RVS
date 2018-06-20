@@ -49,21 +49,29 @@ Contact : bart.kroon@philips.com
 */
 
 /**
-Translates camera in any 3D direction
+\brief Translate and rotate the camera in any 3D direction according to the input position map
+
+The image is divided into triangles which vertices are the centers of the pixels. Those triangle that are wrapped according to the input input position, and rasterized.
+
+The output is the new color image, the new corresponding depth map, and a quality map indicating the quality of each pixel.
+
 @param input_color Input color map
 @param input_depth Input depth map; valid values are > 0 (invalid may be NaN or <= 0)
 @param input_positions Warped coordinate map (result of unproject -> rotate/translate -> project)
-@param depth Output depth map
-@param quality Quality metric to drive blending; involves depth and shape of warped triangles (elongated and big = low quality)
-@result Output color map
+@param output_size Output size of the color image
+@param[out] depth Output depth map
+@param[out] quality Quality metric to drive blending; involves depth and shape of warped triangles (elongated and big = low quality)
+@param horizontalWrap
+@return Output color map
 */
 cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality, bool horizontalWrap);
 
 /**
-Translates camera in any 3D direction
+Translate camera in any 3D direction
 @param input_color Input color map
 @param input_depth Input depth map; valid values are > 0 (invalid may be NaN or <= 0)
 @param input_positions Warped coordinate map (result of unproject -> rotate/translate -> project)
+@param output_size Output size of the color image
 @param depth Output depth map
 @param quality Quality metric to drive blending; involves depth and shape of warped triangles (elongated and big = low quality)
 @result Output color map
