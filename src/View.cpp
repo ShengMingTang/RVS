@@ -44,7 +44,34 @@ Contact : bart.kroon@philips.com
 #include "inpainting.hpp"
 #include "image_loading.hpp"
 
+#include <fstream>
 #include <iostream>
+
+#define DUMP_MEMORY_USE true
+
+#if DUMP_MEMORY_USE
+namespace
+{
+	std::size_t memory_use = 0;
+
+	std::string const keys[] = { "VmRSS:", "RssFile:", "Threads:" };
+
+	void logProcessStatus()
+	{
+		std::ifstream stream("/proc/self/status");
+		std::string line;
+
+		while (std::getline(stream, line)) {
+			for (auto key : keys) {
+				if (key == line.substr(0, key.size())) {
+					std::clog << line << '\n';
+					break;
+				}
+			}
+		}
+	}
+}
+#endif
 
 // Initialize all maps at once
 View::View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f validity)
@@ -52,14 +79,39 @@ View::View(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f validi
 	assign(color, depth, quality, validity);
 }
 
+View::~View()
+{
+#if DUMP_MEMORY_USE
+	memory_use -= _color.size().area() * _color.elemSize();
+	memory_use -= _depth.size().area() * _depth.elemSize();
+	memory_use -= _validity.size().area() * _validity.elemSize();
+	std::clog << __FUNCTION__ << ": " << std::ldexp(double(memory_use), -30) << " GB\n";
+	logProcessStatus(); 
+#endif
+}
+
 // Initialize all maps at once
 void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f validity)
 {
+#if DUMP_MEMORY_USE
+	memory_use -= _color.size().area() * _color.elemSize();
+	memory_use -= _depth.size().area() * _depth.elemSize();
+	memory_use -= _validity.size().area() * _validity.elemSize();
+#endif
+
 	_color = color;
 	_depth = depth;
 	_quality = quality;
 	_validity = validity;
 	validate();
+
+#if DUMP_MEMORY_USE
+	memory_use += _color.size().area() * _color.elemSize();
+	memory_use += _depth.size().area() * _depth.elemSize();
+	memory_use += _validity.size().area() * _validity.elemSize();
+	std::clog << __FUNCTION__ << ": " << std::ldexp(double(memory_use), -30) << " GB\n";
+	logProcessStatus();
+#endif
 }
 
 // Return the texture

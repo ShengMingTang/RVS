@@ -58,6 +58,8 @@ public:
 	/** Initialize all maps at once */
 	View(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
 
+	~View();
+
 	/** Assign all maps at once */
 	void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
 
