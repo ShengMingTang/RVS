@@ -165,6 +165,10 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 		}
 	}
 
+	// Memory optimization: release memory prior to allocation
+	input_depth_mask.release();
+	new_depth_prologation_mask.release();
+
 	depth = 1.f / depth_inv;
 
 	return color;

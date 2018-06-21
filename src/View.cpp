@@ -47,7 +47,7 @@ Contact : bart.kroon@philips.com
 #include <fstream>
 #include <iostream>
 
-#define DUMP_MEMORY_USE true
+#define DUMP_MEMORY_USE false
 
 #if DUMP_MEMORY_USE
 namespace
