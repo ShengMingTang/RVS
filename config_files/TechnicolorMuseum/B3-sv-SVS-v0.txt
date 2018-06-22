@@ -69,7 +69,7 @@ VirtualWidth 2048
 
 VirtualHeight 2048
 
-Precision 3.0
+Precision 1.0
 
 ColorSpace YUV
 

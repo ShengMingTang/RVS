@@ -204,7 +204,7 @@ fprintf(svs_file, 'Width %d\n\n', resolution(1));
 fprintf(svs_file, 'Height %d\n\n', resolution(2));
 fprintf(svs_file, 'VirtualWidth %d\n\n', virtual_size(1));
 fprintf(svs_file, 'VirtualHeight %d\n\n', virtual_size(2));
-fprintf(svs_file, 'Precision 3.0\n\n');
+fprintf(svs_file, 'Precision 1.0\n\n');
 fprintf(svs_file, 'ColorSpace YUV\n\n');
 fprintf(svs_file, 'ViewSynthesisMethod Triangles\n\n');
 fprintf(svs_file, 'BlendingMethod Simple\n\n');
