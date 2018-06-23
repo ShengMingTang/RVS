@@ -129,6 +129,11 @@ namespace testing
 		std::clog << "PSNRs: " << psnr[0] << ", " << psnr[1] << std::endl;
 		YAFFUT_CHECK(psnr[0] > threshold0);
 		YAFFUT_CHECK(psnr[1] > threshold1);
+
+		if (psnr[0] > threshold0 + 0.1 ||
+			psnr[1] > threshold1 + 0.1) {
+			std::clog << "WARNING: thresholds can be increased\n";
+		}
 	}
 
 	template<typename T> void compareWithReferenceView(
@@ -198,7 +203,7 @@ FUNC(ClassroomVideo_v0_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 54.95, 53.71); // VC14 + OpenCV 3.1.0: 55.0009, 53.7675
+		cv::Size(4096, 2048), 10, 70.10, 78.52); // VC14 + OpenCV 3.1.0: 70.1539, 78.572 (with new, full depth maps)
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0)
@@ -208,7 +213,7 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_from_v7v8_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 35.48, 35.95); // VC14 + OpenCV 3.1.0: 35.538, 36.0088
+		cv::Size(4096, 2048), 10, 35.54, 36.05); // VC14 + OpenCV 3.1.0: 35.5957, 36.1051
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0_270deg)
@@ -226,7 +231,7 @@ FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 	reference[1] = reference[1].colRange(192, 1344);
 	reference[2] = reference[2].colRange(192, 1344);
 
-	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 37.90, 38.29); // VC14 + OpenCV 3.1.0: 37.9514, 38.3425
+	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 38.02, 38.36); // VC14 + OpenCV 3.1.0: 38.0782, 38.417
 }
 
 FUNC(TechnicolorHijack_v1v4_to_v9)
