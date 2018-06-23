@@ -95,8 +95,7 @@ namespace
 		auto Ymax = std::min(res.rows - 1, static_cast<int>(std::ceil(std::max(std::max(A[1], B[1]), C[1]))));
 		for (int y = Ymin; y <= Ymax; ++y)
 			for (int x = Xmin; x <= Xmax; ++x)
-				if (x > 0 && x < res.cols && y>0 && y < res.rows) {
-
+				{
 					float lambda_1 = ((B[1] - C[1]) * ((float)x + offset - C[0]) + (C[0] - B[0]) * ((float)y + offset - C[1])) / den;
 					float lambda_2 = ((C[1] - A[1]) * ((float)x + offset - C[0]) + (A[0] - C[0]) * ((float)y + offset - C[1])) / den;
 					float lambda_3 = 1.0f - lambda_1 - lambda_2;
