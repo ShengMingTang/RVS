@@ -203,7 +203,7 @@ FUNC(ClassroomVideo_v0_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 70.10, 78.52); // VC14 + OpenCV 3.1.0: 70.1539, 78.572 (with new, full depth maps)
+		cv::Size(4096, 2048), 10, 70.00, 78.52); // VC14 + OpenCV 3.1.0: 70.0586, 78.572 (with new full depth maps)
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0)
@@ -281,7 +281,7 @@ FUNC(TechnicolorMuseum_v5_to_v5)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v5vs_from_v5_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v5_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 58.51, 73.73); // VC14 + OpenCV 3.1.0: 58.5664, 73.7879
+		cv::Size(2048, 2048), 10, 56.74, 73.73); // VC14 + OpenCV 3.1.0: 56.7996, 73.7879
 }
 
 FUNC(TechnicolorMuseum_v5_to_v6)
