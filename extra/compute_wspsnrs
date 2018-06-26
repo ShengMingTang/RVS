@@ -2,39 +2,42 @@
 
 trap exit ERR
 
-virtualviews=`find output-1frame/ -name ??_v[0-9]*.yuv`
-postfix="$1"
+function compute()
+{
+    for testcase in A1 A2 A3
+    do
+	    for view in {0..14}
+	    do
+		    original="ClassroomVideo/v${view}_4096_2048_420_10b.yuv"
+		    reconstructed="$1/ClassroomVideo/${testcase}/${testcase}_v${view}_4096_2048_420_10b$2.yuv"
+		    echo -n "$testcase $view "
+		    wspsnr -w 4096 -h 2048 -n 1 -y 360 -p 180 -d 10 -o $original -r $reconstructed | tail -n 1
+	    done
+    done
 
-for testcase in A1 A2 A3
-do
-	for view in {0..14}
-	do
-		original="ClassroomVideo/v${view}_4096_2048_420_10b.yuv"
-		reconstructed="output-1frame/ClassroomVideo/${testcase}/${testcase}_v${view}_4096_2048_420_10b${postfix}.yuv"
-		echo -n "$testcase $view "
-		wspsnr -w 4096 -h 2048 -n 1 -y 360 -p 180 -d 10 -o $original -r $reconstructed | tail -n 1
-	done
-done
+    for testcase in B1 B2 B3
+    do
+	    for view in {0..23}
+	    do
+		    original="TechnicolorMuseum/v${view}_2048_2048_420_10b.yuv"
+		    reconstructed="$1/TechnicolorMuseum/${testcase}/${testcase}_v${view}_2048_2048_420_10b$2.yuv"
+		    echo -n "$testcase $view "
+		    wspsnr -w 2048 -h 2048 -n 1 -y 180 -p 180 -d 10 -o $original -r $reconstructed | tail -n 1
+	    done
+    done
 
-for testcase in B1 B2 B3
-do
-	for view in {0..23}
-	do
-		original="TechnicolorMuseum/v${view}_2048_2048_420_10b.yuv"
-		reconstructed="output-1frame/TechnicolorMuseum/${testcase}/${testcase}_v${view}_2048_2048_420_10b${postfix}.yuv"
-		echo -n "$testcase $view "
-		wspsnr -w 2048 -h 2048 -n 1 -y 180 -p 180 -d 10 -o $original -r $reconstructed | tail -n 1
-	done
-done
+    for testcase in C1 C2 C3
+    do
+	    for view in {0..9}
+	    do
+		    original="TechnicolorHijack/v${view}_4096_4096_420_10b.yuv"
+		    reconstructed="$1/TechnicolorHijack/${testcase}/${testcase}_v${view}_4096_4096_420_10b$2.yuv"
+		    echo -n "$testcase $view "
+		    wspsnr -w 4096 -h 4096 -n 1 -y 180 -p 180 -d 10 -o $original -r $reconstructed | tail -n 1
+	    done
+    done
+} 
 
-for testcase in C1 C2 C3
-do
-	for view in {0..9}
-	do
-		original="TechnicolorHijack/v${view}_4096_4096_420_10b.yuv"
-		reconstructed="output-1frame/TechnicolorHijack/${testcase}/${testcase}_v${view}_4096_4096_420_10b${postfix}.yuv"
-		echo -n "$testcase $view "
-		wspsnr -w 4096 -h 4096 -n 1 -y 180 -p 180 -d 10 -o $original -r $reconstructed | tail -n 1
-	done
-done
+compute output | tee regular.wspsnr
+compute masked_output _masked | tee masked.wspsnr
 
