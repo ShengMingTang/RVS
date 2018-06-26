@@ -76,12 +76,22 @@ void erp::Unprojector::create(cv::Size size)
     verticesXYZNormalized.create(size);
     for (int i = 0; i < height; ++i)
     {
-        float vPos  = 0.5f + i;
+        float vPos;
+		float const eps = 1e-3f;
+
+		// Adjust vPos to render poles
+		if (i == 0)
+			vPos = eps;
+		else if (i == height - 1)
+			vPos = height - eps;
+		else
+			vPos = i + 0.5f;
+
         float theta = erp::calculate_theta( vPos, height );
 
         for (int j = 0; j < width; ++j)
         {
-            float hPos = 0.5f + j;
+			float hPos = 0.5f + j;
             float phi  = erp::calculate_phi( offset + hPos, full_width );
 
             phiTheta(i,j) = cv::Vec2f(phi, theta);

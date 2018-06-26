@@ -153,17 +153,17 @@ cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth
 			if (input_depth(i, j + 1) > 0.f && input_depth(i + 1, j) > 0.f && /*why?*/ input_positions(i, j + 1)[0] > 0.f && /*why?*/ input_positions(i + 1, j)[0] > 0.f) {
 				if (input_depth(i, j) > 0.f && /*why?*/ input_positions(i, j)[0] > 0.f)
 					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth, new_depth_prologation_mask, triangle_shape,
-						/*why float?*/ cv::Point(j, i), cv::Point(j + 1, i), cv::Point(j, i + 1));
+						cv::Point(j, i), cv::Point(j + 1, i), cv::Point(j, i + 1));
 				if (input_depth(i + 1, j + 1) > 0.f && input_positions(i + 1, j + 1)[0] > 0.f)
 					colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth, new_depth_prologation_mask, triangle_shape,
-						/*why float?*/ cv::Point(j + 1, i + 1), cv::Point(j, i + 1), cv::Point(j + 1, i));
+						cv::Point(j + 1, i + 1), cv::Point(j, i + 1), cv::Point(j + 1, i));
 			
                 // stitch left and right borders with triangles (e.g. for equirectangular projection)
                 if( horizontalWrap && j == 0 ) { 
                     colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth, new_depth_prologation_mask, triangle_shape,
                         cv::Point(w-1, i), cv::Point( 0, i), cv::Point(w-1, i + 1));
                     colorize_triangle(input_color, input_depth, input_depth_mask, input_positions, color, depth, new_depth_prologation_mask, triangle_shape, 
-                        cv::Point(0, i + 1),   cv::Point(w-1, i + 1), cv::Point(0, i));
+                        cv::Point(0, i + 1), cv::Point(w-1, i + 1), cv::Point(0, i));
                 }
             }
 		}

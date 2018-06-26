@@ -65,15 +65,3 @@ The output is the new color image, the new corresponding depth map, and a qualit
 @return Output color map
 */
 cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality, bool horizontalWrap);
-
-/**
-Translate camera in any 3D direction
-@param input_color Input color map
-@param input_depth Input depth map; valid values are > 0 (invalid may be NaN or <= 0)
-@param input_positions Warped coordinate map (result of unproject -> rotate/translate -> project)
-@param output_size Output size of the color image
-@param depth Output depth map
-@param quality Quality metric to drive blending; involves depth and shape of warped triangles (elongated and big = low quality)
-@result Output color map
-*/
-cv::Mat3f transform_squaresMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality);
