@@ -296,7 +296,6 @@ namespace json
 
 			std::clog << cam_id << ": position=" << position << ", rotation=" << rotation << std::endl;
 
-			float const pi = atan(1.f);
 			auto R = pose_traces::detail::EulerAnglesToRotationMatrix(rotation * CV_PI / 180.f);
 			auto t = position;
 
