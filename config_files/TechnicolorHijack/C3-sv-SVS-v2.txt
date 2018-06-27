@@ -1,7 +1,7 @@
 SVSFile 1
 
 InputCameraParameterFile
-config_files/TechnicolorHijack/C3-sv-camparams.txt
+TechnicolorHijack/metadata.json
 
 InputProjectionType Equirectangular
 
@@ -15,15 +15,12 @@ DepthMapsNames
 TechnicolorHijack/v1_4096_4096_0_5_25_0_420_10b.yuv
 TechnicolorHijack/v4_4096_4096_0_5_25_0_420_10b.yuv
 
-ZValues
-config_files/TechnicolorHijack/C3-sv-depthrange.txt
-
 CamerasNames
 v1
 v4
 
 VirtualCameraParamaterFile
-config_files/TechnicolorHijack/C3-sv-camparams.txt
+TechnicolorHijack/metadata.json
 
 VirtualProjectionType Equirectangular
 

@@ -1,7 +1,7 @@
 SVSFile 1
 
 InputCameraParameterFile
-config_files/TechnicolorMuseum/B3-iv-camparams.txt
+TechnicolorMuseum/metadata.json
 
 InputProjectionType Equirectangular
 
@@ -21,9 +21,6 @@ TechnicolorMuseum/v13_2048_2048_0_5_25_0_420_10b.yuv
 TechnicolorMuseum/v17_2048_2048_0_5_25_0_420_10b.yuv
 TechnicolorMuseum/v19_2048_2048_0_5_25_0_420_10b.yuv
 
-ZValues
-config_files/TechnicolorMuseum/B3-iv-depthrange.txt
-
 CamerasNames
 v0
 v2
@@ -32,7 +29,7 @@ v17
 v19
 
 VirtualCameraParamaterFile
-config_files/TechnicolorMuseum/B3-iv-camparams.txt
+TechnicolorMuseum/TechnicolorMuseum-IntermediateViews.json
 
 VirtualProjectionType Equirectangular
 

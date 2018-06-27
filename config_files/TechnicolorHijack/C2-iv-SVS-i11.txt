@@ -1,7 +1,7 @@
 SVSFile 1
 
 InputCameraParameterFile
-config_files/TechnicolorHijack/C2-iv-camparams.txt
+TechnicolorHijack/metadata.json
 
 InputProjectionType Equirectangular
 
@@ -21,9 +21,6 @@ TechnicolorHijack/v5_4096_4096_0_5_25_0_420_10b.yuv
 TechnicolorHijack/v8_4096_4096_0_5_25_0_420_10b.yuv
 TechnicolorHijack/v9_4096_4096_0_5_25_0_420_10b.yuv
 
-ZValues
-config_files/TechnicolorHijack/C2-iv-depthrange.txt
-
 CamerasNames
 v1
 v4
@@ -32,7 +29,7 @@ v8
 v9
 
 VirtualCameraParamaterFile
-config_files/TechnicolorHijack/C2-iv-camparams.txt
+TechnicolorHijack/TechnicolorHijack-IntermediateViews.json
 
 VirtualProjectionType Equirectangular
 

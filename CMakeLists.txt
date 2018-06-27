@@ -144,7 +144,7 @@ source_group("Configurations" FILES ${CONFIGURATION_FILES})
 
 add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 add_executable(${PROJECT_NAME} src/view_synthesis.cpp extra/example)
-add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp src/unit_test_spikes.cpp)
+add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
 add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp ${CONFIGURATION_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})

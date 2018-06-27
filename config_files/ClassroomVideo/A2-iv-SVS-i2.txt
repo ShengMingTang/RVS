@@ -1,7 +1,7 @@
 SVSFile 1
 
 InputCameraParameterFile
-config_files/ClassroomVideo/A2-iv-camparams.txt
+ClassroomVideo/ClassroomVideo.json
 
 InputProjectionType Equirectangular
 
@@ -29,9 +29,6 @@ ClassroomVideo/v12_4096_2048_0_8_1000_0_420_10b.yuv
 ClassroomVideo/v13_4096_2048_0_8_1000_0_420_10b.yuv
 ClassroomVideo/v14_4096_2048_0_8_1000_0_420_10b.yuv
 
-ZValues
-config_files/ClassroomVideo/A2-iv-depthrange.txt
-
 CamerasNames
 v0
 v7
@@ -44,7 +41,7 @@ v13
 v14
 
 VirtualCameraParamaterFile
-config_files/ClassroomVideo/A2-iv-camparams.txt
+ClassroomVideo/ClassroomVideo-IntermediateViews.json
 
 VirtualProjectionType Equirectangular
 

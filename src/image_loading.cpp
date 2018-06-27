@@ -109,7 +109,7 @@ namespace
 
 		image.convertTo(image, CV_32F, 1. / max_level(bit_depth));
 
-		cv::Mat1f depth = (z_far * z_near) / (z_near + image * (z_far - z_near));
+		cv::Mat1f depth = z_near / (z_near / z_far + image * (1.f - z_near / z_far));
 		depth.setTo(NaN, mask_depth);
 		return depth;
 	}

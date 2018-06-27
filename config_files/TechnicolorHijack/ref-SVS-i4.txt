@@ -1,7 +1,7 @@
 SVSFile 1
 
 InputCameraParameterFile
-config_files/TechnicolorHijack/ref-camparams.txt
+TechnicolorHijack/metadata.json
 
 InputProjectionType Equirectangular
 
@@ -31,9 +31,6 @@ TechnicolorHijack/v7_4096_4096_0_5_25_0_420_16b.yuv
 TechnicolorHijack/v8_4096_4096_0_5_25_0_420_16b.yuv
 TechnicolorHijack/v9_4096_4096_0_5_25_0_420_16b.yuv
 
-ZValues
-config_files/TechnicolorHijack/ref-depthrange.txt
-
 CamerasNames
 v0
 v1
@@ -47,7 +44,7 @@ v8
 v9
 
 VirtualCameraParamaterFile
-config_files/TechnicolorHijack/ref-camparams.txt
+TechnicolorHijack/TechnicolorHijack-IntermediateViews.json
 
 VirtualProjectionType Equirectangular
 

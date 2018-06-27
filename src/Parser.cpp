@@ -33,6 +33,7 @@ of the 3DoF+ Investigation.
 Modifications copyright © 2018 Koninklijke Philips N.V.
 
 Support for n-bit raw texture and depth streams.
+Parsing of 3DoF+ JSON files.
 
 Author  : Bart Kroon
 Contact : bart.kroon@philips.com
@@ -42,9 +43,10 @@ Contact : bart.kroon@philips.com
 #include "Parser.hpp"
 #include <iostream>
 #include <fstream>
+#include <regex>
+#include "PoseTraces.hpp"
 
-
-namespace
+namespace svs
 {
 	void check_is_open(std::ifstream& stream, char const *kind, std::string const& ParameterFile)
 	{
@@ -54,139 +56,269 @@ namespace
 			throw std::runtime_error(text.str());
 		}
 	}
-}
 
-bool seek_string(std::string ParameterFile, int n, std::vector<std::string>& str, std::string key, std::string err_msg) {
-	std::ifstream file(ParameterFile);
-	check_is_open(file, "parameter", ParameterFile);
-	std::string id;
-	while (!file.eof() && file >> id) {
-		if (id == key) {
-			for (int i = 0; i < n; ++i) {
-				std::string c;
-				file >> c;
-				str.push_back(c);
+	bool seek_string(std::string ParameterFile, int n, std::vector<std::string>& str, std::string key, std::string err_msg) {
+		std::ifstream file(ParameterFile);
+		check_is_open(file, "parameter", ParameterFile);
+		std::string id;
+		while (!file.eof() && file >> id) {
+			if (id == key) {
+				for (int i = 0; i < n; ++i) {
+					std::string c;
+					file >> c;
+					str.push_back(c);
+				}
+				return true;
 			}
-			return true;
 		}
+		printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
+		return false;
 	}
-	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
-	return false;
-}
 
-bool seek_int(std::string ParameterFile, int& n, std::string key, std::string err_msg) {
-	std::ifstream file(ParameterFile);
-	check_is_open(file, "parameter", ParameterFile);
-	std::string id;
-	while (!file.eof() && file >> id) {
-		if (id == key) {
-			file >> n;
-			return true;
+	bool seek_int(std::string ParameterFile, int& n, std::string key, std::string err_msg) {
+		std::ifstream file(ParameterFile);
+		check_is_open(file, "parameter", ParameterFile);
+		std::string id;
+		while (!file.eof() && file >> id) {
+			if (id == key) {
+				file >> n;
+				return true;
+			}
 		}
+		printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
+		return false;
 	}
-	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
-	return false;
-}
 
-bool seek_float(std::string ParameterFile, float& f, std::string key, std::string err_msg) {
-	std::ifstream file(ParameterFile);
-	check_is_open(file, "parameter", ParameterFile);
-	std::string id;
-	while (!file.eof() && file >> id) {
-		if (id == key) {
-			file >> f;
-			return true;
+	bool seek_float(std::string ParameterFile, float& f, std::string key, std::string err_msg) {
+		std::ifstream file(ParameterFile);
+		check_is_open(file, "parameter", ParameterFile);
+		std::string id;
+		while (!file.eof() && file >> id) {
+			if (id == key) {
+				file >> f;
+				return true;
+			}
 		}
+		printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
+		return false;
 	}
-	printf("%s: %s  not found in the parameter file.\n", key.c_str(), err_msg.c_str());
-	return false;
-}
 
-bool seek_znear_zfar(std::string ParameterFile, float& z, std::string DepthFile, std::string key, std::string err_msg) {
-	std::ifstream file(ParameterFile);
-	check_is_open(file, "parameter", ParameterFile);
-	std::string id;
-	while (!file.eof() && file >> id) {
-		if (id.find(DepthFile) != std::string::npos) {
-			while (!file.eof() && file >> id) {
-				if (id == key) {
-					file >> z;
-					return true;
+	bool seek_znear_zfar(std::string ParameterFile, float& z, std::string DepthFile, std::string key, std::string err_msg) {
+		std::ifstream file(ParameterFile);
+		check_is_open(file, "parameter", ParameterFile);
+		std::string id;
+		while (!file.eof() && file >> id) {
+			if (id.find(DepthFile) != std::string::npos) {
+				while (!file.eof() && file >> id) {
+					if (id == key) {
+						file >> z;
+						return true;
+					}
 				}
 			}
 		}
+		printf("%s was not found: using default values\n", err_msg.c_str());
+		return false;
 	}
-	printf("%s was not found: using default values\n", err_msg.c_str());
-	return false;
-}
 
-bool find_cam(std::string CameraParameterFile, cv::Mat & r, cv::Vec3f & t, cv::Mat & camMat, std::string cameraId) {
-	std::ifstream file(CameraParameterFile);
-	check_is_open(file, "camera parameter", CameraParameterFile);
-	std::string id;
-	while (!file.eof() && file >> id) {
-		if (id == cameraId) {
-			float f11, f12, f13, f21, f22, f23, f31, f32, f33, k1, k2;
-			float r11, r12, r13, r21, r22, r23, r31, r32, r33;
-			float tx, ty, tz;
-			file >> f11 >> f12 >> f13 >> f21 >> f22 >> f23 >> f31 >> f32 >> f33 >> k1 >> k2 >> r11 >> r12 >> r13 >> tx >> r21 >> r22 >> r23 >> ty >> r31 >> r32 >> r33 >> tz;
-			camMat = (cv::Mat_<float>(3, 3) << f11, f12, f13, f21, f22, f23, f31, f32, f33);
-			r = (cv::Mat_<float>(3, 3) << r11, r12, r13, r21, r22, r23, r31, r32, r33);
-			t = cv::Vec3f(tx, ty, tz);
-			return true;
-		}
-	}
-	printf("Camera %s not found\n", cameraId.c_str());
-	return false;
-}
-
-//read cameras names, positions and rotation
-void read_cameras_paramaters(std::string filename, std::vector<std::string>& camnames, std::vector<Parameters>& params, float& sensor_size) {
-	//read all cameras
-	if (camnames.size() == 0 || camnames[0] == "ALL")
-	{
-		camnames = {};
-		std::ifstream file(filename);
-		check_is_open(file, "camera parameters", filename);
+	bool find_cam(std::string CameraParameterFile, cv::Mat & r, cv::Vec3f & t, cv::Mat & camMat, std::string cameraId) {
+		std::ifstream file(CameraParameterFile);
+		check_is_open(file, "camera parameter", CameraParameterFile);
 		std::string id;
 		while (!file.eof() && file >> id) {
-			float f11, f12, f13, f21, f22, f23, f31, f32, f33, k1, k2;
-			float r11, r12, r13, r21, r22, r23, r31, r32, r33;
-			float tx, ty, tz;
-			file >> f11 >> f12 >> f13 >> f21 >> f22 >> f23 >> f31 >> f32 >> f33 >> k1 >> k2 >> r11 >> r12 >> r13 >> tx >> r21 >> r22 >> r23 >> ty >> r31 >> r32 >> r33 >> tz;
-			cv::Mat cam_mat = (cv::Mat_<float>(3, 3) << f11, f12, f13, f21, f22, f23, f31, f32, f33);
-			cv::Mat r = (cv::Mat_<float>(3, 3) << r11, r12, r13, r21, r22, r23, r31, r32, r33);
-			cv::Vec3f t = cv::Vec3f(tx, ty, tz);
-			camnames.push_back(id);
-			params.push_back(Parameters(r, t, cam_mat, sensor_size, CoordinateSystem::VSRS));
+			if (id == cameraId) {
+				float f11, f12, f13, f21, f22, f23, f31, f32, f33, k1, k2;
+				float r11, r12, r13, r21, r22, r23, r31, r32, r33;
+				float tx, ty, tz;
+				file >> f11 >> f12 >> f13 >> f21 >> f22 >> f23 >> f31 >> f32 >> f33 >> k1 >> k2 >> r11 >> r12 >> r13 >> tx >> r21 >> r22 >> r23 >> ty >> r31 >> r32 >> r33 >> tz;
+				camMat = (cv::Mat_<float>(3, 3) << f11, f12, f13, f21, f22, f23, f31, f32, f33);
+				r = (cv::Mat_<float>(3, 3) << r11, r12, r13, r21, r22, r23, r31, r32, r33);
+				t = cv::Vec3f(tx, ty, tz);
+				return true;
+			}
 		}
-		return;
+		printf("Camera %s not found\n", cameraId.c_str());
+		return false;
 	}
-	//read only specified cameras
-	for (int i = 0; i < static_cast<int>(camnames.size()); ++i) {
-		cv::Mat r;
-		cv::Vec3f t;
-		cv::Mat cam_mat;
-		if (find_cam(filename, r, t, cam_mat, camnames[i])) {
-			params.push_back(Parameters(r, t, cam_mat, sensor_size, CoordinateSystem::VSRS));
+
+	//read cameras names, positions and rotation
+	void read_cameras_parameters(std::string filename, std::vector<std::string>& camnames, std::vector<Parameters>& params, float& sensor_size) {
+		//read all cameras
+		if (camnames.size() == 0 || camnames[0] == "ALL")
+		{
+			camnames = {};
+			std::ifstream file(filename);
+			check_is_open(file, "camera parameters", filename);
+			std::string id;
+			while (!file.eof() && file >> id) {
+				float f11, f12, f13, f21, f22, f23, f31, f32, f33, k1, k2;
+				float r11, r12, r13, r21, r22, r23, r31, r32, r33;
+				float tx, ty, tz;
+				file >> f11 >> f12 >> f13 >> f21 >> f22 >> f23 >> f31 >> f32 >> f33 >> k1 >> k2 >> r11 >> r12 >> r13 >> tx >> r21 >> r22 >> r23 >> ty >> r31 >> r32 >> r33 >> tz;
+				cv::Mat cam_mat = (cv::Mat_<float>(3, 3) << f11, f12, f13, f21, f22, f23, f31, f32, f33);
+				cv::Mat r = (cv::Mat_<float>(3, 3) << r11, r12, r13, r21, r22, r23, r31, r32, r33);
+				cv::Vec3f t = cv::Vec3f(tx, ty, tz);
+				camnames.push_back(id);
+				params.push_back(Parameters(r, t, cam_mat, sensor_size, CoordinateSystem::VSRS));
+			}
+			return;
+		}
+		//read only specified cameras
+		for (int i = 0; i < static_cast<int>(camnames.size()); ++i) {
+			cv::Mat r;
+			cv::Vec3f t;
+			cv::Mat cam_mat;
+			if (find_cam(filename, r, t, cam_mat, camnames[i])) {
+				params.push_back(Parameters(r, t, cam_mat, sensor_size, CoordinateSystem::VSRS));
+			}
 		}
 	}
 }
-//string corresponding to camera name, camera matrix and camera world matrix
-std::string camera_parameter(cv::Mat R, cv::Vec3f t, cv::Mat camMat, std::string cam_name) {
-	//t *= 1000.0;
-	std::string camparams;
-	//camparams = String(name) + "\n1094.8866328999999951 0 934.63286315000004834\n0 1095.9840302000000065 543.2474342599999772\n0 0 1\n0\n0\n";
-	camparams = cam_name + "\n" +
-		std::to_string(camMat.at<float>(0, 0)) + " " + std::to_string(camMat.at<float>(0, 1)) + " " + std::to_string(camMat.at<float>(0, 2)) + "\n" +
-		std::to_string(camMat.at<float>(1, 0)) + " " + std::to_string(camMat.at<float>(1, 1)) + " " + std::to_string(camMat.at<float>(1, 2)) + "\n" +
-		std::to_string(camMat.at<float>(2, 0)) + " " + std::to_string(camMat.at<float>(2, 1)) + " " + std::to_string(camMat.at<float>(2, 2)) + "\n" +
-		"0\n0\n";
-	camparams +=
-		std::to_string(R.at<float>(0, 0)) + " " + std::to_string(R.at<float>(0, 1)) + " " + std::to_string(R.at<float>(0, 2)) + " " + std::to_string(t[0]) + "\n" +
-		std::to_string(R.at<float>(1, 0)) + " " + std::to_string(R.at<float>(1, 1)) + " " + std::to_string(R.at<float>(1, 2)) + " " + std::to_string(t[1]) + "\n" +
-		std::to_string(R.at<float>(2, 0)) + " " + std::to_string(R.at<float>(2, 1)) + " " + std::to_string(R.at<float>(2, 2)) + " " + std::to_string(t[2]) + "\n\n";
-	return std::string(camparams);
+
+namespace json
+{
+	using svs::check_is_open;
+
+	bool is_file(std::string filename)
+	{
+		return filename.substr(filename.size() - 5, 5) == ".json";
+	}
+
+	std::vector<std::string> read_cam_ids(std::string const& text)
+	{
+		std::regex name_regex("\"Name\"\\s*:\\s*\"(.+)\"");
+		std::vector<std::string> result;
+		for (auto name = std::sregex_iterator(std::begin(text), std::end(text), name_regex);
+			      name != std::sregex_iterator();
+			    ++name) { 
+			auto match = *name;
+			result.push_back(match[1].str());
+		}
+		return result;
+	}
+
+	std::vector<cv::Vec3f> read_positions(std::string const& text)
+	{
+		std::regex name_regex("\"Position\"\\s*:\\s*\\[(.+),(.+),(.+)\\]");
+		std::vector<cv::Vec3f> result;
+		for (auto name = std::sregex_iterator(std::begin(text), std::end(text), name_regex);
+			name != std::sregex_iterator();
+			++name) {
+			auto match = *name;
+			result.emplace_back(
+				stof(match[1].str()),
+				stof(match[2].str()),
+				stof(match[3].str()));
+		}
+		return result;
+	}
+
+	std::vector<cv::Vec3f> read_rotations(std::string const& text)
+	{
+		std::regex name_regex("\"Rotation\"\\s*:\\s*\\[(.+),(.+),(.+)\\]");
+		std::vector<cv::Vec3f> result;
+		for (auto name = std::sregex_iterator(std::begin(text), std::end(text), name_regex);
+			name != std::sregex_iterator();
+			++name) {
+			auto match = *name;
+			result.emplace_back(
+				stof(match[1].str()),
+				stof(match[2].str()),
+				stof(match[3].str()));
+		}
+		return result;
+	}
+
+	std::vector<float> read_radius_far(std::string const& text)
+	{
+		std::regex name_regex("\"Rmax\"\\s*:(.+),");
+		std::vector<float> result;
+		for (auto name = std::sregex_iterator(std::begin(text), std::end(text), name_regex);
+			name != std::sregex_iterator();
+			++name) {
+			auto match = *name;
+			auto Rmax = stof(match[1].str());
+			if (Rmax == 1000.f) // according to CfTM
+				Rmax = std::numeric_limits<float>::infinity();
+			result.push_back(Rmax);
+		}
+		return result;
+	}
+
+	std::vector<float> read_radius_near(std::string const& text)
+	{
+		std::regex name_regex("\"Rmin\"\\s*:(.+),");
+		std::vector<float> result;
+		for (auto name = std::sregex_iterator(std::begin(text), std::end(text), name_regex);
+			name != std::sregex_iterator();
+			++name) {
+			auto match = *name;
+			result.push_back(stof(match[1].str()));
+		}
+		return result;
+	}
+
+	void read_cameras_parameters(std::string filename, std::vector<std::string>& cam_ids, std::vector<Parameters>& params, float& sensor_size,
+		std::vector<float> *zfar, std::vector<float> *znear)
+	{
+		// Read entire file
+		std::ifstream stream(filename);
+		check_is_open(stream, "JSON metadata file", filename);
+		std::stringstream buffer;
+		buffer << stream.rdbuf();
+		auto text = buffer.str();
+
+		// Read relevant fields
+		auto all_cam_ids = read_cam_ids(text);
+		auto all_positions = read_positions(text);
+		auto all_rotations = read_rotations(text);
+		auto all_radius_far = read_radius_far(text);
+		auto all_radius_near = read_radius_near(text);
+
+		CV_Assert(all_cam_ids.size() == all_positions.size());
+		CV_Assert(all_cam_ids.size() == all_rotations.size());
+		CV_Assert(!zfar || all_cam_ids.size() == all_radius_far.size());
+		CV_Assert(!znear || all_cam_ids.size() == all_radius_near.size());
+		CV_Assert(!zfar || zfar->empty());
+		CV_Assert(!znear || znear->empty());
+
+		if (cam_ids.empty() || cam_ids.front() == "ALL")
+			cam_ids = all_cam_ids;
+
+		for (auto cam_id : cam_ids) {
+			auto iter = std::find(std::begin(all_cam_ids), std::end(all_cam_ids), cam_id);
+			if (iter == all_cam_ids.end())
+				throw std::runtime_error("Camera ID does not occur in camera metadata file");
+
+			auto index = iter - std::begin(all_cam_ids);
+			auto position = all_positions[index];
+			auto rotation = all_rotations[index];
+
+			std::clog << cam_id << ": position=" << position << ", rotation=" << rotation << std::endl;
+
+			auto R = pose_traces::detail::EulerAnglesToRotationMatrix(rotation);
+			auto t = position;
+
+			// 90deg FOV for pose trace
+			auto cam_mat = cv::Matx33f(
+				2.f*sensor_size, 0.f,             sensor_size/2, 
+				0.f,             2.f*sensor_size, sensor_size/4,
+				0.f,             0.f,             1.f);
+
+			params.push_back(Parameters(R, t, cam_mat, sensor_size, CoordinateSystem::MPEG_I_OMAF));
+			if (zfar) zfar->push_back(all_radius_far[index]);
+			if (znear) znear->push_back(all_radius_near[index]);
+		}
+	}	
+}
+
+void read_cameras_parameters(std::string filename, std::vector<std::string>& camnames, std::vector<Parameters>& params, float& sensor_size,
+	std::vector<float> *zfar, std::vector<float> *znear)
+{
+	if (json::is_file(filename))
+		json::read_cameras_parameters(filename, camnames, params, sensor_size, zfar, znear);
+	else
+		svs::read_cameras_parameters(filename, camnames, params, sensor_size);
 }
 
 Parser::Parser(const std::string & filename)
@@ -208,10 +340,10 @@ Parser::Parser(const std::string & filename)
 	}
 
 	//get input cameras parameters
-	read_cameras_paramaters(config.camerasParameters_in, config.InputCameraNames, config.params_real, config.sensor_size);
+	read_cameras_parameters(config.camerasParameters_in, config.InputCameraNames, config.params_real, config.sensor_size, &config.zfar, &config.znear);
 
 	//get virtual cameras parameters to render
-	read_cameras_paramaters(config.virtualCamerasParameters_in, config.VirtualCameraNames, config.params_virtual, config.sensor_size);
+	read_cameras_parameters(config.virtualCamerasParameters_in, config.VirtualCameraNames, config.params_virtual, config.sensor_size, nullptr, nullptr);
 
 	
 	generate_output_filenames();
@@ -220,9 +352,6 @@ Parser::Parser(const std::string & filename)
 Parser::~Parser()
 {
 }
-
-
-
 
 void Parser::generate_output_filenames() {
 	if (config.outfilenames.size() != config.VirtualCameraNames.size() && config.outmaskedfilenames.empty()) { // ALL?
@@ -241,11 +370,13 @@ void Parser::generate_output_filenames() {
 bool Parser::is_SVS_file(const std::string & filename) const
 {
 	int n = 0;
-	seek_int(filename, n, "SVSFile", "This is a VSRS file.");
+	svs::seek_int(filename, n, "SVSFile", "This is a VSRS file.");
 	return !!n;
 }
 
 void Parser::read_vsrs_config_file() {
+	using namespace svs;
+
 	// Input camera file containing all the parameters for each camera
 	std::vector<std::string> InputCameraParameterFile;
 	// camera parameter file for the output cameras
@@ -300,6 +431,7 @@ void Parser::read_vsrs_config_file() {
 
 
 void Parser::read_SVS_config_file() {
+	using namespace svs;
 
 	// Input camera file containing all the parameters for each camera
 	std::vector<std::string> InputCameraParameterFile;
@@ -445,6 +577,8 @@ void Parser::read_SVS_config_file() {
 
 void Parser::read_ZValues()
 {
+	using namespace svs;
+
 	if (config.zvalues != "")
 		for (int i = 0; i < static_cast<int>(config.InputCameraNames.size()); ++i) {
 			float zf, zn;
@@ -456,7 +590,6 @@ void Parser::read_ZValues()
 			config.znear.push_back(zn);
 		}
 }
-
 
 void Parser::print_results(
 	const std::vector<std::string> & InputCameraParameterFile,

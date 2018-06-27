@@ -1,7 +1,7 @@
 SVSFile 1
 
 InputCameraParameterFile
-config_files/ClassroomVideo/A3-sv-camparams.txt
+ClassroomVideo/ClassroomVideo.json
 
 InputProjectionType Equirectangular
 
@@ -13,14 +13,11 @@ ClassroomVideo/v0_4096_2048_420_10b.yuv
 DepthMapsNames
 ClassroomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv
 
-ZValues
-config_files/ClassroomVideo/A3-sv-depthrange.txt
-
 CamerasNames
 v0
 
 VirtualCameraParamaterFile
-config_files/ClassroomVideo/A3-sv-camparams.txt
+ClassroomVideo/ClassroomVideo.json
 
 VirtualProjectionType Equirectangular
 

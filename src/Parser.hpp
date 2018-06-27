@@ -115,4 +115,5 @@ private:
 @param params Output cameras parameters
 @param sensor_size Size of the sensor (should be the same as the input image size)
 */
-void read_cameras_paramaters(std::string filename, std::vector<std::string>& camnames, std::vector<Parameters>& params, float& sensor_size);
+void read_cameras_parameters(std::string filename, std::vector<std::string>& camnames, std::vector<Parameters>& params, float& sensor_size,
+	std::vector<float> *zfar, std::vector<float> *znear);
