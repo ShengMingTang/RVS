@@ -96,6 +96,8 @@ if(WITH_OPENGL)
 			endif()
 		endif(UNIX)
 	endif()
+else()
+	add_definitions(-DWITH_OPENGL=false)
 endif()
 
 set(PROJECT_SOURCES

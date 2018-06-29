@@ -39,6 +39,17 @@ Contact : bart.kroon@philips.com
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Université Libre de Bruxelles(ULB) for the purpose of
+adding GPU acceleration through OpenGL.
+Modifications copyright © 2018 Université Libre de Bruxelles(ULB)
+
+Authors : Daniele Bonatto, Sarah Fachada
+Contact : Gauthier.Lafruit@ulb.ac.be
+
+------------------------------------------------------------------------------ -*/
+
 #pragma once
 
 #include "SynthetizedView.hpp"

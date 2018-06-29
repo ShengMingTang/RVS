@@ -26,9 +26,31 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Université Libre de Bruxelles(ULB) for the purpose of
+adding GPU acceleration through OpenGL.
+Modifications copyright © 2018 Université Libre de Bruxelles(ULB)
+
+Authors : Daniele Bonatto, Sarah Fachada
+Contact : Gauthier.Lafruit@ulb.ac.be
+
+------------------------------------------------------------------------------ -*/
+
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Université Libre de Bruxelles(ULB) for the purpose of
+adding GPU acceleration through OpenGL.
+Modifications copyright © 2018 Université Libre de Bruxelles(ULB)
+
+Authors : Daniele Bonatto, Sarah Fachada
+Contact : Gauthier.Lafruit@ulb.ac.be
+
+------------------------------------------------------------------------------ -*/
+
 
 extern bool with_opengl;
-#ifdef WITH_OPENGL
+#if WITH_OPENGL
 #include "helpersGL.hpp"
 #endif
 
@@ -51,7 +73,7 @@ int main(int argc, char* argv[])
 			throw std::logic_error("Too many parameters - not compiled with OpenGL");
 
 		if (WITH_OPENGL && with_opengl) {
-#ifdef WITH_OPENGL
+#if WITH_OPENGL
 			PROF_START("OpenGL Context");
 			context_init();
 			PROF_END("OpenGL Context");

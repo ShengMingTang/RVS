@@ -39,6 +39,18 @@ Contact : bart.kroon@philips.com
 
 ------------------------------------------------------------------------------ -*/
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Université Libre de Bruxelles(ULB) for the purpose of
+adding GPU acceleration through OpenGL.
+Modifications copyright © 2018 Université Libre de Bruxelles(ULB)
+
+Authors : Daniele Bonatto, Sarah Fachada
+Contact : Gauthier.Lafruit@ulb.ac.be
+
+------------------------------------------------------------------------------ -*/
+
+
 #include "SynthetizedView.hpp"
 #include "transform.hpp"
 #include "Timer.hpp"
@@ -215,10 +227,6 @@ void SynthetizedView::compute(View& input)
 		std::clog << "input_uv(i, j) == " << input_uv(DUMP_I, DUMP_J) << '\n';
 		std::clog << "input_get_depth()(i, j) == " << input.get_depth()(DUMP_I, DUMP_J) << '\n';
 		std::clog << "input_xyz(i, j) == " << input_xyz(DUMP_I, DUMP_J) << '\n';
-		std::clog << "unprojector->get_translation() == " << unprojector->get_translation() << '\n';
-		std::clog << "unprojector->get_rotation() == " << unprojector->get_rotation() << '\n';
-		std::clog << "projector->get_translation() == " << projector->get_translation() << '\n';
-		std::clog << "projector->get_rotation() == " << projector->get_rotation() << '\n';
 		std::clog << "R == " << R << '\n';
 		std::clog << "t == " << t << '\n';
 		std::clog << "virtual_xyz(i, j) == " << virtual_xyz(DUMP_I, DUMP_J) << '\n';

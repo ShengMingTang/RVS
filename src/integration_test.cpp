@@ -27,6 +27,17 @@ copies, substantial portions or derivative works of the Software.
 
 ------------------------------------------------------------------------------ - */
 
+/*------------------------------------------------------------------------------ -
+
+This source file has been modified by Université Libre de Bruxelles(ULB) for the purpose of
+adding GPU acceleration through OpenGL.
+Modifications copyright © 2018 Université Libre de Bruxelles(ULB)
+
+Authors : Daniele Bonatto, Sarah Fachada
+Contact : Gauthier.Lafruit@ulb.ac.be
+
+------------------------------------------------------------------------------ -*/
+
 // NOTE: Integration tests require the following files to be downloaded and unpacked
 //       (or symlinked) in the root of the source tree:
 //
