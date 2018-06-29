@@ -332,6 +332,7 @@ Parser::Parser(const std::string & filename)
 	else
 	{
 		read_vsrs_config_file();
+		config.use_pose_trace = false;
 	}
 
 	// Intelligent default for backwards compatibility

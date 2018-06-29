@@ -50,10 +50,6 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 	auto px = M(0, 2);
 	auto py = M(1, 2);
 
-    std::cout << "R, t" << std::endl;
-    std::cout << get_rotation() << std::endl;
-    std::cout << get_translation() << std::endl;
-
 	cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
 	depth = cv::Mat1f(world_pos.size(), NaN);
 
@@ -65,18 +61,23 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 			// Image plane: x right, y down
 
 			if (xyz[0] > 0.f) {
-                auto uv = cv::Vec2f(
+				auto uv = cv::Vec2f(
 					-fx * xyz[1] / xyz[0] + px,
 					-fy * xyz[2] / xyz[0] + py);
 
 				image_pos(i, j) = uv;
-				
-                if( uv[0] >= 0.f && uv[1] >=0 && uv[0] <= image_pos.cols && uv[1] <= image_pos.rows )
-                    depth(i, j) = xyz[0];
+
+				if (uv[0] >= 0.f && uv[1] >= 0 && uv[0] <= image_pos.cols && uv[1] <= image_pos.rows)
+					depth(i, j) = xyz[0];
 			}
 		}
 	}
 
 	wrapping_method = WrappingMethod::NONE;
 	return image_pos;
+}
+
+cv::Matx33f const & PerspectiveProjector::get_camera_matrix() const
+{
+	return parameters.get_camera_matrix();
 }

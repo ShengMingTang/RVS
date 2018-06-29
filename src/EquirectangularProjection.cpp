@@ -91,7 +91,7 @@ void erp::Unprojector::create(cv::Size size)
 
         for (int j = 0; j < width; ++j)
         {
-			float hPos = 0.5f + j;
+	    float hPos = 0.5f + j;
             float phi  = erp::calculate_phi( offset + hPos, full_width );
 
             phiTheta(i,j) = cv::Vec2f(phi, theta);

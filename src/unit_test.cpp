@@ -208,10 +208,6 @@ FUNC(Test_PerspectiveProjector)
 	// Construct projector
 	PerspectiveProjector projector(parameters, cv::Size(13, 17));
 	
-	// Check that extrinsics can be obtained
-	EQUAL(R, projector.get_rotation());
-	EQUAL(t, projector.get_translation());
-
 	// Example world positions
 	// OMAF Referential: x forward, y left, z up
 	cv::Mat3f world_pos(1, 4);

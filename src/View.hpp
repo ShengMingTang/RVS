@@ -64,7 +64,7 @@ public:
 	void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
 
 	/** @return the texture */
-	cv::Mat3f get_color() const;
+	virtual cv::Mat3f get_color() const;
 
 	/** @return the depth map (same size as texture) */
 	cv::Mat1f get_depth() const;
@@ -86,6 +86,8 @@ public:
 
 	/** @return a mask for invalid masking */
 	cv::Mat1b get_validity_mask(float threshold) const;
+
+	virtual float get_max_depth() const { return 1.0; };
 
 private:
 	void validate() const;
@@ -129,6 +131,7 @@ public:
 
 	void load();
 	void unload();
+	float get_max_depth() const { return z_far; };
 
 private:
 	std::string filepath_color;

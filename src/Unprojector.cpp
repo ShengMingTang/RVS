@@ -41,12 +41,8 @@ Unprojector::Unprojector(Parameters const& parameters)
 
 Unprojector::~Unprojector() {}
 
-cv::Matx33f const& Unprojector::get_rotation() const
-{
-	return parameters.get_rotation();
-}
 
-cv::Vec3f Unprojector::get_translation() const
+cv::Matx33f const & Unprojector::get_camera_matrix() const
 {
-	return parameters.get_translation();
+	return parameters.get_camera_matrix();
 }

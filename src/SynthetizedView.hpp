@@ -45,7 +45,7 @@ Contact : bart.kroon@philips.com
 #include "Config.hpp"
 #include "View.hpp"
 #include "Projector.hpp"
-#include "Unprojector.hpp"
+#include "SpaceTransformer.hpp"
 
 
 /**
@@ -71,14 +71,9 @@ public:
 	virtual ~SynthetizedView();
 
 	/** 
-	\brief Set unprojector (input view to world)
+	\brief Set SpaceTransformer (input view to world)
 	*/
-	void setUnprojector(Unprojector const *object) { this->unprojector = object; }
-
-	/** 
-	\brief Set projector (world to virtual view)
-	*/
-	void setProjector(Projector const *object) { this->projector = object;  }
+	void setSpaceTransformer(SpaceTransformer const * object) { this->space_transformer = object; };
 
 	/**
 	\brief Compute this view from the input View
@@ -101,11 +96,7 @@ protected:
         cv::Size output_size, WrappingMethod wrapping_method) = 0;
 
 private:
-	// Unprojector converts input view to world coordinates
-	Unprojector const *unprojector = nullptr;
-
-	// Projector converts world to virtual view coordinates
-	Projector const *projector = nullptr;
+	SpaceTransformer const *space_transformer = nullptr;
 };
 
 /**

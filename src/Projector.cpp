@@ -30,32 +30,24 @@ copies, substantial portions or derivative works of the Software.
 #include "Projector.hpp"
 
 Projector::Projector()
-    : rotation( cv::Matx33f::eye())
-    , translation( cv::Vec3f::all(0.f))
 {
 }
 
 
 Projector::Projector(Parameters const& parameters, cv::Size size)
-	: rotation(parameters.get_rotation())
-	, translation(parameters.get_translation())
-	, size(size)
+:	size(size)
 {
 }
 
 Projector::~Projector() {}
 
-cv::Matx33f const& Projector::get_rotation() const
-{
-	return rotation;
-}
-
-cv::Vec3f Projector::get_translation() const
-{
-	return translation;
-}
 
 cv::Size Projector::get_size() const
 {
 	return size;
+}
+
+cv::Matx33f const & Projector::get_camera_matrix() const
+{
+	return cv::Matx33f::eye();
 }

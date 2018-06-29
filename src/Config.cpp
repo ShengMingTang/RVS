@@ -32,3 +32,5 @@ copies, substantial portions or derivative works of the Software.
 float rescale = 1.0f;
 ColorSpace color_space = COLORSPACE_YUV;
 ViewSynthesisMethod vs_method = SYNTHESIS_TRIANGLE;
+
+bool with_opengl = true;

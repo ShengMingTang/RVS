@@ -58,6 +58,12 @@ Contact : bart.kroon@philips.com
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
+extern bool with_opengl;
+#if WITH_OPENGL
+#include "helpersGL.hpp"
+#include "RFBO.hpp"
+#endif
+
 #define DUMP_MAPS false
 
 Pipeline::Pipeline(std::string filename)
@@ -109,7 +115,14 @@ void Pipeline::load_images(int frame) {
 }
 
 void Pipeline::compute_views(int frame) {
+	if (WITH_OPENGL && with_opengl) {
+#if WITH_OPENGL
+		auto FBO = RFBO::getInstance();
+		FBO->init(cv::Size(rescale*config.virtual_size.width, rescale*config.virtual_size.height));
+#endif
+	}
 	for (std::size_t virtual_idx = 0; virtual_idx != config.params_virtual.size(); ++virtual_idx) {
+		PROF_START("One view computed");
 		std::unique_ptr<BlendedView> blender;
 
 		if (config.blending_method == BLENDING_SIMPLE)
@@ -121,29 +134,38 @@ void Pipeline::compute_views(int frame) {
 		else throw std::logic_error("Unknown blending method");
 
 		// Project according to parameters of the virtual view
-		std::unique_ptr<Projector> projector;
+		std::unique_ptr<SpaceTransformer> spaceTransformer;
+		if (WITH_OPENGL && with_opengl) {
+			spaceTransformer.reset(new OpenGLTransformer());
+		}
+		else {
+			spaceTransformer.reset(new PUTransformer());
+		}
 
 		Parameters& params_virtual = config.params_virtual[virtual_idx];
-		if( config.use_pose_trace)
+		if(config.use_pose_trace)
 		{
 			params_virtual.adapt_initial_rotation( config.pose_trace[frame].rotation );
 			params_virtual.adapt_initial_translation( config.pose_trace[frame].translation );
 		}
-
-		if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
+		
+		/*if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
 			projector.reset(new PerspectiveProjector(params_virtual, config.virtual_size));
 		else if ( config.virtual_projection_type == PROJECTION_EQUIRECTANGULAR )
-			projector.reset(new erp::Projector(params_virtual, config.virtual_size));
+			projector.reset(new erp::Projector(params_virtual, config.virtual_size));*/
+		spaceTransformer->set_targetPosition(params_virtual, config.virtual_size, config.virtual_projection_type);
+
 
 		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
 
 			// Select type of un-projection 
-			std::unique_ptr<Unprojector> unprojector;
+			/*std::unique_ptr<Unprojector> unprojector;
 			if( config.input_projection_type == PROJECTION_PERSPECTIVE )
 				unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
 			else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
-				unprojector.reset(new erp::Unprojector(config.params_real[input_idx], config.size ));
+				unprojector.reset(new erp::Unprojector(config.params_real[input_idx], config.size ));*/
+			spaceTransformer->set_inputPosition(config.params_real[input_idx], config.size, config.input_projection_type);
 
 			// Select view synthesis method
 			std::unique_ptr<SynthetizedView> synthesizer;
@@ -153,13 +175,20 @@ void Pipeline::compute_views(int frame) {
 				throw std::logic_error("Unknown synthesis method");
 
 			// Bind to projectors
-			synthesizer->setUnprojector(unprojector.get());
-			synthesizer->setProjector(projector.get());
+			//synthesizer->setUnprojector(unprojector.get());
+			//synthesizer->setProjector(projector.get());
+			synthesizer->setSpaceTransformer(spaceTransformer.get());
 
 			// Memory optimization: Load the input image
 			PROF_START("loading");
 			input_images[input_idx].load();
 			PROF_END("loading");
+
+			if (WITH_OPENGL && with_opengl) {
+#if WITH_OPENGL
+				rd_start_capture_frame();
+#endif
+			}
 
 			// Synthesize view
 			synthesizer->compute(input_images[input_idx]);
@@ -169,6 +198,12 @@ void Pipeline::compute_views(int frame) {
 			blender->blend(*synthesizer);
 			PROF_END("blending");
 
+			if (WITH_OPENGL && with_opengl) {
+#if WITH_OPENGL
+				rd_end_capture_frame();
+#endif
+			}
+
 #if DUMP_MAPS
 			// Dump texture, depth, quality and validity maps for analysis (with DUMP_MAPS enabled)
 			dump_maps(input_idx, virtual_idx, *synthesizer, *blender);
@@ -176,6 +211,12 @@ void Pipeline::compute_views(int frame) {
 
 			// Memory optimization: Unload the input image 
 			input_images[input_idx].unload();
+		}
+		
+		if (WITH_OPENGL && with_opengl) {
+#ifdef WITH_OPENGL
+		blender->assignFromGL2CV(cv::Size(rescale*config.virtual_size.width, rescale*config.virtual_size.height));
+#endif
 		}
 
 		PROF_START("inpainting");
@@ -200,6 +241,7 @@ void Pipeline::compute_views(int frame) {
 			write_color(config.outmaskedfilenames[virtual_idx], color, config.bit_depth_color, frame);
 			PROF_END("masking");
 		}
+		PROF_END("One view computed");
 	}
 }
 

@@ -68,17 +68,14 @@ public:
 	 */
 	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const = 0;
 
-	/**@return Virtual view rotation matrix (like in VSRS camparams)*/
-	cv::Matx33f const& get_rotation() const;
-
-	/**@return Virtual view translation vector (like in VSRS camparams)*/
-	cv::Vec3f get_translation() const;
-
 	/**@return Size of the virtual view in pixels*/
 	cv::Size get_size() const;
 
+	/**\brief Return the camera matrix
+	@return The camera matrix. If we don't have one, we return an eye matrix.
+	*/
+	virtual cv::Matx33f const& get_camera_matrix() const;
+
 private:
-	cv::Matx33f rotation;
-	cv::Vec3f translation;
 	cv::Size size;
 };

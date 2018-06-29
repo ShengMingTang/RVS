@@ -4,6 +4,7 @@ project(${PROJECT_NAME})
 
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_SOURCE_DIR}/cmake/easy_profiler/")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_SOURCE_DIR}/cmake/glm/")
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -41,26 +42,6 @@ else()
     endif()
 endif()
 
-option(WITH_CUDA "Build the cuda version" OFF)
-
-set(CUDA_LIB "")
-if(WITH_CUDA)
-	find_package(CUDA QUIET)
-	if(CUDA_FOUND)
-		include_directories(${CUDA_INCLUDE_DIRS})
-		set(ALL_CUDA_LIBS ${CUDA_LIBRARIES} ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY})
-		set(LIBS ${LIBS} ${ALL_CUDA_LIBS})
-		message(STATUS "CUDA_LIBRARIES: ${CUDA_INCLUDE_DIRS} ${ALL_CUDA_LIBS}")
-		set(CUDA_PROPAGATE_HOST_FLAGS ON)
-		set(CUDA_SEPARABLE_COMPILATION OFF)
-		list(APPEND CUDA_NVCC_FLAGS -gencode=arch=compute_30,code=compute_30)
-		list(APPEND CUDA_NVCC_FLAGS -gencode=arch=compute_52,code=sm_52)
-		file(GLOB_RECURSE CUDA_SOURCES src/*.cu)
-		cuda_add_library(${PROJECT_NAME}_cuda STATIC ${CUDA_SOURCES})
-		set(CUDA_LIB ${PROJECT_NAME}_cuda)
-	endif()
-endif()
-
 
 option(WITH_EASY_PROFILER "Build the easy_profiler" OFF)
 
@@ -78,6 +59,44 @@ if(WITH_EASY_PROFILER)
 	endif()
 endif()
 
+option(WITH_OPENGL "Build the opengl version" OFF)
+
+set(OPENGL_SOURCES "")
+set(OPENGL_HEADERS "")
+set(OPENGL_LIB "")
+if(WITH_OPENGL)
+	find_package(OpenGL QUIET)
+	find_package(GLM QUIET)
+	if(OPENGL_FOUND AND GLM_FOUND)
+		include_directories(${OPENGL_INCLUDE_DIR})
+		include_directories(${GLM_INCLUDE_DIRS})
+		set(OPENGL_LIB ${OPENGL_LIBRARY})
+		
+		set(OPENGL_SOURCES
+			src/gl_core_4.5.cpp
+			src/helpersGL.cpp
+			src/RFBO.cpp
+			src/Shader.cpp)
+
+		set(OPENGL_HEADERS
+			src/gl_core_4.5.hpp
+			src/helpersGL.hpp
+			src/RFBO.hpp
+			src/renderdoc_app.h
+			src/Shader.hpp)
+
+		
+		add_definitions(-DWITH_OPENGL)
+
+		if (UNIX)
+			find_package(X11 QUIET)
+			if (X11_FOUND)
+				include_directories(${X11_INCLUDE_DIR})
+				set(OPENGL_LIB ${OPENGL_LIB} ${X11_LIBRARIES})
+			endif()
+		endif(UNIX)
+	endif()
+endif()
 
 set(PROJECT_SOURCES
 	src/BlendedView.cpp
@@ -98,7 +117,8 @@ set(PROJECT_SOURCES
 	src/Projector.cpp
 	src/PerspectiveUnprojector.cpp
 	src/PerspectiveProjector.cpp
-	src/PoseTraces.cpp)
+	src/PoseTraces.cpp
+	src/SpaceTransformer.cpp)
 
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
@@ -120,7 +140,13 @@ set(PROJECT_HEADERS
 	src/Projector.hpp
 	src/PerspectiveUnprojector.hpp
 	src/PerspectiveProjector.hpp
-	src/PoseTraces.hpp)
+	src/PoseTraces.hpp
+	src/SpaceTransformer.hpp)
+
+if (WITH_OPENGL)
+set(PROJECT_SOURCES ${PROJECT_SOURCES} ${OPENGL_SOURCES})
+set(PROJECT_HEADERS ${PROJECT_HEADERS} ${OPENGL_HEADERS})
+endif()
 
 set(CONFIGURATION_FILES
 	config_files/example_config_file.cfg
@@ -147,9 +173,9 @@ add_executable(${PROJECT_NAME} src/view_synthesis.cpp extra/example)
 add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
 add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp ${CONFIGURATION_FILES})
 
-target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
-target_link_libraries(${PROJECT_NAME}UnitTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
-target_link_libraries(${PROJECT_NAME}IntegrationTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB})
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB} ${OPENGL_LIB})
+target_link_libraries(${PROJECT_NAME}UnitTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB} ${OPENGL_LIB})
+target_link_libraries(${PROJECT_NAME}IntegrationTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB} ${OPENGL_LIB})
 
 enable_testing()
 add_test(NAME UnitTest${PROJECT_NAME} COMMAND ${PROJECT_NAME}UnitTest WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

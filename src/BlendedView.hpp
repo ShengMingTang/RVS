@@ -73,6 +73,12 @@ public:
 	\brief Blends this view with a new view.	
 	*/
 	virtual void blend(View const& view) = 0;
+#if WITH_OPENGL
+	/**
+	\brief Transfert textures from OpenGL to OpenCV Matrices (color, validity)
+	*/
+	void assignFromGL2CV(cv::Size size);
+#endif
 };
 
 /**

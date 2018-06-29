@@ -58,6 +58,11 @@ public:
 	*/
 	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
 
+	/**\brief get the camera matrix
+	@return Camera matrix
+	*/
+	cv::Matx33f const& get_camera_matrix() const;
+
 private:
 	Parameters parameters;
 };

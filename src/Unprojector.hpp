@@ -61,13 +61,11 @@ public:
 	@return Result in OMAF Referential: x forward, y left, z up*/
 	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const = 0;
 
-	/** \brief Input view rotation matrix (like in VSRS camparams)
-	@return Rotation matrix*/
-	cv::Matx33f const& get_rotation() const;
 
-	/**\brief Input view translation vector (like in VSRS camparams)
-	@return Translation vector*/
-	cv::Vec3f get_translation() const;
+	/**\brief Return the camera matrix
+	@return The camera matrix
+	*/
+	cv::Matx33f const& get_camera_matrix() const;
 
 private:
 	Parameters parameters;

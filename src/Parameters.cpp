@@ -36,6 +36,7 @@ Parameters::Parameters()
 {}
 
 /** Camera parameters
+All the parameters are internally stocked in the OMAF coordinate system
 @param rotation External parameter of rotation
 @param translation External parameter of translation
 @param camera_matrix Internal parameters
@@ -59,14 +60,15 @@ Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::M
 
 		//   right   down    forward
 		auto P = cv::Matx33f(
-			  0.f,   0.f,    1.f,	// forward
-			 -1.f,   0.f,    0.f,   // left
-			  0.f,  -1.f,    0.f);  // up
+			0.f, 0.f, 1.f,	// forward
+			-1.f, 0.f, 0.f,   // left
+			0.f, -1.f, 0.f);  // up
 
-		this->rotation     = P * rotation * P.t();
-		this->translation  = P * translation;
-        this->rotation0    = this->rotation;
-        this->translation0 = this->translation;
+		this->rotation = P * rotation * P.t();
+		this->translation = P * translation;
+		this->rotation0 = this->rotation;
+		this->translation0 = this->translation;
+
 	}
 	else throw std::logic_error("Unknown coordinate system");
 }

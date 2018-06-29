@@ -27,6 +27,11 @@ copies, substantial portions or derivative works of the Software.
 ------------------------------------------------------------------------------ -*/
 
 
+extern bool with_opengl;
+#ifdef WITH_OPENGL
+#include "helpersGL.hpp"
+#endif
+
 #include "Timer.hpp"
 #include "Pipeline.hpp"
 
@@ -40,6 +45,19 @@ int main(int argc, char* argv[])
 	{
 		PROF_BEGIN();
 
+		if ((argc > 2)) // -noopengl
+			with_opengl = false;
+		if (argc > 2 && !WITH_OPENGL)
+			throw std::logic_error("Too many parameters - not compiled with OpenGL");
+
+		if (WITH_OPENGL && with_opengl) {
+#ifdef WITH_OPENGL
+			PROF_START("OpenGL Context");
+			context_init();
+			PROF_END("OpenGL Context");
+#endif
+		}
+		
 		// BK: As soon as we have the manual as input document (and when accepted as output document), then we add it to this statement
 		std::cout
 			<< " - -------------------------------------------------------------------------------------- -\n"
