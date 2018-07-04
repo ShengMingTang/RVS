@@ -163,7 +163,13 @@ struct VAO_VBO_EBO {
 
 #if WITH_OPENGL
 #define NOMINMAX
+#if _WIN32
 #include <Windows.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glx.h>
+#endif
 // NEVER WRITE ON IT.
 struct context_NO_WRITE_H
 {

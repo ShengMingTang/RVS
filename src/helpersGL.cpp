@@ -138,9 +138,9 @@ RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 #endif
 
 #include "gl_core_4.5.hpp"
-#include <gl/gl.h>
 
 #if _WIN32
+#include <gl/gl.h>
 // Inspired by https://gist.github.com/nickrolfe/1127313ed1dbf80254b614a721b3ee9c
 
 typedef HGLRC WINAPI wglCreateContextAttribsARB_type(HDC hdc, HGLRC hShareContext,
@@ -470,6 +470,7 @@ void context_init() {
 
 #ifdef SVS_DEBUG
 	// At init, on windows
+#if _WIN32
 	HMODULE mod = GetModuleHandleA("renderdoc.dll");
 	if (mod)
 	{
@@ -481,6 +482,7 @@ void context_init() {
 	{
 		printf("Unable to load RenderDoc module.\n");
 	}
+#endif
 #endif
 	PROF_START("Create GL Context");
 
