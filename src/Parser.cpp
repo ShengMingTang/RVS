@@ -390,12 +390,18 @@ void Parser::read_vsrs_config_file() {
 	//seek left/right camera
 	seek_string(filename_parameter_file, 1, config.texture_names, "LeftViewImageName", "Input RGB left file name");
 	seek_string(filename_parameter_file, 1, config.texture_names, "RightViewImageName", "Input RGB right file name");
+	seek_string(filename_parameter_file, 1, config.texture_names, "Left2ViewImageName", "Input RGB left file name");
+	seek_string(filename_parameter_file, 1, config.texture_names, "Right2ViewImageName", "Input RGB right file name");
 	//seek l/r Depth images
 	seek_string(filename_parameter_file, 1, config.depth_names, "LeftDepthMapName", "Input depth left file name");
 	seek_string(filename_parameter_file, 1, config.depth_names, "RightDepthMapName", "Input depth right file name");
+	seek_string(filename_parameter_file, 1, config.depth_names, "Left2DepthMapName", "Input depth left file name");
+	seek_string(filename_parameter_file, 1, config.depth_names, "Right2DepthMapName", "Input depth right file name");
 	//seek l/r input cameras names
 	seek_string(filename_parameter_file, 1, config.InputCameraNames, "LeftCameraName", "Input left camera name");
 	seek_string(filename_parameter_file, 1, config.InputCameraNames, "RightCameraName", "Input right camera name");
+	seek_string(filename_parameter_file, 1, config.InputCameraNames, "Left2CameraName", "Input left camera name");
+	seek_string(filename_parameter_file, 1, config.InputCameraNames, "Right2CameraName", "Input right camera name");
 
 	//seek virtual camera file
 	seek_string(filename_parameter_file, 1, VirtualCameraParameterFile, "CameraParameterFile", "Camera parameter file");
@@ -407,6 +413,9 @@ void Parser::read_vsrs_config_file() {
 	//seek filesnames for output
 	seek_string(filename_parameter_file, 1, config.outfilenames, "OutputVirtualViewImageName", "Output file names");
 	seek_string(filename_parameter_file, 1, config.outmaskedfilenames, "MaskedVirtualViewImageName", "Masked output file names");
+
+	if (seek_float(filename_parameter_file, rescale, "Precision", "Precision") == 0)
+		rescale = 4.0f;
 
 	//seek w,h (default = 1920x1080)
 	int w, h;
@@ -423,6 +432,16 @@ void Parser::read_vsrs_config_file() {
 	config.zfar.push_back(z_far_right);
 	config.znear.push_back(z_near_left);
 	config.znear.push_back(z_near_right);
+	//seek zn, zf, l/r
+	float z_near_left2, z_far_left2, z_near_right2, z_far_right2;
+	seek_float(filename_parameter_file, z_near_left2, "Left2NearestDepthValue", "");
+	seek_float(filename_parameter_file, z_far_left2, "Left2FarthestDepthValue", "");
+	seek_float(filename_parameter_file, z_near_right2, "Right2NearestDepthValue", "");
+	seek_float(filename_parameter_file, z_far_right2, "Right2FarthestDepthValue", "");
+	config.zfar.push_back(z_far_left2);
+	config.zfar.push_back(z_far_right2);
+	config.znear.push_back(z_near_left2);
+	config.znear.push_back(z_near_right2);
 
 	print_results(InputCameraParameterFile, config.texture_names, config.depth_names, VirtualCameraParameterFile, 2, 1);
 	
