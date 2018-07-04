@@ -230,16 +230,12 @@ void main(void)
 	//coordinate of the translated image 
 	vec3 vt = vec3((position.x - n_p.x) / w, (position.y - n_p.y) / w, n_f.x / sensor);
 
-	//coordinates of the rotated image
-	mat3 vtm;
-	vtm[0][0] = vt[0];
-	vtm[0][1] = vt[1];
-	vtm[0][2] = vt[2];
-		
-	mat3 Vr = R*vtm;
-	Vr /= Vr[0][2] * sensor / n_f.x;
-	float xi = Vr[0][0] * w + n_p.x;
-	float yi = Vr[0][1] * w + n_p.y;
+	//coordinates of the rotated image		
+	vec3 Vr = R*vt;
+	Vr /= Vr[2];
+	Vr*= n_f.x/sensor;
+	float xi = Vr[0] * w + n_p.x;
+	float yi = Vr[1] * w + n_p.y;
 	//position = vec4(xi, yi, 0.0f, 0.0f);
 
 	position = vec4((xi)*2.0f/w-1.0f, -(yi)*2.0f/h +1.0f, 0.0f, 1.0f);
@@ -355,6 +351,8 @@ void main(void)
 	out float gs_depth;
 
 	uniform float w;
+	uniform float max_depth;
+	uniform float min_depth;
 
 	float get_quality_old() {
 		vec2 A = (gl_in[0].gl_Position).xy;
@@ -370,8 +368,16 @@ void main(void)
 		float dAC= dot((C-A), (C-A));
 
 		float maximum = max(max(dBA, dBC), dAC);
+		//return max(20000.f * area / maximum, 1.0f);
 
-		return 2.0f * area / maximum;
+		// TODO Philips:
+		// This quality works better with the Unicorn Dataset,
+		// Could you look into this?
+		float max_d = max(max(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
+		float min_d = min(min(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
+
+		return min(max(10000.0f-50000.0f*(max_d-min_d)/(max_depth-min_depth),1.0f),10000.f);
+
 	}
 	float get_quality() {
 		vec2 A = (gl_in[0].gl_Position).xy;
@@ -403,7 +409,8 @@ void main(void)
 	}
 
 	void main() {
-		float quality = get_quality();
+		// TODO change to the right quality function when the issue is closed
+		float quality = get_quality_old();
 		gen_vertex(0, quality);
 		gen_vertex(1, quality);
 		gen_vertex(2, quality);
@@ -433,7 +440,8 @@ void main(void)
 	color = texture(image_texture, gs_uv).rgb;
 	depth = gs_depth;
 	quality = gs_quality;
-	gl_FragDepth = ((gs_depth/max_depth)*(gs_depth/max_depth)*(gs_depth/max_depth))/gs_quality;
+	// TODO: Check with quality
+	gl_FragDepth = ((gs_depth/max_depth)/*(gs_depth/max_depth)*(gs_depth/max_depth)*/)/gs_quality;
 }
 )";
 
