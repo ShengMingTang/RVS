@@ -133,8 +133,14 @@ void SynthetizedView::compute(View& input)
 			fromCV2GLM<3, 3>(cv::Mat(R), &Rt);//OMAF
 		}
 		else if (ogl_transformer->get_projection_type() == PROJECTION_PERSPECTIVE){
-			translation = glm::vec3(t[1], t[2], t[0]);//omaf2VSRS
-			fromCV2GLM<3, 3>(cv::Mat(R), &Rt);//OMAF2VSRS
+			translation = glm::vec3(t[1], t[2], -t[0]);//omaf2VSRS
+			auto P = cv::Matx33f(
+				0.f, 0.f, -1.f,	// up
+				1.f, 0.f, 0.f,	// forward
+				0.f, 1.f, 0.f); // left
+			fromCV2GLM<3, 3>(cv::Mat(P.t()*R.t()*P), &Rt);//OMAF2VSRS
+			translation = Rt * translation;
+			Rt= glm::transpose(Rt);
 		}
 
 
@@ -170,6 +176,7 @@ void SynthetizedView::compute(View& input)
 		glUniform1f(glGetUniformLocation(program, "h"), h);
 		glUniform1f(glGetUniformLocation(program, "offset"), offset);
 		glUniform1f(glGetUniformLocation(program, "max_depth"), input.get_max_depth());
+		glUniform1f(glGetUniformLocation(program, "min_depth"), input.get_min_depth());
 
 		//only usefull for perpespective shader
 		glUniform2fv(glGetUniformLocation(program, "f"), 1, glm::value_ptr(f));

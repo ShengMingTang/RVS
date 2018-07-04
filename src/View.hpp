@@ -88,6 +88,7 @@ public:
 	cv::Mat1b get_validity_mask(float threshold) const;
 
 	virtual float get_max_depth() const { return 1.0; };
+	virtual float get_min_depth() const { return 0.0; };
 
 private:
 	void validate() const;
@@ -132,6 +133,7 @@ public:
 	void load();
 	void unload();
 	float get_max_depth() const { return z_far; };
+	float get_min_depth() const { return z_near; };
 
 private:
 	std::string filepath_color;
