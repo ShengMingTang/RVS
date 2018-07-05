@@ -34,7 +34,7 @@ copies, substantial portions or derivative works of the Software.
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveProjector::PerspectiveProjector(Parameters const& parameters, cv::Size size)
-	: Projector(parameters, size)
+	: Projector(size)
 	, parameters(parameters)
 {
 }

@@ -131,7 +131,7 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat2f /*image_pos*/, cv::Mat1f radius
 
 
 erp::Projector::Projector(Parameters const& parameters, cv::Size size)
-    : ::Projector(parameters, size)
+    : ::Projector(size)
 {
 }
 

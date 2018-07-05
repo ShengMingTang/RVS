@@ -34,7 +34,7 @@ Projector::Projector()
 }
 
 
-Projector::Projector(Parameters const& parameters, cv::Size size)
+Projector::Projector(cv::Size size)
 :	size(size)
 {
 }
@@ -49,5 +49,6 @@ cv::Size Projector::get_size() const
 
 cv::Matx33f const & Projector::get_camera_matrix() const
 {
-	return cv::Matx33f::eye();
+	auto static const eye = cv::Matx33f::eye();
+	return eye;
 }

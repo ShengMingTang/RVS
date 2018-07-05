@@ -52,10 +52,9 @@ public:
     Projector();
 
 	/**\brief Constructor
-	@param parameters Parameters of the View
 	@param size Size of the View 
 	*/
-    Projector(Parameters const&, cv::Size);
+    Projector(cv::Size);
 
 	/**\brief Destructor*/
 	virtual ~Projector();

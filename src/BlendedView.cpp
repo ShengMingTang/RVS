@@ -102,8 +102,8 @@ BlendedViewSimple::~BlendedViewSimple() {}
 
 void BlendedViewSimple::blend(View const& view)
 { 
-	if (WITH_OPENGL && with_opengl) {
 #if WITH_OPENGL
+	if (with_opengl) {
 		PROF_START("BLENDING_OPENGL");
 
 		auto FBO = RFBO::getInstance();
@@ -172,9 +172,9 @@ void BlendedViewSimple::blend(View const& view)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		PROF_END("BLENDING_OPENGL");
 		FBO->toggle();
-#endif
 	}
-	else {
+#endif
+	if (!with_opengl) {
 		if (is_empty) {
 			is_empty = false;
 			assign(view.get_color(), cv::Mat1b(), view.get_quality(), view.get_validity());
@@ -210,7 +210,7 @@ void BlendedView::assignFromGL2CV(cv::Size size)
 	cv::Mat3f img(size, CV_32FC3);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	glPixelStorei(GL_PACK_ROW_LENGTH, img.step / img.elemSize());
+	glPixelStorei(GL_PACK_ROW_LENGTH, GLint(img.step / img.elemSize()));
 
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
 	glReadBuffer(GL_COLOR_ATTACHMENT3 + 2 * FBO->value);
@@ -223,7 +223,7 @@ void BlendedView::assignFromGL2CV(cv::Size size)
 	cv::Mat validity = cv::Mat::ones(size, CV_32FC1);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	glPixelStorei(GL_PACK_ROW_LENGTH, validity.step / validity.elemSize());
+	glPixelStorei(GL_PACK_ROW_LENGTH, GLint(validity.step / validity.elemSize()));
 
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
 	glReadBuffer(GL_COLOR_ATTACHMENT4 + 2 * (FBO->value));

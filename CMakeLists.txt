@@ -7,7 +7,7 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_SOURCE_DIR}/cmake/easy_profi
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_SOURCE_DIR}/cmake/glm/")
 
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
 
 
 find_package(OpenMP)
@@ -59,17 +59,17 @@ if(WITH_EASY_PROFILER)
 	endif()
 endif()
 
-option(WITH_OPENGL "Build the opengl version" OFF)
+option(WITH_OPENGL "Build the opengl version" ON)
 
 set(OPENGL_SOURCES "")
 set(OPENGL_HEADERS "")
 set(OPENGL_LIB "")
 if(WITH_OPENGL)
-	find_package(OpenGL QUIET)
-	find_package(GLM QUIET)
+	find_package(OpenGL REQUIRED)
+	find_package(GLM REQUIRED)
 	if(OPENGL_FOUND AND GLM_FOUND)
-		include_directories(${OPENGL_INCLUDE_DIR})
-		include_directories(${GLM_INCLUDE_DIRS})
+		include_directories(SYSTEM ${OPENGL_INCLUDE_DIR})
+		include_directories(SYSTEM ${GLM_INCLUDE_DIRS})
 		set(OPENGL_LIB ${OPENGL_LIBRARY})
 		
 		set(OPENGL_SOURCES
@@ -91,7 +91,7 @@ if(WITH_OPENGL)
 		if (UNIX)
 			find_package(X11 QUIET)
 			if (X11_FOUND)
-				include_directories(${X11_INCLUDE_DIR})
+				include_directories(SYSTEM ${X11_INCLUDE_DIR})
 				set(OPENGL_LIB ${OPENGL_LIB} ${X11_LIBRARIES})
 			endif()
 		endif(UNIX)

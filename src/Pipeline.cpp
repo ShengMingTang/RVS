@@ -126,12 +126,12 @@ void Pipeline::load_images(int frame) {
 }
 
 void Pipeline::compute_views(int frame) {
-	if (WITH_OPENGL && with_opengl) {
 #if WITH_OPENGL
+	if (with_opengl) {
 		auto FBO = RFBO::getInstance();
-		FBO->init(cv::Size(rescale*config.virtual_size.width, rescale*config.virtual_size.height));
-#endif
+		FBO->init(cv::Size(int(rescale*config.virtual_size.width), int(rescale*config.virtual_size.height)));
 	}
+#endif
 	for (std::size_t virtual_idx = 0; virtual_idx != config.params_virtual.size(); ++virtual_idx) {
 		PROF_START("One view computed");
 		std::unique_ptr<BlendedView> blender;
@@ -146,10 +146,12 @@ void Pipeline::compute_views(int frame) {
 
 		// Project according to parameters of the virtual view
 		std::unique_ptr<SpaceTransformer> spaceTransformer;
-		if (WITH_OPENGL && with_opengl) {
+#if WITH_OPENGL
+		if (with_opengl) {
 			spaceTransformer.reset(new OpenGLTransformer());
 		}
-		else {
+#endif
+		if (!with_opengl) {
 			spaceTransformer.reset(new PUTransformer());
 		}
 
@@ -195,11 +197,11 @@ void Pipeline::compute_views(int frame) {
 			input_images[input_idx].load();
 			PROF_END("loading");
 
-			if (WITH_OPENGL && with_opengl) {
 #if WITH_OPENGL
+			if (with_opengl) {
 				rd_start_capture_frame();
-#endif
 			}
+#endif
 
 			// Synthesize view
 			synthesizer->compute(input_images[input_idx]);
@@ -209,11 +211,11 @@ void Pipeline::compute_views(int frame) {
 			blender->blend(*synthesizer);
 			PROF_END("blending");
 
-			if (WITH_OPENGL && with_opengl) {
 #if WITH_OPENGL
+			if (with_opengl) {
 				rd_end_capture_frame();
-#endif
 			}
+#endif
 
 #if DUMP_MAPS
 			// Dump texture, depth, quality and validity maps for analysis (with DUMP_MAPS enabled)
@@ -224,11 +226,11 @@ void Pipeline::compute_views(int frame) {
 			input_images[input_idx].unload();
 		}
 		
-		if (WITH_OPENGL && with_opengl) {
 #if WITH_OPENGL
-		blender->assignFromGL2CV(cv::Size(rescale*config.virtual_size.width, rescale*config.virtual_size.height));
-#endif
+		if (with_opengl) {
+			blender->assignFromGL2CV(cv::Size(int(rescale*config.virtual_size.width), int(rescale*config.virtual_size.height)));
 		}
+#endif
 
 		PROF_START("inpainting");
 		cv::Mat3f color = inpaint(blender->get_color(), blender->get_inpaint_mask(), true);

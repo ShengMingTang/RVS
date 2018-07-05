@@ -106,7 +106,7 @@ void OpenGLTransformer::set_targetPosition(Parameters params_virtual, cv::Size v
 		this->shader_name = "translate_rotate_ERP";
 }
 
-void OpenGLTransformer::set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type)
+void OpenGLTransformer::set_inputPosition(Parameters params_real, cv::Size /*input_size*/, ProjectionType input_projection_type)
 {
 	this->input_param = params_real;
 	this->sensor_size = params_real.get_sensor();

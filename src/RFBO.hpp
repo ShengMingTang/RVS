@@ -93,7 +93,7 @@ public:
 
 	GLuint depth_stencil = 0;
 
-	size_t value = 0;
+	GLint value = 0;
 
 private:
 	void validate(void) const

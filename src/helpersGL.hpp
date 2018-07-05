@@ -84,7 +84,7 @@ struct VAO_VBO_EBO {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, (depth.step & 3) ? 1 : 4);
 
 		//set length of one complete row in data (doesn't need to equal image.cols)
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, depth.step / depth.elemSize());
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, GLint(depth.step / depth.elemSize()));
 
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
@@ -114,23 +114,23 @@ struct VAO_VBO_EBO {
 	}
 
 #define INDEX_E(x,y,W) ((y)*(W) + (x))
-	void generate_picture_EBO(const cv::Size &s, size_t &number_of_elements)
+	void generate_picture_EBO(const cv::Size &s, size_t &elements_number)
 	{
-		const int W = s.width;
-		const int H = s.height;
+		const size_t W = s.width;
+		const size_t H = s.height;
 
-		number_of_elements = 3 * 2 * (H - 1)*(W - 1);
+		elements_number = 3 * 2 * (H - 1)*(W - 1);
 		std::vector<GLuint> indices;
-		indices.resize(number_of_elements);
+		indices.resize(elements_number);
 
 		size_t offset = 0;
 		for (size_t y = 0; y < H - 1; ++y)
 		{
 			for (size_t x = 0; x < W - 1; ++x)
 			{
-				indices[3 * INDEX_E(x, y, (W - 1)) + 0] = INDEX_E(x, y, W);
-				indices[3 * INDEX_E(x, y, (W - 1)) + 1] = INDEX_E(x + 1, y, W);
-				indices[3 * INDEX_E(x, y, (W - 1)) + 2] = INDEX_E(x, y + 1, W);
+				indices[3 * INDEX_E(x, y, (W - 1)) + 0] = GLuint(INDEX_E(x, y, W));
+				indices[3 * INDEX_E(x, y, (W - 1)) + 1] = GLuint(INDEX_E(x + 1, y, W));
+				indices[3 * INDEX_E(x, y, (W - 1)) + 2] = GLuint(INDEX_E(x, y + 1, W));
 				offset += 3;
 			}
 		}
@@ -139,9 +139,9 @@ struct VAO_VBO_EBO {
 		{
 			for (size_t x = 0; x < W - 1; ++x)
 			{
-				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 0] = INDEX_E(x, y, W);
-				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 1] = INDEX_E(x + 1, y - 1, W);
-				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 2] = INDEX_E(x + 1, y, W);
+				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 0] = GLuint(INDEX_E(x, y, W));
+				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 1] = GLuint(INDEX_E(x + 1, y - 1, W));
+				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 2] = GLuint(INDEX_E(x + 1, y, W));
 			}
 		}
 
@@ -149,9 +149,9 @@ struct VAO_VBO_EBO {
 		// Bind index buffer to corresponding target
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		// ititialize index buffer, allocate memory, fill it with data
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, number_of_elements * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_number * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
-		printf("Real number of elements %i\n", int(number_of_elements));
+		printf("Real number of elements %i\n", int(elements_number));
 	}
 
 };

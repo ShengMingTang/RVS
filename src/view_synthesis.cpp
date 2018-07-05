@@ -67,18 +67,23 @@ int main(int argc, char* argv[])
 	{
 		PROF_BEGIN();
 
-		if ((argc > 2)) // -noopengl
+		if (argc > 2) // -noopengl
 			with_opengl = false;
-		if (argc > 2 && !WITH_OPENGL)
-			throw std::logic_error("Too many parameters - not compiled with OpenGL");
 
-		if (WITH_OPENGL && with_opengl) {
+#if !WITH_OPENGL
+		with_opengl = false;
+		if (argc > 2 && !with_opengl)
+			throw std::logic_error("Too many parameters - not compiled with OpenGL");
+#endif
+
+
 #if WITH_OPENGL
+		if (with_opengl) {
 			PROF_START("OpenGL Context");
 			context_init();
 			PROF_END("OpenGL Context");
-#endif
 		}
+#endif
 		
 		// BK: As soon as we have the manual as input document (and when accepted as output document), then we add it to this statement
 		std::cout

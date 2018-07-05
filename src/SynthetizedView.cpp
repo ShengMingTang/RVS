@@ -113,8 +113,8 @@ void SynthetizedView::compute(View& input)
 	auto R = space_transformer->get_rotation();
 	auto t = space_transformer->get_translation();
 
-	if (WITH_OPENGL && with_opengl) {
 #if WITH_OPENGL
+	if (with_opengl) {
 		auto ogl_transformer = static_cast<const OpenGLTransformer*>(space_transformer);
 		GLuint image_texture = cvMat2glTexture(input.get_color());
 
@@ -123,8 +123,8 @@ void SynthetizedView::compute(View& input)
 		auto FBO = RFBO::getInstance();
 		auto & shaders = *(ShadersList::getInstance());
 
-		float w = input.get_depth().cols;
-		float h = input.get_depth().rows;
+		float w = float(input.get_depth().cols);
+		float h = float(input.get_depth().rows);
 
 		glm::mat3x3 Rt(0);
 		glm::vec3 translation;
@@ -198,9 +198,9 @@ void SynthetizedView::compute(View& input)
 		glDisable(GL_DEPTH_TEST);
 		
 		glDeleteTextures(GLsizei(1), &image_texture);
-#endif
 	}
-	else {
+#endif
+	if (!with_opengl) {
 		auto pu_transformer = static_cast<const PUTransformer*>(space_transformer);
 
 		// Generate image coordinates 
