@@ -44,6 +44,12 @@ Contact : Gauthier.Lafruit@ulb.ac.be
 #include "gl_core_4.5.hpp"
 #include "Config.hpp"
 #include <opencv2/core/mat.hpp>
+
+// C4201 in glm: nonstandard extension used: nameless struct/union
+#if _MSC_VER >= 1900
+#pragma warning(disable : 4201)
+#endif
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
