@@ -82,7 +82,7 @@ GLuint cvMat2glTexture(const cv::Mat& mat)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, (img.step & 3) ? 1 : 4); //printf("%i %llu ", (mat.step & 3), mat.step / mat.elemSize());
 
 																//set length of one complete row in data (doesn't need to equal image.cols)
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, static_cast<GLint>(img.step / img.elemSize()));
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, img.step / img.elemSize());
 
 	GLenum internalformat = GL_RGB32F;
 	if (img.channels() == 4) internalformat = GL_RGBA;
@@ -384,20 +384,20 @@ create_window(HINSTANCE inst)
 
 typedef GLXContext(*glXCreateContextAttribsARBProc) (Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
-void create_opengl_context(Display * disp, Window & win, GLXContext & ctx)
+void create_opengl_context()
 {
 	/* Create_display_and_window
 	-------------------------
 	Skip if you already have a display and window */
-	disp = XOpenDisplay(0);
-	win = XCreateSimpleWindow(disp, DefaultRootWindow(disp),
+	context_NO_WRITE.disp = XOpenDisplay(0);
+	context_NO_WRITE.win = XCreateSimpleWindow(context_NO_WRITE.disp, DefaultRootWindow(context_NO_WRITE.disp),
 		10, 10,   /* x, y */
 		800, 600, /* width, height */
 		0, 0,     /* border_width, border */
 		0);       /* background */
 
-				  /* Create_the_modern_OpenGL_context
-				  -------------------------------- */
+	/* Create_the_modern_OpenGL_context
+	 -------------------------------- */
 	static int visual_attribs[] = {
 		GLX_RENDER_TYPE, GLX_RGBA_BIT,
 		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
@@ -409,8 +409,8 @@ void create_opengl_context(Display * disp, Window & win, GLXContext & ctx)
 	};
 
 	int num_fbc = 0;
-	GLXFBConfig *fbc = glXChooseFBConfig(disp,
-		DefaultScreen(disp),
+	GLXFBConfig *fbc = glXChooseFBConfig(context_NO_WRITE.disp,
+		DefaultScreen(context_NO_WRITE.disp),
 		visual_attribs, &num_fbc);
 	if (!fbc) {
 		printf("glXChooseFBConfig() failed\n");
@@ -419,15 +419,15 @@ void create_opengl_context(Display * disp, Window & win, GLXContext & ctx)
 
 	/* Create old OpenGL context to get correct function pointer for
 	glXCreateContextAttribsARB() */
-	XVisualInfo *vi = glXGetVisualFromFBConfig(disp, fbc[0]);
-	GLXContext ctx_old = glXCreateContext(disp, vi, 0, GL_TRUE);
+	XVisualInfo *vi = glXGetVisualFromFBConfig(context_NO_WRITE.disp, fbc[0]);
+	GLXContext ctx_old = glXCreateContext(context_NO_WRITE.disp, vi, 0, GL_TRUE);
 	glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
 	glXCreateContextAttribsARB =
 		(glXCreateContextAttribsARBProc)
 		glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 	/* Destroy old context */
-	glXMakeCurrent(disp, 0, 0);
-	glXDestroyContext(disp, ctx_old);
+	glXMakeCurrent(context_NO_WRITE.disp, 0, 0);
+	glXDestroyContext(context_NO_WRITE.disp, ctx_old);
 	if (!glXCreateContextAttribsARB) {
 		printf("glXCreateContextAttribsARB() not found\n");
 		exit(1);
@@ -440,8 +440,8 @@ void create_opengl_context(Display * disp, Window & win, GLXContext & ctx)
 		None
 	};
 	/* Create modern OpenGL context */
-	ctx = glXCreateContextAttribsARB(disp, fbc[0], NULL, true, context_attribs);
-	if (!ctx) {
+	context_NO_WRITE.ctx = glXCreateContextAttribsARB(context_NO_WRITE.disp, fbc[0], NULL, true, context_attribs);
+	if (!context_NO_WRITE.ctx) {
 		printf("Failed to create OpenGL context. Exiting.\n");
 		exit(1);
 	}
@@ -491,21 +491,20 @@ void context_init() {
 
 	context_NO_WRITE.gldc = GetDC(context_NO_WRITE.fakewindow);
 	context_NO_WRITE.glrc = init_opengl(context_NO_WRITE.gldc);
-
+#else // linux
+	create_opengl_context(/*context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx*/);
+#endif
 	if (ogl_LoadFunctions() == ogl_LOAD_FAILED)
 	{
 		printf("Failed to load OpenGL Functions.\n");
 	}
 
+	// Show windows:
+	// Windows:
 	//ShowWindow(context_NO_WRITE.fakewindow, 1);
 	//UpdateWindow(context_NO_WRITE.fakewindow);
-#else // linux
-	create_opengl_context(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
-
-	// TODO I think I need to do glXMakeCurrent(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
+	// Linux:
 	//show_window(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
-#endif
-
 	PROF_END("Create GL Context");
 #endif
 }
@@ -517,8 +516,7 @@ void setGLContext()
 #if _WIN32
 	wglMakeCurrent(context_NO_WRITE.gldc, context_NO_WRITE.glrc);
 #else // linux
-	// TODO check  I think I need to do glXMakeCurrent(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
-
+	glXMakeCurrent(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
 #endif
 	PROF_END("Set GL Context");
 #endif
