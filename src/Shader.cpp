@@ -151,7 +151,7 @@ void Shader::compile()
 	if (!tessE_source.empty()) glDeleteShader(tessEShader);
 }
 
-const GLuint Shader::program()
+GLuint Shader::program()
 {
 	if (ID > 0)
 		return ID;

@@ -67,8 +67,8 @@ set(OPENGL_LIB "")
 if(WITH_OPENGL)
 	set(OpenGL_GL_PREFERENCE "GLVND")
 	find_package(OpenGL REQUIRED)
-	find_package(GLM REQUIRED)
-	if(OPENGL_FOUND AND GLM_FOUND)
+	find_package(glm REQUIRED)
+	if(OPENGL_FOUND AND glm_FOUND)
 		include_directories(SYSTEM ${OPENGL_INCLUDE_DIR})
 		include_directories(SYSTEM ${GLM_INCLUDE_DIRS})
 		set(OPENGL_LIB ${OPENGL_LIBRARY})
@@ -83,9 +83,7 @@ if(WITH_OPENGL)
 			src/gl_core_4.5.hpp
 			src/helpersGL.hpp
 			src/RFBO.hpp
-			src/renderdoc_app.h
 			src/Shader.hpp)
-
 		
 		add_definitions(-DWITH_OPENGL)
 
@@ -96,6 +94,14 @@ if(WITH_OPENGL)
 				set(OPENGL_LIB ${OPENGL_LIB} ${X11_LIBRARIES})
 			endif()
 		endif(UNIX)
+
+		find_path(RENDERDOC_INCLUDE_DIR NAMES "renderdoc_app.h" PATHS "C:/Program Files/RenderDoc")
+		if(EXISTS ${RENDERDOC_INCLUDE_DIR})
+			add_definitions(-DWITH_RENDERDOC)
+			include_directories(${RENDERDOC_INCLUDE_DIR})
+		else()
+			add_definitions(-DWITH_RENDERDOC=false)
+		endif()
 	endif()
 else()
 	add_definitions(-DWITH_OPENGL=false)
