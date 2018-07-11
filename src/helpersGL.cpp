@@ -40,18 +40,9 @@ Contact : Gauthier.Lafruit@ulb.ac.be
 #ifdef WITH_OPENGL
 
 #include "helpersGL.hpp"
-#include "renderdoc_app.h"
 #include "RFBO.hpp"
 #include "Shader.hpp"
 
-#define SVS_DEBUG
-// TODO change with DUMP ?
-// The advantage of keeping this is that we
-// can run the OpenGL Debugging Software
-// In Release With Debug Info to have the speed
-// and be able to debug the software at the same time
-// When DUMP_VALUES works in Debug mode only and slow down
-// everything
 
 #include <string>
 
@@ -133,7 +124,7 @@ GLuint cvMat2glTexture(const cv::Mat& mat)
 // We need to declare this global variable to make it available everywhere
 context_NO_WRITE_H context_NO_WRITE;
 
-#ifdef SVS_DEBUG
+#if SVS_DEBUG && WITH_RENDERDOC
 RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 #endif
 
@@ -468,7 +459,7 @@ void show_window(Display * disp, Window & win, GLXContext & ctx)
 void context_init() {
 #ifdef WITH_OPENGL
 
-#ifdef SVS_DEBUG
+#if SVS_DEBUG && WITH_RENDERDOC
 	// At init, on windows
 #if _WIN32
 	HMODULE mod = GetModuleHandleA("renderdoc.dll");
@@ -527,7 +518,7 @@ void setGLContext()
 
 void rd_start_capture_frame() {
 #ifdef WITH_OPENGL
-	#ifdef SVS_DEBUG
+	#if SVS_DEBUG && WITH_RENDERDOC
 	if (rdoc_api && rdoc_api->IsTargetControlConnected()) {
 		//rdoc_api->TriggerCapture();
 		rdoc_api->StartFrameCapture(NULL, NULL);
@@ -538,7 +529,7 @@ void rd_start_capture_frame() {
 
 void rd_end_capture_frame() {
 #ifdef WITH_OPENGL
-	#ifdef SVS_DEBUG
+	#if SVS_DEBUG && WITH_RENDERDOC
 	static int frame_number = 0;
 	if (rdoc_api && rdoc_api->IsTargetControlConnected()) {
 		//rdoc_api->TriggerCapture();
