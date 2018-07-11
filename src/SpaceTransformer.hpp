@@ -92,13 +92,13 @@ public:
 	cv::Matx33f get_input_camera_matrix() const;
 	cv::Matx33f get_output_camera_matrix() const;
 	ProjectionType get_projection_type() const { return projection_type; }
-	char* get_shader_name() const { return shader_name; };
+	char const* get_shader_name() const { return shader_name; };
 
 	void set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type);
 	void set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type);
 	
 private:
 	ProjectionType projection_type;
-	char* shader_name;
+	char const* shader_name;
 
 };

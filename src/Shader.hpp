@@ -75,7 +75,7 @@ private:
 public:
 	void compile();
 
-	const GLuint program();
+	GLuint program();
 
 };
 
