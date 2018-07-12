@@ -44,6 +44,8 @@ Contact : Gauthier.Lafruit@ulb.ac.be
 
 #include "opencv2/imgproc.hpp"
 
+#include <memory>
+
 class SpaceTransformer
 {
 public:
