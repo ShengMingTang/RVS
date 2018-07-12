@@ -50,6 +50,8 @@ private:
 	~RFBO()
 	{
 		// TODO delete OpenGL Buffers	
+		delete _singleton;
+		initialized = false;
 	}
 
 public:
@@ -62,8 +64,9 @@ public:
 
 	void init(cv::Size size)
 	{
+		if (!initialized)
+			create_fbo(size);
 		initialized = true;
-		create_fbo(size);
 	}
 
 public:
@@ -74,8 +77,11 @@ public:
 
 	void clear_buffers();
 
+	void free();
+
 private:
 	GLuint create_texture_buffer(cv::Size size, GLenum attachement_type, GLenum internalformat);
+	void RFBO::delete_texture_buffer(GLuint texture);
 
 	void create_fbo(cv::Size size);
 

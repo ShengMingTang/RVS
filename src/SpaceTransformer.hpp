@@ -77,10 +77,10 @@ public:
 private:
 
 	// Unprojector converts input view to world coordinates
-	Unprojector const *unprojector = nullptr;
+	std::unique_ptr<Unprojector> unprojector = nullptr;
 
 	// Projector converts world to virtual view coordinates
-	Projector const *projector = nullptr;
+	std::unique_ptr<Projector> projector = nullptr;
 };
 
 #include "Shader.hpp"

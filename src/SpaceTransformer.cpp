@@ -117,9 +117,9 @@ void OpenGLTransformer::set_inputPosition(Parameters params_real, cv::Size /*inp
 void PUTransformer::set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type)
 {
 	if (virtual_projection_type == PROJECTION_PERSPECTIVE)
-		this->projector = new PerspectiveProjector(params_virtual, virtual_size);
+		this->projector.reset(new PerspectiveProjector(params_virtual, virtual_size));
 	else if (virtual_projection_type == PROJECTION_EQUIRECTANGULAR)
-		this->projector = new erp::Projector(params_virtual, virtual_size);
+		this->projector.reset(new erp::Projector(params_virtual, virtual_size));
 	this->size = virtual_size;
 	this->output_param = params_virtual;
 }
@@ -127,9 +127,9 @@ void PUTransformer::set_targetPosition(Parameters params_virtual, cv::Size virtu
 void PUTransformer::set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type)
 {
 	if (input_projection_type == PROJECTION_PERSPECTIVE)
-		this->unprojector = new PerspectiveUnprojector(params_real);
+		this->unprojector.reset(new PerspectiveUnprojector(params_real));
 	else if (input_projection_type == PROJECTION_EQUIRECTANGULAR)
-		this->unprojector = new erp::Unprojector(params_real, input_size);
+		this->unprojector.reset(new erp::Unprojector(params_real, input_size));
 
 	this->input_param = params_real;
 	this->sensor_size = params_real.get_sensor();

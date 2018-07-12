@@ -101,6 +101,11 @@ GLuint RFBO::create_texture_buffer(cv::Size size, GLenum attachement_type, GLenu
 
 	return texture;
 }
+void RFBO::delete_texture_buffer(GLuint texture)
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDeleteTextures(1, &texture);
+}
 
 void RFBO::create_fbo(cv::Size size)
 {
@@ -109,6 +114,7 @@ void RFBO::create_fbo(cv::Size size)
 
 	glGenFramebuffers(1, &ID);
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+	initialized = true;
 
 	image = create_texture_buffer(size, GL_COLOR_ATTACHMENT0, GL_RGB32F);
 	depth = create_texture_buffer(size, GL_COLOR_ATTACHMENT1, GL_R32F);
@@ -130,6 +136,7 @@ void RFBO::create_fbo(cv::Size size)
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
+		initialized = false;
 		printf("FATAL ERROR WHILE CREATING THE FRAMEBUFFER. %u\n", glGetError());
 		exit(1);
 	}
@@ -138,5 +145,30 @@ void RFBO::create_fbo(cv::Size size)
 
 }
 
+void RFBO::free()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &ID);
+	initialized = false;
+
+	delete_texture_buffer(image);
+	delete_texture_buffer(depth);
+	delete_texture_buffer(quality_triangle);
+
+	delete_texture_buffer(swap_image[0]);
+	delete_texture_buffer(swap_quality[0]);
+
+	delete_texture_buffer(swap_image[1]);
+	delete_texture_buffer(swap_quality[1]);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glDeleteRenderbuffers(1, &depth_stencil);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 0, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
+
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
 
 #endif

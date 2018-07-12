@@ -255,6 +255,13 @@ void Pipeline::compute_views(int frame) {
 			PROF_END("masking");
 		}
 		PROF_END("One view computed");
+
+#if WITH_OPENGL
+		if (with_opengl) {
+		auto FBO = RFBO::getInstance();
+		FBO->free();
+		}
+#endif
 	}
 }
 
