@@ -197,6 +197,7 @@ struct context_NO_WRITE_H
 	Window win = 0;
 	GLXContext ctx = 0;
 #endif
+	bool initialized = false;
 };
 
 extern context_NO_WRITE_H context_NO_WRITE;

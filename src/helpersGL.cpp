@@ -43,7 +43,6 @@ Contact : Gauthier.Lafruit@ulb.ac.be
 #include "RFBO.hpp"
 #include "Shader.hpp"
 
-
 #include <string>
 
 
@@ -458,6 +457,8 @@ void show_window(Display * disp, Window & win, GLXContext & ctx)
 
 void context_init() {
 #ifdef WITH_OPENGL
+	if (context_NO_WRITE.initialized)
+		return;
 
 #if SVS_DEBUG && WITH_RENDERDOC
 	// At init, on windows
@@ -483,20 +484,21 @@ void context_init() {
 	context_NO_WRITE.gldc = GetDC(context_NO_WRITE.fakewindow);
 	context_NO_WRITE.glrc = init_opengl(context_NO_WRITE.gldc);
 #else // linux
-	create_opengl_context(/*context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx*/);
+	create_opengl_context();
 #endif
 	if (ogl_LoadFunctions() == ogl_LOAD_FAILED)
 	{
 		printf("Failed to load OpenGL Functions.\n");
 	}
 
-	// Show windows:
+	// Show a window:
 	// Windows:
 	//ShowWindow(context_NO_WRITE.fakewindow, 1);
-	//UpdateWindow(context_NO_WRITE.fakewindow);
+	//UpdateWindow(context_NO_WRITE.fakewindow); // in the main loop
 	// Linux:
 	//show_window(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
 	PROF_END("Create GL Context");
+	context_NO_WRITE.initialized = true;
 #endif
 }
 
