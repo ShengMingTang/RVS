@@ -72,7 +72,7 @@ GLuint cvMat2glTexture(const cv::Mat& mat)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, (img.step & 3) ? 1 : 4); //printf("%i %llu ", (mat.step & 3), mat.step / mat.elemSize());
 
 																//set length of one complete row in data (doesn't need to equal image.cols)
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, img.step / img.elemSize());
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, static_cast<GLint>(img.step / img.elemSize()));
 
 	GLenum internalformat = GL_RGB32F;
 	if (img.channels() == 4) internalformat = GL_RGBA;
