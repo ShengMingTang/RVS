@@ -81,7 +81,7 @@ public:
 
 private:
 	GLuint create_texture_buffer(cv::Size size, GLenum attachement_type, GLenum internalformat);
-	void RFBO::delete_texture_buffer(GLuint texture);
+	void delete_texture_buffer(GLuint texture);
 
 	void create_fbo(cv::Size size);
 
