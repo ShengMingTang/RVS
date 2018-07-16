@@ -49,6 +49,7 @@ Contact : Gauthier.Lafruit@ulb.ac.be
 // and be able to debug the software at the same time
 // When DUMP_VALUES works in Debug mode only and slow down
 // everything
+// Proposal: #define SVS_DEBUG WITH_RENDERDOC && !NDEBUG
 
 #include "gl_core_4.5.hpp"
 #include "Config.hpp"

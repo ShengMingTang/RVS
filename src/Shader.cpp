@@ -201,7 +201,7 @@ void main(void)
 
 	vec4 position;
 
-	if (d - translation.z <= 0.0f || d == 0.0) {
+	if (d + translation.x <= 0.0f || d == 0.0) {
 		position = vec4(-1.0f, -1.0f, 0, 1.0f);
 		gl_Position = position;
 		vs_out.uv = position.xy;
@@ -210,14 +210,14 @@ void main(void)
 	//coordinates of the translated image in plane (x,y)
 	float dispX = f.x / d * w_sensor;
 	float dispY = f.y / d * w_sensor;
-	float dx = dispX*translation.x;
-	float dy = dispY*translation.y;
+	float dx = dispX*translation.y;
+	float dy = dispY*translation.z;
 	float x2 = (x + offset) - dx;
 	float y2 = (y + offset) - dy;
 	//coordinate after z translation
 	vec2 v = vec2((x2) / w_sensor - p.x, (y2) / w_sensor - p.y);
-	float beta = (translation.z*v.x) / (f.x + -f.x*translation.z / d);
-	float gamma = (translation.z*v.y) / (f.x + -f.x*translation.z / d);
+	float beta = (-translation.x*v.x) / (f.x + f.x*translation.x / d);
+	float gamma = (-translation.x*v.y) / (f.x + f.x*translation.x / d);
 	//new image with old focal length (optical center at (0,0))
 	vec2 v2 = vec2(x2 + beta*dispX - p.x, y2 + gamma*dispY - p.y);
 	//new image with new focal length (optical center at (0,0))
@@ -228,14 +228,14 @@ void main(void)
 	position = vec4(X, Y, 0.0f, 0.0f);
 
 	//coordinate of the translated image 
-	vec3 vt = vec3((position.x - n_p.x) / w, (position.y - n_p.y) / w, n_f.x / sensor);
+	vec3 vt = vec3(-n_f.x / sensor, (position.x - n_p.x) / w, (position.y - n_p.y) / w);
 
 	//coordinates of the rotated image		
 	vec3 Vr = R*vt;
-	Vr /= Vr[2];
-	Vr*= n_f.x/sensor;
-	float xi = Vr[0] * w + n_p.x;
-	float yi = Vr[1] * w + n_p.y;
+	Vr /= Vr[0];
+	Vr*= -n_f.x/sensor;
+	float xi = Vr[1] * w + n_p.x;
+	float yi = Vr[2] * w + n_p.y;
 	//position = vec4(xi, yi, 0.0f, 0.0f);
 
 	position = vec4((xi)*2.0f/w-1.0f, -(yi)*2.0f/h +1.0f, 0.0f, 1.0f);
@@ -259,12 +259,21 @@ out VS_OUT {
 
 uniform vec3 translation;
 
-uniform float rotation;
 uniform float w;
 uniform float h;
 uniform float offset;
 
+uniform int erp_in;
+uniform int erp_out;
+
+uniform vec2 f;
+uniform vec2 n_f;
+uniform vec2 p;
+uniform vec2 n_p;
+
 uniform mat3 R;
+
+uniform float max_depth;
 vec3 calculate_euclidian_coordinates( vec2 phiTheta )
 {
     float phi   = phiTheta.x;
@@ -295,16 +304,15 @@ vec2 get_position_from_Vertex_ID(int id, float width) {
 	return vec2(float(x), float(y));
 }
 
-void main(void)
-{
+vec3 unproject_erp(){
 	//image coordinates
 	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
 	float x = xy.x;
 	float y = xy.y;
-
-	//spherical coordinates
 	float full_width = max(w, 2.0f * h);
 	float offset_w = (full_width - w) / 2.0f;
+
+	//spherical coordinates
 	vec2 phiTheta=vec2(2.0f*M_PI * ( 0.5f - (offset_w+offset+x) / full_width ),  M_PI * ( 0.5f - y / h ));
 
 	//normalized euclidian coordinates
@@ -313,8 +321,27 @@ void main(void)
 	//euclidian coordinates
 	eucl = eucl*d;
 
-	//transform
-	eucl = R*eucl+translation;
+	return eucl;
+}
+vec3 unproject_perspective(){
+	//image coordinates
+	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
+	float x = xy.x;
+	float y = xy.y;
+
+	// OMAF Referential: x forward, y left, z up
+	// Image plane: x right, y down
+	//if (d > 0.f) {
+		return vec3(d, -(d / f.x) * (x - p.x), -(d / f.y) * (y - p.y));
+	//}
+}
+void project_erp(vec3 eucl){
+	//image coordinates
+	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
+	float x = xy.x;
+	float y = xy.y;
+	float full_width = max(w, 2.0f * h);
+	float offset_w = (full_width - w) / 2.0f;
 
 	//normalize
 	float n = length(eucl);
@@ -328,10 +355,38 @@ void main(void)
 	float vic = 2.0f * phiTheta2.y / M_PI ;
 	vec4 position = vec4(hic,vic,0.0f,1.0f);
 
-	vs_out.uv = vec2(xy.x/w, xy.y/h);
+	vs_out.uv = vec2(x/w, y/h);
 	gl_Position = position;
 
 	vs_out.depth = n;
+}
+void project_perspective(vec3 eucl){
+	//image coordinates
+	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
+	float x = xy.x;
+	float y = xy.y;
+
+	//image coordinates (in [-1,1])
+	vec2 uv = vec2 (-n_f.x * eucl.y / eucl.x + n_p.x, -n_f.y * eucl.z / eucl.x + n_p.y);
+
+	gl_Position = vec4(2.0*uv.x/w-1.0, -2.0*uv.y/h+1.0, 0.f, 1.f);
+	vs_out.uv = vec2(x/w, y/h);
+	vs_out.depth = 1.0;
+}
+
+void main(void)
+{
+	vec3 eucl;
+	if (erp_in == 1)
+		eucl = unproject_erp();
+	else
+		eucl = unproject_perspective();
+	//transform
+	eucl = R*eucl+translation;
+	if (erp_out == 1)
+		project_erp(eucl);
+	else
+		project_perspective(eucl);
 }
 )";
 
@@ -354,7 +409,9 @@ void main(void)
 	uniform float max_depth;
 	uniform float min_depth;
 
-	float get_quality_old() {
+	//TODO Philips+ULB find the best quality possible (a combinaison of this 3 functions get_quality())
+
+	float get_quality_old() {//quality based on area/longuest side
 		vec2 A = (gl_in[0].gl_Position).xy;
 		vec2 B = (gl_in[1].gl_Position).xy;
 		vec2 C = (gl_in[2].gl_Position).xy;
@@ -368,18 +425,31 @@ void main(void)
 		float dAC= dot((C-A), (C-A));
 
 		float maximum = max(max(dBA, dBC), dAC);
-		//return max(20000.f * area / maximum, 1.0f);
+		return max(20000.f * area / maximum, 1.0f);
+	}
+	float get_quality_test() {//based of the depth difference in the triangle
+		vec2 A = (gl_in[0].gl_Position).xy;
+		vec2 B = (gl_in[1].gl_Position).xy;
+		vec2 C = (gl_in[2].gl_Position).xy;
 
-		// TODO Philips:
-		// This quality works better with the Unicorn Dataset,
-		// Could you look into this?
+		float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
+
+		if (area < 0) { return 0.0f; };
+
+		float dBA= dot((A-B), (A-B));
+		float dBC= dot((C-B), (C-B));
+		float dAC= dot((C-A), (C-A));
+
+		float maximum = max(max(dBA, dBC), dAC);
+		// This quality works better with the Unicorn Dataset
+		//TODO remove this comment
 		float max_d = max(max(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
 		float min_d = min(min(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
 
-		return min(max(10000.0f-50000.0f*(max_d-min_d)/(max_depth-min_depth),1.0f),10000.f);
+		return min(max(10000.0f-50000.0f*(max_d-min_d)/(min_depth),1.0f),10000.f);
 
 	}
-	float get_quality() {
+	float get_quality() { //quality based only on the longest side of the triangle
 		vec2 A = (gl_in[0].gl_Position).xy;
 		vec2 B = (gl_in[1].gl_Position).xy;
 		vec2 C = (gl_in[2].gl_Position).xy;
@@ -389,11 +459,11 @@ void main(void)
 
 		float dBA= dot((A-B), (A-B));
 		float dBC= dot((C-B), (C-B));
-		float dAC= dot((C-A), (C-A));
+		float dAC= dot((C-A), (C-A)); 
 
 		float maximum = max(max(dBA, dBC), dAC);
 
-		float quality = 10000.f - 1000.f * w*sqrt(maximum);
+		float quality = 10000.f / maximum / maximum;
 		quality = max(1.f, quality); // always > 0
 		quality = min(10000.f, quality);
 
@@ -410,7 +480,7 @@ void main(void)
 
 	void main() {
 		// TODO change to the right quality function when the issue is closed
-		float quality = get_quality_old();
+		float quality = sqrt(get_quality_test()*get_quality());
 		gen_vertex(0, quality);
 		gen_vertex(1, quality);
 		gen_vertex(2, quality);
@@ -441,7 +511,10 @@ void main(void)
 	depth = gs_depth;
 	quality = gs_quality;
 	// TODO: Check with quality
+	//works ? with unicorn
 	gl_FragDepth = ((gs_depth/max_depth)/*(gs_depth/max_depth)*(gs_depth/max_depth)*/)/gs_quality;
+	//work with 360
+	//gl_FragDepth = ((gs_depth/max_depth)*(gs_depth/max_depth)*(gs_depth/max_depth))/gs_quality;
 }
 )";
 

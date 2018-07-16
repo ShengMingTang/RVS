@@ -126,23 +126,12 @@ void SynthetizedView::compute(View& input)
 		float w = float(input.get_depth().cols);
 		float h = float(input.get_depth().rows);
 
+		//rotation and translation
 		glm::mat3x3 Rt(0);
-		glm::vec3 translation;
-		if (ogl_transformer->get_projection_type() == PROJECTION_EQUIRECTANGULAR) {
-			translation= glm::vec3(t[0], t[1], t[2]);//OMAF
-			fromCV2GLM<3, 3>(cv::Mat(R), &Rt);//OMAF
-		}
-		else if (ogl_transformer->get_projection_type() == PROJECTION_PERSPECTIVE){
-			translation = glm::vec3(t[1], t[2], -t[0]);//omaf2VSRS
-			auto P = cv::Matx33f(
-				0.f, 0.f, -1.f,	// up
-				1.f, 0.f, 0.f,	// forward
-				0.f, 1.f, 0.f); // left
-			fromCV2GLM<3, 3>(cv::Mat(P.t()*R.t()*P), &Rt);//OMAF2VSRS
-			translation = Rt * translation;
-			Rt= glm::transpose(Rt);
-		}
-
+		glm::vec3 translation;		
+		translation= glm::vec3(t[0], t[1], t[2]);//OMAF
+		fromCV2GLM<3, 3>(cv::Mat(R), &Rt);//OMAF
+		
 
 		cv::Mat old_cam_mat = cv::Mat(ogl_transformer->get_input_camera_matrix());
 		cv::Mat new_cam_mat = cv::Mat(ogl_transformer->get_output_camera_matrix());
@@ -184,6 +173,11 @@ void SynthetizedView::compute(View& input)
 		glUniform2fv(glGetUniformLocation(program, "p"), 1, glm::value_ptr(p));
 		glUniform2fv(glGetUniformLocation(program, "n_p"), 1, glm::value_ptr(n_p));
 		glUniform1f(glGetUniformLocation(program, "sensor"), sensor);
+
+
+		//only usefull for erp shader
+		glUniform1i(glGetUniformLocation(program, "erp_in"), ogl_transformer->get_input_projection_type());
+		glUniform1i(glGetUniformLocation(program, "erp_out"), ogl_transformer->get_output_projection_type());
 
 		// end parameters
 
