@@ -192,11 +192,6 @@ FUNC( TestERP_Project)
     double errorRadius = cv::sum( cv::abs( imRadiusActual  - radiusExpected ) ).val[0];
     
     ALMOST( 0.0, errorRadius, eps );
-
-    //auto errorPhiTheta = cv::sum( cv::abs( unprojector.phiTheta - projector.imPhiTheta ) );
-    //ALMOST( 0.0, errorPhiTheta[0], eps );
-    //ALMOST( 0.0, errorPhiTheta[1], eps );
-
 }
 
 FUNC(Test_PerspectiveProjector)
