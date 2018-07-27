@@ -62,8 +62,8 @@ cv::Mat compute_mask(std::vector<cv::Mat> depths) {
 }
 cv::Mat raffine_mask(cv::Mat mask) {
 	cv::Mat mask2;
-	erode(mask, mask2, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3 * (int)rescale, 3 * (int)rescale)), cv::Point(-1, -1), 1);
-	dilate(mask2, mask2, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3 * (int)rescale, 3 * (int)rescale)), cv::Point(-1, -1), 1);
+	erode(mask, mask2, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3 * (int)g_rescale, 3 * (int)g_rescale)), cv::Point(-1, -1), 1);
+	dilate(mask2, mask2, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3 * (int)g_rescale, 3 * (int)g_rescale)), cv::Point(-1, -1), 1);
 	return mask2;
 }
 
@@ -144,7 +144,7 @@ void inpaint_color(const cv::Mat& src, const cv::Mat & mask, cv::Mat& dst) {
 				if (mask.at<bool>(y, x))
 					map.at<cv::Vec4i>(y, x) = cv::Vec4i(map.cols + map.rows, map.cols + map.rows, map.cols + map.rows, map.cols + map.rows);
 			}
-		compute_interpolation(map, (int)(1000.0f*rescale));
+		compute_interpolation(map, (int)(1000.0f*g_rescale));
 		for (int y = 0; y < src.rows; ++y)
 			for (int x = 0; x < src.cols; ++x) {
 				if (mask.at<bool>(y, x)) {

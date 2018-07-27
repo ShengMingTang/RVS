@@ -44,7 +44,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-extern bool with_opengl;
+extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #endif
@@ -63,17 +63,17 @@ int main(int argc, char* argv[])
 		PROF_BEGIN();
 
 		if (argc > 2) // -noopengl
-			with_opengl = false;
+			g_with_opengl = false;
 
 #if !WITH_OPENGL
-		with_opengl = false;
-		if (argc > 2 && !with_opengl)
+		g_with_opengl = false;
+		if (argc > 2 && !g_with_opengl)
 			throw std::logic_error("Too many parameters - not compiled with OpenGL");
 #endif
 
 
 #if WITH_OPENGL
-		if (with_opengl) {
+		if (g_with_opengl) {
 			PROF_START("OpenGL Context");
 			context_init();
 			PROF_END("OpenGL Context");

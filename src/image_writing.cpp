@@ -65,7 +65,7 @@ namespace
 
 	void write_color_YUV(std::string filename, cv::Mat3f image, int bit_depth, int frame)
 	{
-		if (color_space == COLORSPACE_RGB)
+		if (g_color_space == COLORSPACE_RGB)
 			cv::cvtColor(image, image, CV_BGR2YCrCb);
 
 		cv::Mat ycbcr;
@@ -90,7 +90,7 @@ namespace
 
 	void write_color_RGB(std::string filename, cv::Mat3f image, int bit_depth)
 	{
-		if (color_space == COLORSPACE_YUV)
+		if (g_color_space == COLORSPACE_YUV)
 			cv::cvtColor(image, image, CV_YCrCb2BGR);
 
 		cv::Mat out;

@@ -51,7 +51,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <iostream>
 #include <algorithm>
 
-extern float rescale; // Config.hpp
+extern float g_rescale; // Config.hpp
 
 namespace
 {
@@ -61,7 +61,7 @@ namespace
 		double dbc = cv::norm(B, C);
 
 		float stretch = static_cast<float>(std::max(dbc, std::max(dab, dac)));
-		stretch /= rescale;
+		stretch /= g_rescale;
 
 		float quality = 10000.f - 1000.f * stretch;
 		quality = std::max(1.f, quality); // always > 0

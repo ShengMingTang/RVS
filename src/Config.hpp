@@ -98,7 +98,7 @@ enum ProjectionType {
 };
 
 /**Precision*/
-extern float rescale;
+extern float g_rescale;
 
 /**\brief RGB color for empty pixel (when no inpainting)*/
 const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
@@ -107,10 +107,7 @@ const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
 const cv::Vec3f empty_yuv_color(0.0f, 0.0f, 0.0f);
 
 /**Working color space (RGB or YUV). Independent of the input or output formats*/
-extern ColorSpace color_space;
-
-/**\brief Method for view synthesis*/
-extern ViewSynthesisMethod vs_method;
+extern ColorSpace g_color_space;
 
 /**
 \brief Configuration parameters
@@ -191,7 +188,7 @@ public:
 	/** Size of input image*/
 	cv::Size size = cv::Size(1920, 1080);
 
-	/** Size of output image (multiply by rescale to get the working size)*/
+	/** Size of output image (multiply by g_rescale to get the working size)*/
 	cv::Size virtual_size = cv::Size(0, 0);
 
 	/** Blending method (see BlendedView) */
@@ -229,6 +226,9 @@ public:
 
 	/**Pose*/
     std::vector<pose_traces::Pose> pose_trace;
+
+	/**Method for view synthesis*/
+	ViewSynthesisMethod vs_method = SYNTHESIS_TRIANGLE;
 };
 
 #endif

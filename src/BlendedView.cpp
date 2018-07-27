@@ -50,7 +50,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "iostream"
 
-extern bool with_opengl;
+extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #include "RFBO.hpp"
@@ -97,7 +97,7 @@ BlendedViewSimple::~BlendedViewSimple() {}
 void BlendedViewSimple::blend(View const& view)
 { 
 #if WITH_OPENGL
-	if (with_opengl) {
+	if (g_with_opengl) {
 		PROF_START("BLENDING_OPENGL");
 
 		auto FBO = RFBO::getInstance();
@@ -155,7 +155,7 @@ void BlendedViewSimple::blend(View const& view)
 		glUniform1i(glGetUniformLocation(program, "accumulator_quality"), 4 + 2 * FBO->value);
 
 		// parameters
-		glUniform1f(glGetUniformLocation(program, "blending_factor"), blending_exp);
+		glUniform1f(glGetUniformLocation(program, "blending_factor"), m_blending_exp);
 		// end parameters
 
 		glBindVertexArray(quadVAO);
@@ -168,7 +168,7 @@ void BlendedViewSimple::blend(View const& view)
 		FBO->toggle();
 	}
 #endif
-	if (!with_opengl) {
+	if (!g_with_opengl) {
 		if (m_is_empty) {
 			m_is_empty = false;
 			assign(view.get_color(), cv::Mat1b(), view.get_quality(), view.get_validity());

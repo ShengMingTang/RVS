@@ -62,7 +62,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-extern bool with_opengl;
+extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #include "RFBO.hpp"
@@ -120,9 +120,9 @@ void Pipeline::load_images(int frame) {
 
 void Pipeline::compute_views(int frame) {
 #if WITH_OPENGL
-	if (with_opengl) {
+	if (g_with_opengl) {
 		auto FBO = RFBO::getInstance();
-		FBO->init(cv::Size(int(rescale*config.virtual_size.width), int(rescale*config.virtual_size.height)));
+		FBO->init(cv::Size(int(g_rescale*m_config.virtual_size.width), int(g_rescale*m_config.virtual_size.height)));
 	}
 #endif
 	for (std::size_t virtual_idx = 0; virtual_idx != m_config.params_virtual.size(); ++virtual_idx) {
@@ -140,11 +140,11 @@ void Pipeline::compute_views(int frame) {
 		// Project according to parameters of the virtual view
 		std::unique_ptr<SpaceTransformer> spaceTransformer;
 #if WITH_OPENGL
-		if (with_opengl) {
+		if (g_with_opengl) {
 			spaceTransformer.reset(new OpenGLTransformer());
 		}
 #endif
-		if (!with_opengl) {
+		if (!g_with_opengl) {
 			spaceTransformer.reset(new PUTransformer());
 		}
 
@@ -166,7 +166,7 @@ void Pipeline::compute_views(int frame) {
 
 			// Select view synthesis method
 			std::unique_ptr<SynthesizedView> synthesizer;
-			if (vs_method == SYNTHESIS_TRIANGLE)
+			if (m_config.vs_method == SYNTHESIS_TRIANGLE)
 				synthesizer.reset(new SynthetisedViewTriangle);
 			else
 				throw std::logic_error("Unknown synthesis method");
@@ -180,7 +180,7 @@ void Pipeline::compute_views(int frame) {
 			PROF_END("loading");
 
 #if WITH_OPENGL
-			if (with_opengl) {
+			if (g_with_opengl) {
 				rd_start_capture_frame();
 			}
 #endif
@@ -194,7 +194,7 @@ void Pipeline::compute_views(int frame) {
 			PROF_END("blending");
 
 #if WITH_OPENGL
-			if (with_opengl) {
+			if (g_with_opengl) {
 				rd_end_capture_frame();
 			}
 #endif
@@ -209,8 +209,8 @@ void Pipeline::compute_views(int frame) {
 		}
 		
 #if WITH_OPENGL
-		if (with_opengl) {
-			blender->assignFromGL2CV(cv::Size(int(rescale*config.virtual_size.width), int(rescale*config.virtual_size.height)));
+		if (g_with_opengl) {
+			blender->assignFromGL2CV(cv::Size(int(g_rescale*m_config.virtual_size.width), int(g_rescale*m_config.virtual_size.height)));
 		}
 #endif
 
@@ -239,7 +239,7 @@ void Pipeline::compute_views(int frame) {
 		PROF_END("One view computed");
 
 #if WITH_OPENGL
-		if (with_opengl) {
+		if (g_with_opengl) {
 		auto FBO = RFBO::getInstance();
 		FBO->free();
 		}

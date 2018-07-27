@@ -47,8 +47,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "Config.hpp"
 
 
-float rescale = 1.0f;
-ColorSpace color_space = COLORSPACE_YUV;
-ViewSynthesisMethod vs_method = SYNTHESIS_TRIANGLE;
-
-bool with_opengl = true;
+float g_rescale = 1.0f;
+ColorSpace g_color_space = COLORSPACE_YUV;
+bool g_with_opengl = true;

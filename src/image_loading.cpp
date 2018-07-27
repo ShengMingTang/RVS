@@ -92,7 +92,7 @@ namespace
 		
 		image.convertTo(image, CV_32F, 1. / max_level(bit_depth));
 		
-		if (color_space == COLORSPACE_RGB)
+		if (g_color_space == COLORSPACE_RGB)
 			cv::cvtColor(image, image, CV_YCrCb2BGR);
 
 		return image;
@@ -137,7 +137,7 @@ namespace
 
 		image.convertTo(image, CV_32F, 1. / max_level(bit_depth));
 
-		if (color_space == COLORSPACE_YUV)
+		if (g_color_space == COLORSPACE_YUV)
 			cv::cvtColor(image, image, CV_BGR2YCrCb);
 
 		return image;

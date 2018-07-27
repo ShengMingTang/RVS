@@ -369,7 +369,7 @@ void split_frequencies(const cv::Mat & img, cv::Mat & low_freq, cv::Mat & high_f
 	PROF_START("blur");
 	int kernel_size = ((int)MAX(img.rows, img.cols) / 20);
 	//RGB: blur all three channels
-	if (color_space == COLORSPACE_RGB) {
+	if (g_color_space == COLORSPACE_RGB) {
 		cv::Mat img_rgb_blurry;
 	
 		calcBlurring(img, low_freq, mask, kernel_size);
@@ -377,7 +377,7 @@ void split_frequencies(const cv::Mat & img, cv::Mat & low_freq, cv::Mat & high_f
 		high_freq = img - low_freq;
 	}
 	//YCrCb: blur only Y channel
-	else if (color_space == COLORSPACE_YUV) {
+	else if (g_color_space == COLORSPACE_YUV) {
 		CV_DbgAssert(img.channels() == 3);
 		cv::Mat chans[3];
 		cv::split(img, chans);

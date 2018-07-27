@@ -416,8 +416,8 @@ void Parser::read_vsrs_config_file() {
 	seek_string(m_filename_parameter_file, 1, m_config.outfilenames, "OutputVirtualViewImageName", "Output file names");
 	seek_string(m_filename_parameter_file, 1, m_config.outmaskedfilenames, "MaskedVirtualViewImageName", "Masked output file names");
 
-	if (seek_float(m_filename_parameter_file, rescale, "Precision", "Precision") == 0)
-		rescale = 4.0f;
+	if (seek_float(m_filename_parameter_file, g_rescale, "Precision", "Precision") == 0)
+		g_rescale = 4.0f;
 
 	//seek w,h (default = 1920x1080)
 	int w, h;
@@ -515,22 +515,22 @@ void Parser::read_SVS_config_file() {
 	seek_int(m_filename_parameter_file, m_config.bit_depth_color, "BitDepthColor", "Element bit depth of raw texture streams");
 	seek_int(m_filename_parameter_file, m_config.bit_depth_depth, "BitDepthDepth", "Element bit depth of raw depth streams");
 	//seek Rescale factor for super resolution
-	if (seek_float(m_filename_parameter_file, rescale, "Precision", "Precision") == 0)
-		rescale = 4.0f;
+	if (seek_float(m_filename_parameter_file, g_rescale, "Precision", "Precision") == 0)
+		g_rescale = 4.0f;
 
 	//seek working color space
 	std::vector<std::string> cs;
 	if (seek_string(m_filename_parameter_file, 1, cs, "ColorSpace", "Working Color Space"))
 	{
-		if(cs[0] == "RGB") color_space = COLORSPACE_RGB;
-		else if (cs[0] == "YUV") color_space = COLORSPACE_YUV;
+		if(cs[0] == "RGB") g_color_space = COLORSPACE_RGB;
+		else if (cs[0] == "YUV") g_color_space = COLORSPACE_YUV;
 		else throw std::runtime_error("ColorSpace");
 	}
 	//view synthesis method
 	std::vector<std::string> vs;
 	if (seek_string(m_filename_parameter_file, 1, vs, "ViewSynthesisMethod", "View Synthesis Method"))
 	{
-		if (vs[0] == "Triangles") vs_method = SYNTHESIS_TRIANGLE;
+		if (vs[0] == "Triangles") m_config.vs_method = SYNTHESIS_TRIANGLE;
 		else throw std::runtime_error("ViewSynthesisMethod");
 	}
 	//seek blending method

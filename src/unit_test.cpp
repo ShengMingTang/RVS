@@ -164,8 +164,7 @@ FUNC( TestERP_BackProject)
 FUNC( TestERP_Project)
 {
     double eps = 1e-7;
-    //const float rescale = 1.f;
-    rescale = 1.f;
+    g_rescale = 1.f;
 
 	Parameters const parameters;
     const cv::Size size(5, 5);

@@ -51,7 +51,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <algorithm>
 #include <iostream>
 
-extern bool with_opengl;
+extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #include "RFBO.hpp"
@@ -107,8 +107,8 @@ void SynthesizedView::compute(View& input)
 	auto t = m_space_transformer->get_translation();
 
 #if WITH_OPENGL
-	if (with_opengl) {
-		auto ogl_transformer = static_cast<const OpenGLTransformer*>(space_transformer);
+	if (g_with_opengl) {
+		auto ogl_transformer = static_cast<const OpenGLTransformer*>(m_space_transformer);
 		GLuint image_texture = cvMat2glTexture(input.get_color());
 
 		const float offset = 0.0; // Center of a pixel
@@ -187,7 +187,7 @@ void SynthesizedView::compute(View& input)
 		glDeleteTextures(GLsizei(1), &image_texture);
 	}
 #endif
-	if (!with_opengl) {
+	if (!g_with_opengl) {
 		auto pu_transformer = static_cast<const PUTransformer*>(m_space_transformer);
 
 		// Generate image coordinates 
@@ -208,8 +208,8 @@ void SynthesizedView::compute(View& input)
 		// Resize: rasterize with oversampling
 		auto virtual_size = pu_transformer->get_size();
 		auto output_size = cv::Size(
-			int(0.5f + virtual_size.width * rescale),
-			int(0.5f + virtual_size.height * rescale));
+			int(0.5f + virtual_size.width * g_rescale),
+			int(0.5f + virtual_size.height * g_rescale));
 		cv::Mat2f scaled_uv;
 		cv::transform(virtual_uv, scaled_uv, cv::Matx22f(
 			float(output_size.width) / virtual_size.width, 0.f,
