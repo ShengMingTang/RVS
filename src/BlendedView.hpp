@@ -1,54 +1,46 @@
-/*------------------------------------------------------------------------------ -
+/* The copyright in this software is being made available under the BSD
+* License, included below. This software may be subject to other third party
+* and contributor rights, including patent rights, and no such rights are
+* granted under this license.
+*
+* Copyright (c) 2010-2018, ITU/ISO/IEC
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*  * Redistributions of source code must retain the above copyright notice,
+*    this list of conditions and the following disclaimer.
+*  * Redistributions in binary form must reproduce the above copyright notice,
+*    this list of conditions and the following disclaimer in the documentation
+*    and/or other materials provided with the distribution.
+*  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+* THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
-Copyright © 2018 - 2025 Université Libre de Bruxelles(ULB)
+/*
+Original authors:
 
-Authors : Sarah Fachada, Daniele Bonatto, Arnaud Schenkel
-Contact : Gauthier.Lafruit@ulb.ac.be
+Universite Libre de Bruxelles, Brussels, Belgium:
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
-SVS – Several inputs View Synthesis
-This software synthesizes virtual views at any position and orientation in space,
-from any number of camera input views, using depth image - based rendering
-techniques.
-
-Permission is hereby granted, free of charge, to the members of the Moving Picture
-Experts Group(MPEG) obtaining a copy of this software and associated documentation
-files(the "Software"), to use the Software exclusively within the framework of the
-MPEG - I(immersive) and MPEG - I Visual activities, for the sole purpose of
-developing the MPEG - I standard.This permission includes without limitation the
-rights to use, copy, modify and merge copies of the Software, and explicitly
-excludes the rights to publish, distribute, sublicense, sell, embed into a product
-or a service and/or otherwise commercially exploit copies of the Software without
-the written consent of the owner(ULB).
-
-This permission is provided subject to the following conditions :
-The above copyright notice and this permission notice shall be included in all
-copies, substantial portions or derivative works of the Software.
-
------------------------------------------------------------------------------- -*/
-
-/*------------------------------------------------------------------------------ -
-
-This source file has been modified by Koninklijke Philips N.V. for the purpose of
-of the 3DoF+ Investigation.
-Modifications copyright © 2018 Koninklijke Philips N.V.
-
-Extraction of a generalized unproject -> translate/rotate -> project flow
-
-Author  : Bart Kroon, Bart Sonneveldt
-Contact : bart.kroon@philips.com
-
------------------------------------------------------------------------------- -*/
-
-/*------------------------------------------------------------------------------ -
-
-This source file has been modified by Université Libre de Bruxelles(ULB) for the purpose of
-adding GPU acceleration through OpenGL.
-Modifications copyright © 2018 Université Libre de Bruxelles(ULB)
-
-Authors : Daniele Bonatto, Sarah Fachada
-Contact : Gauthier.Lafruit@ulb.ac.be
-
------------------------------------------------------------------------------- -*/
+Koninklijke Philips N.V., Eindhoven, The Netherlands:
+  Bart Kroon, bart.kroon@philips.com
+  Bart Sonneveldt, bart.sonneveldt@philips.com
+*/
 
 #pragma once
 

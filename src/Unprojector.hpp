@@ -1,32 +1,46 @@
-/* ------------------------------------------------------------------------------ -
+/* The copyright in this software is being made available under the BSD
+* License, included below. This software may be subject to other third party
+* and contributor rights, including patent rights, and no such rights are
+* granted under this license.
+*
+* Copyright (c) 2010-2018, ITU/ISO/IEC
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*  * Redistributions of source code must retain the above copyright notice,
+*    this list of conditions and the following disclaimer.
+*  * Redistributions in binary form must reproduce the above copyright notice,
+*    this list of conditions and the following disclaimer in the documentation
+*    and/or other materials provided with the distribution.
+*  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+* THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
-Copyright © 2018 Koninklijke Philips N.V.
+/*
+Original authors:
 
-Authors : Bart Kroon, Bart Sonneveldt
-Contact : bart.kroon@philips.com
+Universite Libre de Bruxelles, Brussels, Belgium:
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
-SVS 3DoF+
-For the purpose of the 3DoF+ Investigation, SVS is extended to match with the
-description of the Reference View Synthesizer(RVS) of the 3DoF+ part of the CTC.
-This includes support for unprojecting and projecting ERP images, reading and
-writing of 10 - bit YUV 4:2 : 0 texture and depth, parsing of JSON files according to
-the 3DoF + CfTM, and unit / integration tests.
-
-Permission is hereby granted, free of charge, to the members of the Moving Picture
-Experts Group(MPEG) obtaining a copy of this software and associated documentation
-files(the "Software"), to use the Software exclusively within the framework of the
-MPEG - I(immersive) and MPEG - I Visual activities, for the sole purpose of
-developing the MPEG - I standard.This permission explicitly excludes the rights
-to publish, distribute, sublicense, sell, embed into a product or a service and / or
-otherwise commercially exploit copies of the Software without the written consent
-of the owner(Koninklijke Philips N.V.).
-
-This permission is provided subject to the following conditions :
-The above copyright notice and this permission notice shall be included in all
-copies, substantial portions or derivative works of the Software.
-
------------------------------------------------------------------------------- - */
-
+Koninklijke Philips N.V., Eindhoven, The Netherlands:
+  Bart Kroon, bart.kroon@philips.com
+  Bart Sonneveldt, bart.sonneveldt@philips.com
+*/
 
 /**
 @file Unprojector.hpp
