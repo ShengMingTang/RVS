@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _PERSPECTIVE_UNPROJECTOR_HPP_
+#define _PERSPECTIVE_UNPROJECTOR_HPP_
 
 #include "Unprojector.hpp"
 #include "Config.hpp"
@@ -75,3 +76,5 @@ public:
 private:
 	Parameters parameters;
 };
+
+#endif

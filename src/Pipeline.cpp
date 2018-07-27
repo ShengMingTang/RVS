@@ -48,7 +48,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "Parser.hpp"
 #include "Timer.hpp"
 #include "BlendedView.hpp"
-#include "SynthetizedView.hpp"
+#include "SynthesizedView.hpp"
 #include "inpainting.hpp"
 #include "image_writing.hpp"
 #include "PerspectiveUnprojector.hpp"
@@ -165,9 +165,9 @@ void Pipeline::compute_views(int frame) {
 			spaceTransformer->set_inputPosition(config.params_real[input_idx], config.size, config.input_projection_type);
 
 			// Select view synthesis method
-			std::unique_ptr<SynthetizedView> synthesizer;
+			std::unique_ptr<SynthesizedView> synthesizer;
 			if (vs_method == SYNTHESIS_TRIANGLE)
-				synthesizer.reset(new SynthetizedViewTriangle);
+				synthesizer.reset(new SynthetisedViewTriangle);
 			else
 				throw std::logic_error("Unknown synthesis method");
 

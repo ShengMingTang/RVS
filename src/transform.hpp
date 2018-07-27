@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _TRANSFORM_HPP_
+#define _TRANSFORM_HPP_
 
 #include <opencv2/core.hpp>
 
@@ -68,3 +69,5 @@ The output is the new color image, the new corresponding depth map, and a qualit
 @return Output color map
 */
 cv::Mat3f transform_trianglesMethod(cv::Mat3f input_color, cv::Mat1f input_depth, cv::Mat2f input_positions, cv::Size output_size, cv::Mat1f& depth, cv::Mat1f& quality, bool horizontalWrap);
+
+#endif

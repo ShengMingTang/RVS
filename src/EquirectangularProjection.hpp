@@ -42,7 +42,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _EQUIRECTANGULAR_PROJECTION_HPP_
+#define _EQUIRECTANGULAR_PROJECTION_HPP_
+
 #include "Projector.hpp"
 #include "Unprojector.hpp"
 #include "Config.hpp"
@@ -165,3 +167,5 @@ public:
 };
 
 } // namespace
+
+#endif

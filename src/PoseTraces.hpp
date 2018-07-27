@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _POSE_TRACES_HPP_
+#define _POSE_TRACES_HPP_
 
 #include <opencv2/core.hpp>
 
@@ -192,3 +193,5 @@ namespace detail
     }
 } // namespace
 } // namespace
+
+#endif

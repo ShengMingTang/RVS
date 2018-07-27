@@ -158,7 +158,7 @@ set(PROJECT_SOURCES
 	src/Parameters.cpp
 	src/Parser.cpp
 	src/Pipeline.cpp
-	src/SynthetizedView.cpp
+	src/SynthesizedView.cpp
 	src/Timer.cpp
 	src/View.cpp
 	src/blending.cpp
@@ -179,7 +179,7 @@ set(PROJECT_HEADERS
 	src/Config.hpp
 	src/Parser.hpp
 	src/Pipeline.hpp
-	src/SynthetizedView.hpp
+	src/SynthesizedView.hpp
 	src/Timer.hpp
 	src/View.hpp
 	src/blending.hpp

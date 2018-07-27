@@ -35,7 +35,9 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
+  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
+  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Kroon, bart.kroon@philips.com
@@ -56,8 +58,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 The pipeline executes the following steps:
 	- Parsing the configuration file (see Parser)
 	- Loading the input reference views (see InputView, and load_images());
-	- View synthesis of the target view once for each input reference view (see SynthetizedView);
-	- Blending all the SynthetizedView together by assigning a per-pixel quality to each synthesized view (see BlendedView);
+	- View synthesis of the target view once for each input reference view (see SynthesizedView);
+	- Blending all the SynthesizedView together by assigning a per-pixel quality to each synthesized view (see BlendedView);
 	- Inpainting to fill the remaining holes (see inpaint());
 	- Writing the output (see write_color()).
 */

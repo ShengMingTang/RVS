@@ -42,7 +42,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _VIEW_HPP_
+#define _VIEW_HPP_
+
 #include <opencv2/core.hpp>
 
 /**
@@ -147,3 +149,5 @@ private:
 	float z_far;
 	int frame;
 };
+
+#endif

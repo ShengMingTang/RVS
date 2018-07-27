@@ -46,7 +46,10 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 @file Unprojector.hpp
 \brief The file containing the Unprojector class
 */
-#pragma once
+
+#ifndef _UNPROJECTOR_HPP_
+#define _UNPROJECTOR_HPP_
+
 #include "Parameters.hpp"
 
 #include <opencv2/core.hpp>
@@ -84,3 +87,5 @@ public:
 private:
 	Parameters parameters;
 };
+
+#endif

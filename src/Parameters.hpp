@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _PARAMETERS_HPP_
+#define _PARAMETERS_HPP_
 
 #include <opencv2/core.hpp>
 
@@ -113,3 +114,5 @@ private:
 	/**Size of the sensor, in the same unit as camera_matrix*/
 	float sensor;
 };
+
+#endif

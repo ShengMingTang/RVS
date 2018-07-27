@@ -42,7 +42,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _SPACE_TRANSFORMER_HPP_
+#define _SPACE_TRANSFORMER_HPP_
+
 #include "Projector.hpp"
 #include "Unprojector.hpp"
 #include "Config.hpp"
@@ -111,3 +113,5 @@ private:
 	char const* shader_name;
 
 };
+
+#endif

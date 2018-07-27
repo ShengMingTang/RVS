@@ -46,7 +46,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 @file PerspectiveProjector.hpp
 */
 
-#pragma once
+#ifndef _PERSPECTIVE_PROJECTOR_HPP_
+#define _PERSPECTIVE_PROJECTOR_HPP_
 
 #include "Projector.hpp"
 #include "Config.hpp"
@@ -83,3 +84,5 @@ public:
 private:
 	Parameters parameters;
 };
+
+#endif

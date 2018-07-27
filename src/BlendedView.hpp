@@ -35,16 +35,19 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
+  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
+  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Kroon, bart.kroon@philips.com
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _BLENDED_VIEW_HPP_
+#define _BLENDED_VIEW_HPP_
 
-#include "SynthetizedView.hpp"
+#include "SynthesizedView.hpp"
 
 #include <opencv2/core.hpp>
 
@@ -170,3 +173,5 @@ private:
 	BlendedViewSimple low_freq;
 	BlendedViewSimple high_freq;
 };
+
+#endif

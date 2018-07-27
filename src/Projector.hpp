@@ -46,7 +46,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 @file Projector.hpp
 */
 
-#pragma once
+#ifndef _PROJECTOR_HPP_
+#define _PROJECTOR_HPP_
+
 #include "Parameters.hpp"
 
 #include <opencv2/core.hpp>
@@ -93,3 +95,5 @@ public:
 private:
 	cv::Size size;
 };
+
+#endif

@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _CONFIG_HPP_
+#define _CONFIG_HPP_
 
 #include "Parameters.hpp"
 #include "PoseTraces.hpp"
@@ -229,3 +230,5 @@ public:
 	/**Pose*/
     std::vector<pose_traces::Pose> pose_trace;
 };
+
+#endif

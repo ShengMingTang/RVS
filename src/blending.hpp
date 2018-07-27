@@ -42,8 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
-
+#ifndef _BLENDING_HPP_
+#define _BLENDING_HPP_
 
 #include <opencv2/core.hpp>
 
@@ -99,3 +99,5 @@ If blending_exp < 0, calls blend_img_by_max().
 @return Color image containing the the weighted mean of the input images. 
 */
 cv::Mat blend_img(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& qualities, const std::vector<cv::Mat>& depth_prolongations, cv::Vec3f empty_color, cv::Mat& quality, cv::Mat& depth_prolongation_mask, cv::Mat& inpaint_mask, float blending_exp);
+
+#endif

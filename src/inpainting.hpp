@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _INPAINTING_HPP_
+#define _INPAINTING_HPP_
 
 #include <opencv2/core.hpp>
 
@@ -60,3 +61,5 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 	@return inpainted image
 */
 cv::Mat inpaint(const cv::Mat& img, const cv::Mat& mask, bool color);
+
+#endif

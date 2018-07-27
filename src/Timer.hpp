@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _TIMER_HPP_
+#define _TIMER_HPP_
 
 /**
 @file Timer.hpp
@@ -116,3 +117,5 @@ void Timer_Finalize();
 		PROF_START_1_ARGS, )
 
 #define PROF_START(...) PROF_START_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+
+#endif
