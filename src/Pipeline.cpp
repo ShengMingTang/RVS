@@ -151,8 +151,8 @@ void Pipeline::compute_views(int frame) {
 		Parameters& params_virtual = config.params_virtual[virtual_idx];
 		if(config.use_pose_trace)
 		{
-			params_virtual.adapt_initial_rotation( config.pose_trace[frame].rotation );
-			params_virtual.adapt_initial_translation( config.pose_trace[frame].translation );
+			params_virtual.adapt_initial_rotation( config.pose_trace[config.start_frame + frame].rotation );
+			params_virtual.adapt_initial_translation( config.pose_trace[config.start_frame + frame].translation );
 		}
 		
 		spaceTransformer->set_targetPosition(params_virtual, config.virtual_size, config.virtual_projection_type);
