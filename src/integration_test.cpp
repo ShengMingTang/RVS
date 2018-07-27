@@ -210,17 +210,6 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 		cv::Size(1920, 1080), 8, 20.30, 24.35); // VC14 + OpenCV 3.1.0: 20.3568, 24.4012
 }
 
-FUNC(ULB_Unicorn_10b)
-{
-	with_opengl = false;
-	Pipeline p("./config_files/Unicorn_10b.cfg");
-	p.execute();
-	testing::compareWithReferenceView<std::uint16_t>(
-		"030003250438_from_030003070370_030003430506-10b.yuv",
-		"10bit/Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438-10b.yuv",
-		cv::Size(1920, 1080), 10, 20.49, 24.75); // VC14 + OpenCV 3.1.0: 20.5474, 24.8075
-}
-
 FUNC(ULB_Unicorn_Same_View)
 {
 	with_opengl = false;

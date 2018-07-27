@@ -140,8 +140,6 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat1f radiusMap) const
 
 cv::Mat3f erp::Unprojector::unproject( cv::Mat2f /*image_pos*/, cv::Mat1f radiusMap) const 
 {
-    // TODO: Use image_pos instead of calculating them again
-    
     return unproject(radiusMap);
 }
 

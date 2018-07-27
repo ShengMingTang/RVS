@@ -122,7 +122,6 @@ void compute_nearest(cv::Mat & map) { // map : 3 channels : x of the nearest,y o
 							if (abs(x-i) + abs(y-j) == 1) {
 								cv::Vec3i path = map.at<cv::Vec3i>(j, i);
 								if (path[2] + 1 < map.at<cv::Vec3i>(y, x)[2]) {
-									//std::cout << "test " << path[2] + 1 << std::endl;
 									map.at<cv::Vec3i>(y, x) = cv::Vec3i(path[0], path[1], path[2] + 1);
 									change = true;
 								}
@@ -212,7 +211,6 @@ void inpaint_color(const cv::Mat& src, const cv::Mat & mask, cv::Mat& dst) {
 cv::Mat inpaint(const cv::Mat& img, const cv::Mat& mask, bool color) {
 	
 	cv::Mat inpaint_mask = mask > 0;
-	//cv::Mat mask = raffine_mask(inpaint_mask);
 	if (color) {
 		cv::Mat inpainted = img;
 		inpaint_color(img, inpaint_mask, inpainted);
@@ -226,10 +224,9 @@ cv::Mat inpaint(const cv::Mat& img, const cv::Mat& mask, bool color) {
 
 //renvoie un inpainting complet. renvoie une image dans le type demande
 cv::Mat inpaint_all(const cv::Mat& img, const cv::Mat& prev, int return_type, int cvt_type, int col_cvt_type, int col_cvtback_type, cv::Vec3f empty_color) {
-	cv::Mat img_8;// img.copyTo(img_8);
+	cv::Mat img_8;
 	cv::Mat inpaint_mask = prev == 0.f;
 	cv::Mat mask = raffine_mask(inpaint_mask);
-	//cv::Mat mask = inpaint_mask;
 	if (col_cvt_type > -1)
 		cvtColor(img, img_8, col_cvt_type);
 	else
@@ -238,7 +235,6 @@ cv::Mat inpaint_all(const cv::Mat& img, const cv::Mat& prev, int return_type, in
 		img_8 *= 255.0;
 	img_8.convertTo(img_8, cvt_type);
 	cv::Mat inpainted = cv::Mat::zeros(img_8.size(), cvt_type);
-	//result.convertTo(result, COLOR_BGRA2BGR);
 	inpaint(img_8, inpaint_mask, inpainted, 1, cv::INPAINT_NS);
 	if (col_cvtback_type > -1)
 		cvtColor(inpainted, inpainted, col_cvtback_type);

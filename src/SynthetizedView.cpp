@@ -193,8 +193,10 @@ void SynthetizedView::compute(View& input)
 		// Generate image coordinates 
 		auto input_size = input.get_size();
 		auto input_uv = uvCoordinates(input_size); // TODO: Move into PerspectiveUnproject
-		// Unproject: input view image to input view world coordinates
+		
+												   // Unproject: input view image to input view world coordinates
 		auto input_xyz = pu_transformer->unproject(input_uv, input.get_depth());
+		
 		// Rotate and translate from input (real) to output (virtual) view
 		auto virtual_xyz = affine_transform(input_xyz, R, t);
 

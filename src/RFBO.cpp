@@ -59,11 +59,7 @@ void RFBO::toggle()
 void RFBO::clear_working_buffers()
 {
 	validate();
-	/* OpenGL 3.0+
-	static const float transparent[] = { 0, 0, 0, 0 };
-	glClearBufferfv(GL_COLOR, GL_COLOR_ATTACHMENT4 + 2 * value, transparent);
-	glClearBufferfv(GL_COLOR, GL_COLOR_ATTACHMENT5 + 2 * value, transparent);
-	*/
+
 	// OpenGL 4.4+
 	glClearTexImage(swap_image[value], 0, GL_RGB, GL_FLOAT, 0);
 	glClearTexImage(swap_quality[value], 0, GL_RED, GL_FLOAT, 0);
@@ -77,6 +73,7 @@ void RFBO::clear_working_buffers()
 void RFBO::clear_buffers()
 {
 	validate();
+
 	// OpenGL 4.4+
 	glClearTexImage(swap_image[0], 0, GL_RGB, GL_FLOAT, 0);
 	glClearTexImage(swap_quality[0], 0, GL_RED, GL_FLOAT, 0);

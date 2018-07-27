@@ -65,11 +65,10 @@ OpenGLTransformer::OpenGLTransformer()
 
 cv::Vec3f SpaceTransformer::get_translation() const
 {
-	//auto R_from = unprojector->get_rotation();
 	auto t_from = input_param.get_translation();
 	auto R_to = output_param.get_rotation();
 	auto t_to = output_param.get_translation();
-
+	
 	auto t = -R_to.t()*(t_to - t_from);
 
 	return t;
@@ -100,11 +99,7 @@ void OpenGLTransformer::set_targetPosition(Parameters params_virtual, cv::Size v
 	this->output_param = params_virtual;
 	this->size = virtual_size;
 	this->output_projection_type = virtual_projection_type;
-	//uncomment to use the shader without reprojection
-	/*if (virtual_projection_type == PROJECTION_PERSPECTIVE)
-		this->shader_name = "translate_rotate_Perspective";
-	else if (virtual_projection_type == PROJECTION_EQUIRECTANGULAR)*/
-		this->shader_name = "translate_rotate_ERP";
+	this->shader_name = "translate_rotate_ERP";
 }
 
 void OpenGLTransformer::set_inputPosition(Parameters params_real, cv::Size /*input_size*/, ProjectionType input_projection_type_)

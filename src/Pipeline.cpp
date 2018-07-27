@@ -155,10 +155,6 @@ void Pipeline::compute_views(int frame) {
 			params_virtual.adapt_initial_translation( config.pose_trace[frame].translation );
 		}
 		
-		/*if( config.virtual_projection_type == PROJECTION_PERSPECTIVE )
-			projector.reset(new PerspectiveProjector(params_virtual, config.virtual_size));
-		else if ( config.virtual_projection_type == PROJECTION_EQUIRECTANGULAR )
-			projector.reset(new erp::Projector(params_virtual, config.virtual_size));*/
 		spaceTransformer->set_targetPosition(params_virtual, config.virtual_size, config.virtual_projection_type);
 
 
@@ -166,11 +162,6 @@ void Pipeline::compute_views(int frame) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
 
 			// Select type of un-projection 
-			/*std::unique_ptr<Unprojector> unprojector;
-			if( config.input_projection_type == PROJECTION_PERSPECTIVE )
-				unprojector.reset(new PerspectiveUnprojector(config.params_real[input_idx]));
-			else if ( config.input_projection_type == PROJECTION_EQUIRECTANGULAR )
-				unprojector.reset(new erp::Unprojector(config.params_real[input_idx], config.size ));*/
 			spaceTransformer->set_inputPosition(config.params_real[input_idx], config.size, config.input_projection_type);
 
 			// Select view synthesis method
@@ -181,8 +172,6 @@ void Pipeline::compute_views(int frame) {
 				throw std::logic_error("Unknown synthesis method");
 
 			// Bind to projectors
-			//synthesizer->setUnprojector(unprojector.get());
-			//synthesizer->setProjector(projector.get());
 			synthesizer->setSpaceTransformer(spaceTransformer.get());
 
 			// Memory optimization: Load the input image

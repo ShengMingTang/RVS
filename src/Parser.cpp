@@ -283,9 +283,6 @@ namespace json
 		CV_Assert(all_cam_ids.size() == all_rotations.size());
 		CV_Assert(!zfar || all_cam_ids.size() == all_radius_far.size());
 		CV_Assert(!znear || all_cam_ids.size() == all_radius_near.size());
-		// TODO check those tests
-		//CV_Assert(!zfar || zfar->empty());
-		//CV_Assert(!znear || znear->empty());
 
 		if (cam_ids.empty() || cam_ids.front() == "ALL")
 			cam_ids = all_cam_ids;
