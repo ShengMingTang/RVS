@@ -139,11 +139,12 @@ public:
 	*/
     cv::Mat3f unproject( cv::Mat1f radiusMap) const;
 
+private:
 	/**\brief Normalized euclidian coordinates of the pixels*/
-    cv::Mat3f verticesXYZNormalized;
+    cv::Mat3f m_verticesXYZNormalized;
 	
 	/**\brief Spherical coordinates of the pixels*/
-    cv::Mat2f phiTheta;
+    cv::Mat2f m_phiTheta;
 };
 
 /**\brief Equirectangular Projector*/

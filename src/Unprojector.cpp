@@ -52,7 +52,7 @@ Unprojector::Unprojector()
 
 
 Unprojector::Unprojector(Parameters const& parameters)
-	: parameters(parameters)
+	: m_parameters(parameters)
 {
 }
 
@@ -61,5 +61,5 @@ Unprojector::~Unprojector() {}
 
 cv::Matx33f const & Unprojector::get_camera_matrix() const
 {
-	return parameters.get_camera_matrix();
+	return m_parameters.get_camera_matrix();
 }

@@ -100,11 +100,11 @@ SynthesizedView::~SynthesizedView() {}
 
 void SynthesizedView::compute(View& input)
 {
-	assert(space_transformer);
+	assert(m_space_transformer);
 	PROF_START("warping");
 
-	auto R = space_transformer->get_rotation();
-	auto t = space_transformer->get_translation();
+	auto R = m_space_transformer->get_rotation();
+	auto t = m_space_transformer->get_translation();
 
 #if WITH_OPENGL
 	if (with_opengl) {
@@ -188,7 +188,7 @@ void SynthesizedView::compute(View& input)
 	}
 #endif
 	if (!with_opengl) {
-		auto pu_transformer = static_cast<const PUTransformer*>(space_transformer);
+		auto pu_transformer = static_cast<const PUTransformer*>(m_space_transformer);
 
 		// Generate image coordinates 
 		auto input_size = input.get_size();

@@ -93,7 +93,7 @@ public:
 	virtual cv::Matx33f const& get_camera_matrix() const;
 
 private:
-	cv::Size size;
+	cv::Size m_size;
 };
 
 #endif

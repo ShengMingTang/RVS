@@ -52,7 +52,7 @@ Projector::Projector()
 
 
 Projector::Projector(cv::Size size)
-:	size(size)
+:	m_size(size)
 {
 }
 
@@ -61,7 +61,7 @@ Projector::~Projector() {}
 
 cv::Size Projector::get_size() const
 {
-	return size;
+	return m_size;
 }
 
 cv::Matx33f const & Projector::get_camera_matrix() const

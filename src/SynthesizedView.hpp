@@ -80,7 +80,7 @@ public:
 	/** 
 	\brief Set SpaceTransformer (input view to world)
 	*/
-	void setSpaceTransformer(SpaceTransformer const * object) { this->space_transformer = object; };
+	void setSpaceTransformer(SpaceTransformer const * object) { m_space_transformer = object; };
 
 	/**
 	\brief Compute this view from the input View
@@ -103,7 +103,7 @@ protected:
         cv::Size output_size, WrappingMethod wrapping_method) = 0;
 
 private:
-	SpaceTransformer const *space_transformer = nullptr;
+	SpaceTransformer const *m_space_transformer = nullptr;
 };
 
 /**

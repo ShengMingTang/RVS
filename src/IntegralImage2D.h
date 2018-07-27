@@ -116,24 +116,25 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
     private:
         typedef cv::Vec<typename TypeTraits<DataType>::Type, dim_fst> InputType;
 
-        std::vector<FirstType>  img_fst;
-        std::vector<SecondType> img_snd;
-        std::vector<unsigned>   img_fin;
+        std::vector<FirstType>  m_img_fst;
+        std::vector<SecondType> m_img_snd;
+        std::vector<unsigned>   m_img_fin;
 
         /** \brief The height of the 2d input data array */
-        unsigned hgt;
-        /** \brief The width of the 2d input data array */
-        unsigned wdt;
+        unsigned m_height;
+        
+		/** \brief The width of the 2d input data array */
+        unsigned m_width;
 
         /** \brief Indicates whether second order integral images are available *  */
-        bool com_snd;
+        bool m_com_snd;
 
 
     public:
         /** \brief Constructor for an Integral Image
           * \param[in] snd set to true if we want to compute a second order image
           */
-        IntegralImage2D(bool snd = false) : hgt(1), wdt(1), com_snd(snd) { }
+        IntegralImage2D(bool snd = false) : m_height(1), m_width(1), m_com_snd(snd) { }
 
         /** \brief Destructor */
         virtual ~IntegralImage2D() { }
@@ -147,15 +148,15 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         void setInput(const DataType* dat, unsigned wdt, unsigned hgt, unsigned srd_ele, unsigned srd_row)
         {
-            if((wdt + 1) * (hgt + 1) > img_fst.size())
+            if((wdt + 1) * (hgt + 1) > m_img_fst.size())
             {
-                this->hgt = hgt;
-                this->wdt = wdt;
+                this->m_height = hgt;
+                this->m_width = wdt;
 
-                img_fst.resize((wdt + 1) * (hgt + 1));
-                img_fin.resize((wdt + 1) * (hgt + 1));
-                if(com_snd)
-                    img_snd.resize((wdt + 1) * (hgt + 1));
+                m_img_fst.resize((wdt + 1) * (hgt + 1));
+                m_img_fin.resize((wdt + 1) * (hgt + 1));
+                if(m_com_snd)
+                    m_img_snd.resize((wdt + 1) * (hgt + 1));
             }
             computeIntegralImages(dat, srd_ele, srd_row);
         }
@@ -169,22 +170,22 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         void setInput(const DataType* dat, const uchar* msk, unsigned wd, unsigned hg, unsigned srd_ele, unsigned srd_row)
         {
-            if((wd + 1) * (hg + 1) > img_fst.size())
+            if((wd + 1) * (hg + 1) > m_img_fst.size())
             {
-                this->hgt = hg;
-                this->wdt = wd;
+                this->m_height = hg;
+                this->m_width = wd;
 
-                img_fst.resize((wd + 1) * (hg + 1));
-                img_fin.resize((wd + 1) * (hg + 1));
-                if(com_snd)
-                    img_snd.resize((wd + 1) * (hg + 1));
+                m_img_fst.resize((wd + 1) * (hg + 1));
+                m_img_fin.resize((wd + 1) * (hg + 1));
+                if(m_com_snd)
+                    m_img_snd.resize((wd + 1) * (hg + 1));
             }
             computeIntegralImages(dat, msk, srd_ele, srd_row);
         }
         /** \brief sets the computation for second order integral images on or off.
           * \param compute_second_order_integral_images
           */
-        void setSecondOrderComputation(bool in_com_snd) { com_snd = in_com_snd; }
+        void setSecondOrderComputation(bool in_com_snd) { m_com_snd = in_com_snd; }
 
 
         /** \brief Compute the first order sum within a given rectangle
@@ -195,12 +196,12 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         inline FirstType getFirstOrderSum(unsigned start_x, unsigned start_y, unsigned width, unsigned height) const
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
             const unsigned upper_right_idx = upper_left_idx + width;
-            const unsigned lower_left_idx  =(start_y + height) * (wdt + 1) + start_x;
+            const unsigned lower_left_idx  =(start_y + height) * (m_width + 1) + start_x;
             const unsigned lower_right_idx = lower_left_idx + width;
 
-            return(img_fst[lower_right_idx] + img_fst[upper_left_idx] - img_fst[upper_right_idx] - img_fst[lower_left_idx]);
+            return(m_img_fst[lower_right_idx] + m_img_fst[upper_left_idx] - m_img_fst[upper_right_idx] - m_img_fst[lower_left_idx]);
         }
         /** \brief Compute the second order sum within a given rectangle
           * \param[in] start_x x position of rectangle
@@ -210,12 +211,12 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         inline SecondType getSecondOrderSum(unsigned start_x, unsigned start_y, unsigned width, unsigned height) const
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
             const unsigned upper_right_idx = upper_left_idx + width;
-            const unsigned lower_left_idx  = (start_y + height) * (wdt + 1) + start_x;
+            const unsigned lower_left_idx  = (start_y + height) * (m_width + 1) + start_x;
             const unsigned lower_right_idx = lower_left_idx + width;
 
-            return(img_snd[lower_right_idx] + img_snd[upper_left_idx] - img_snd[upper_right_idx] - img_snd[lower_left_idx]);
+            return(m_img_snd[lower_right_idx] + m_img_snd[upper_left_idx] - m_img_snd[upper_right_idx] - m_img_snd[lower_left_idx]);
         }
         /** \brief Compute the number of finite elements within a given rectangle
           * \param[in] start_x x position of rectangle
@@ -225,12 +226,12 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         inline unsigned getFiniteElementsCount(unsigned start_x, unsigned start_y, unsigned width, unsigned height) const
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
             const unsigned upper_right_idx = upper_left_idx + width;
-            const unsigned lower_left_idx  = (start_y + height) * (wdt + 1) + start_x;
+            const unsigned lower_left_idx  = (start_y + height) * (m_width + 1) + start_x;
             const unsigned lower_right_idx = lower_left_idx + width;
 
-            return(img_fin[lower_right_idx] + img_fin[upper_left_idx] - img_fin[upper_right_idx] - img_fin[lower_left_idx]);
+            return(m_img_fin[lower_right_idx] + m_img_fin[upper_left_idx] - m_img_fin[upper_right_idx] - m_img_fin[lower_left_idx]);
         }
 
         /** \brief Compute the first order sum within a given rectangle
@@ -241,12 +242,12 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         inline FirstType getFirstOrderSumSE(unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y)
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
-            const unsigned upper_right_idx = start_y * (wdt + 1) + end_x;
-            const unsigned lower_left_idx  = end_y * (wdt + 1) + start_x;
-            const unsigned lower_right_idx = end_y * (wdt + 1) + end_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
+            const unsigned upper_right_idx = start_y * (m_width + 1) + end_x;
+            const unsigned lower_left_idx  = end_y * (m_width + 1) + start_x;
+            const unsigned lower_right_idx = end_y * (m_width + 1) + end_x;
 
-            return(img_fst[lower_right_idx] + img_fst[upper_left_idx] - img_fst[upper_right_idx] - img_fst[lower_left_idx]);
+            return(m_img_fst[lower_right_idx] + m_img_fst[upper_left_idx] - m_img_fst[upper_right_idx] - m_img_fst[lower_left_idx]);
         }
         /** \brief Compute the second order sum within a given rectangle
           * \param[in] start_x x position of the start of the rectangle
@@ -256,12 +257,12 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         inline SecondType getSecondOrderSumSE(unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y)
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
-            const unsigned upper_right_idx = start_y * (wdt + 1) + end_x;
-            const unsigned lower_left_idx  = end_y * (wdt + 1) + start_x;
-            const unsigned lower_right_idx = end_y * (wdt + 1) + end_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
+            const unsigned upper_right_idx = start_y * (m_width + 1) + end_x;
+            const unsigned lower_left_idx  = end_y * (m_width + 1) + start_x;
+            const unsigned lower_right_idx = end_y * (m_width + 1) + end_x;
 
-            return(img_snd[lower_right_idx] + img_snd[upper_left_idx] - img_snd[upper_right_idx] - img_snd[lower_left_idx]);
+            return(m_img_snd[lower_right_idx] + m_img_snd[upper_left_idx] - m_img_snd[upper_right_idx] - m_img_snd[lower_left_idx]);
         }
         /** \brief Compute the number of finite elements within a given rectangle
           * \param[in] start_x x position of the start of the rectangle
@@ -271,12 +272,12 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         inline unsigned getFiniteElementsCountSE(unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y)
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
-            const unsigned upper_right_idx = start_y * (wdt + 1) + end_x;
-            const unsigned lower_left_idx  = end_y * (wdt + 1) + start_x;
-            const unsigned lower_right_idx = end_y * (wdt + 1) + end_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
+            const unsigned upper_right_idx = start_y * (m_width + 1) + end_x;
+            const unsigned lower_left_idx  = end_y * (m_width + 1) + start_x;
+            const unsigned lower_right_idx = end_y * (m_width + 1) + end_x;
 
-            return(img_fin[lower_right_idx] + img_fin[upper_left_idx] - img_fin[upper_right_idx] - img_fin[lower_left_idx]);
+            return(m_img_fin[lower_right_idx] + m_img_fin[upper_left_idx] - m_img_fin[upper_right_idx] - m_img_fin[lower_left_idx]);
         }
 
 
@@ -288,22 +289,22 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         void computeIntegralImages(const DataType* dat, unsigned srd_ele, unsigned srd_row)
         {
-            FirstType* previous_row = &img_fst[0];
-            FirstType* current_row  = previous_row +(wdt + 1);
-            memset(previous_row, 0, sizeof(FirstType) * (wdt + 1));
+            FirstType* previous_row = &m_img_fst[0];
+            FirstType* current_row  = previous_row +(m_width + 1);
+            memset(previous_row, 0, sizeof(FirstType) * (m_width + 1));
 
-            unsigned* count_previous_row = &img_fin[0];
-            unsigned* count_current_row  = count_previous_row + (wdt + 1);
-            memset(count_previous_row, 0, sizeof(unsigned) * (wdt + 1));
+            unsigned* count_previous_row = &m_img_fin[0];
+            unsigned* count_current_row  = count_previous_row + (m_width + 1);
+            memset(count_previous_row, 0, sizeof(unsigned) * (m_width + 1));
 
-            if(!com_snd)
+            if(!m_com_snd)
             {
-                for(unsigned row_idx = 0 ; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0 ; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = current_row[0].all(0);
                     count_current_row[0] = 0;
 
-                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         count_current_row[col_idx + 1] = count_previous_row[col_idx + 1] + count_current_row[col_idx] - count_previous_row[col_idx];
@@ -327,23 +328,23 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
                     }
                     dat += srd_row;
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                 }
             }
             else
             {
-                SecondType* so_previous_row = &img_snd[0];
-                SecondType* so_current_row  = so_previous_row + (wdt + 1);
-                memset(so_previous_row, 0, sizeof(SecondType) * (wdt + 1));
+                SecondType* so_previous_row = &m_img_snd[0];
+                SecondType* so_current_row  = so_previous_row + (m_width + 1);
+                memset(so_previous_row, 0, sizeof(SecondType) * (m_width + 1));
 
-                for(unsigned row_idx = 0 ; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0 ; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = current_row[0].all(0);
                     so_current_row[0] = so_current_row[0].all(0);
                     count_current_row[0] = 0;
-                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         so_current_row[col_idx + 1] = so_previous_row[col_idx + 1] + so_current_row[col_idx] - so_previous_row[col_idx];
@@ -364,11 +365,11 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
 
                     dat += srd_row;
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                     so_previous_row = so_current_row;
-                    so_current_row += (wdt + 1);
+                    so_current_row += (m_width + 1);
                 }
             }
         }
@@ -380,22 +381,22 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           */
         void computeIntegralImages(const DataType* dat, const uchar* msk, unsigned srd_ele, unsigned srd_row)
         {
-            FirstType* previous_row = &img_fst[0];
-            FirstType* current_row  = previous_row +(wdt + 1);
-            memset(previous_row, 0, sizeof(FirstType) * (wdt + 1));
+            FirstType* previous_row = &m_img_fst[0];
+            FirstType* current_row  = previous_row +(m_width + 1);
+            memset(previous_row, 0, sizeof(FirstType) * (m_width + 1));
 
-            unsigned* count_previous_row = &img_fin[0];
-            unsigned* count_current_row  = count_previous_row + (wdt + 1);
-            memset(count_previous_row, 0, sizeof(unsigned) * (wdt + 1));
+            unsigned* count_previous_row = &m_img_fin[0];
+            unsigned* count_current_row  = count_previous_row + (m_width + 1);
+            memset(count_previous_row, 0, sizeof(unsigned) * (m_width + 1));
 
-            if(!com_snd)
+            if(!m_com_snd)
             {
-                for(unsigned row_idx = 0 ; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0 ; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = current_row[0].all(0);
                     count_current_row[0] = 0;
 
-                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         count_current_row[col_idx + 1] = count_previous_row[col_idx + 1] + count_current_row[col_idx] - count_previous_row[col_idx];
@@ -414,25 +415,25 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
                         msk_idx += 1;
                     }
                     dat += srd_row;
-                    msk += (wdt);
+                    msk += (m_width);
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                 }
             }
             else
             {
-                SecondType* so_previous_row = &img_snd[0];
-                SecondType* so_current_row  = so_previous_row + (wdt + 1);
-                memset(so_previous_row, 0, sizeof(SecondType) * (wdt + 1));
+                SecondType* so_previous_row = &m_img_snd[0];
+                SecondType* so_current_row  = so_previous_row + (m_width + 1);
+                memset(so_previous_row, 0, sizeof(SecondType) * (m_width + 1));
 
-                for(unsigned row_idx = 0 ; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0 ; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = current_row[0].all(0);
                     so_current_row[0] = so_current_row[0].all(0);
                     count_current_row[0] = 0;
-                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         so_current_row[col_idx + 1] = so_previous_row[col_idx + 1] + so_current_row[col_idx] - so_previous_row[col_idx];
@@ -457,13 +458,13 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
                     }
 
                     dat += srd_row;
-                    msk += (wdt);
+                    msk += (m_width);
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                     so_previous_row = so_current_row;
-                    so_current_row += (wdt + 1);
+                    so_current_row += (m_width + 1);
                 }
             }
         }
@@ -482,24 +483,24 @@ template <class DataType> class IntegralImage2D <DataType, 1>
 
 
     private:
-        std::vector<FirstType>  img_fst;
-        std::vector<SecondType> img_snd;
-        std::vector<unsigned>   img_fin;
+        std::vector<FirstType>  m_img_fst;
+        std::vector<SecondType> m_img_snd;
+        std::vector<unsigned>   m_img_fin;
 
         /** \brief The height of the 2d input data array */
-        unsigned hgt;
+        unsigned m_height;
         /** \brief The width of the 2d input data array */
-        unsigned wdt;
+        unsigned m_width;
 
         /** \brief Indicates whether second order integral images are available *  */
-        bool com_snd;
+        bool m_com_snd;
 
 
     public:
         /** \brief Constructor for an Integral Image
           * \param[in] snd set to true if we want to compute a second order image
           */
-        IntegralImage2D(bool snd = false) : hgt(1), wdt(1), com_snd(snd) { }
+        IntegralImage2D(bool snd = false) : m_height(1), m_width(1), m_com_snd(snd) { }
 
         /** \brief Destructor */
         virtual ~IntegralImage2D() { }
@@ -513,15 +514,15 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         void setInput(const DataType* dat, unsigned wdt, unsigned hgt, unsigned srd_ele, unsigned srd_row)
         {
-            if((wdt + 1) * (hgt + 1) > img_fst.size())
+            if((wdt + 1) * (hgt + 1) > m_img_fst.size())
             {
-                this->hgt = hgt;
-                this->wdt = wdt;
+                this->m_height = hgt;
+                this->m_width = wdt;
 
-                img_fst.resize((wdt + 1) * (hgt + 1));
-                img_fin.resize((wdt + 1) * (hgt + 1));
-                if(com_snd)
-                    img_snd.resize((wdt + 1) * (hgt + 1));
+                m_img_fst.resize((wdt + 1) * (hgt + 1));
+                m_img_fin.resize((wdt + 1) * (hgt + 1));
+                if(m_com_snd)
+                    m_img_snd.resize((wdt + 1) * (hgt + 1));
             }
             computeIntegralImages(dat, srd_ele, srd_row);
         }
@@ -535,15 +536,15 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         void setInput(const DataType* dat, const uchar* msk, unsigned wd, unsigned hg, unsigned srd_ele, unsigned srd_row)
         {
-            if((wd + 1) * (hg + 1) > img_fst.size())
+            if((wd + 1) * (hg + 1) > m_img_fst.size())
             {
-                this->hgt = hg;
-                this->wdt = wd;
+                this->m_height = hg;
+                this->m_width = wd;
 
-                img_fst.resize((wd + 1) * (hg + 1));
-                img_fin.resize((wd + 1) * (hg + 1));
-                if(com_snd)
-                    img_snd.resize((wd + 1) * (hg + 1));
+                m_img_fst.resize((wd + 1) * (hg + 1));
+                m_img_fin.resize((wd + 1) * (hg + 1));
+                if(m_com_snd)
+                    m_img_snd.resize((wd + 1) * (hg + 1));
             }
             computeIntegralImages(dat, msk, srd_ele, srd_row);
         }
@@ -552,7 +553,7 @@ template <class DataType> class IntegralImage2D <DataType, 1>
         /** \brief sets the computation for second order integral images on or off.
           * \param compute_second_order_integral_images
           */
-        void setSecondOrderComputation(bool in_com_snd) { com_snd = in_com_snd; }
+        void setSecondOrderComputation(bool in_com_snd) { m_com_snd = in_com_snd; }
 
 
         /** \brief Compute the first order sum within a given rectangle
@@ -563,12 +564,12 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         inline FirstType getFirstOrderSum(unsigned start_x, unsigned start_y, unsigned width, unsigned height) const
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
             const unsigned upper_right_idx = upper_left_idx + width;
-            const unsigned lower_left_idx  = (start_y + height) * (wdt + 1) + start_x;
+            const unsigned lower_left_idx  = (start_y + height) * (m_width + 1) + start_x;
             const unsigned lower_right_idx = lower_left_idx + width;
 
-            return(img_fst[lower_right_idx] + img_fst[upper_left_idx] - img_fst[upper_right_idx] - img_fst[lower_left_idx]);
+            return(m_img_fst[lower_right_idx] + m_img_fst[upper_left_idx] - m_img_fst[upper_right_idx] - m_img_fst[lower_left_idx]);
         }
         /** \brief Compute the second order sum within a given rectangle
           * \param[in] start_x x position of rectangle
@@ -578,12 +579,12 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         inline SecondType getSecondOrderSum(unsigned start_x, unsigned start_y, unsigned width, unsigned height) const
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
             const unsigned upper_right_idx = upper_left_idx + width;
-            const unsigned lower_left_idx  = (start_y + height) * (wdt + 1) + start_x;
+            const unsigned lower_left_idx  = (start_y + height) * (m_width + 1) + start_x;
             const unsigned lower_right_idx = lower_left_idx + width;
 
-            return(img_snd[lower_right_idx] + img_snd[upper_left_idx] - img_snd[upper_right_idx] - img_snd[lower_left_idx]);
+            return(m_img_snd[lower_right_idx] + m_img_snd[upper_left_idx] - m_img_snd[upper_right_idx] - m_img_snd[lower_left_idx]);
         }
         /** \brief Compute the number of finite elements within a given rectangle
           * \param[in] start_x x position of rectangle
@@ -593,12 +594,12 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         inline unsigned getFiniteElementsCount(unsigned start_x, unsigned start_y, unsigned width, unsigned height) const
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
             const unsigned upper_right_idx = upper_left_idx + width;
-            const unsigned lower_left_idx  = (start_y + height) * (wdt + 1) + start_x;
+            const unsigned lower_left_idx  = (start_y + height) * (m_width + 1) + start_x;
             const unsigned lower_right_idx = lower_left_idx + width;
 
-            return(img_fin[lower_right_idx] + img_fin[upper_left_idx] - img_fin[upper_right_idx] - img_fin[lower_left_idx]);
+            return(m_img_fin[lower_right_idx] + m_img_fin[upper_left_idx] - m_img_fin[upper_right_idx] - m_img_fin[lower_left_idx]);
         }
 
         /** \brief Compute the first order sum within a given rectangle
@@ -609,12 +610,12 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         inline FirstType getFirstOrderSumSE(unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y)
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
-            const unsigned upper_right_idx = start_y * (wdt + 1) + end_x;
-            const unsigned lower_left_idx  = end_y * (wdt + 1) + start_x;
-            const unsigned lower_right_idx = end_y * (wdt + 1) + end_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
+            const unsigned upper_right_idx = start_y * (m_width + 1) + end_x;
+            const unsigned lower_left_idx  = end_y * (m_width + 1) + start_x;
+            const unsigned lower_right_idx = end_y * (m_width + 1) + end_x;
 
-            return(img_fst[lower_right_idx] + img_fst[upper_left_idx] - img_fst[upper_right_idx] - img_fst[lower_left_idx]);
+            return(m_img_fst[lower_right_idx] + m_img_fst[upper_left_idx] - m_img_fst[upper_right_idx] - m_img_fst[lower_left_idx]);
         }
         /** \brief Compute the second order sum within a given rectangle
           * \param[in] start_x x position of the start of the rectangle
@@ -624,12 +625,12 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         inline SecondType getSecondOrderSumSE(unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y)
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
-            const unsigned upper_right_idx = start_y * (wdt + 1) + end_x;
-            const unsigned lower_left_idx  = end_y * (wdt + 1) + start_x;
-            const unsigned lower_right_idx = end_y * (wdt + 1) + end_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
+            const unsigned upper_right_idx = start_y * (m_width + 1) + end_x;
+            const unsigned lower_left_idx  = end_y * (m_width + 1) + start_x;
+            const unsigned lower_right_idx = end_y * (m_width + 1) + end_x;
 
-            return(img_snd[lower_right_idx] + img_snd[upper_left_idx] - img_snd[upper_right_idx] - img_snd[lower_left_idx]);
+            return(m_img_snd[lower_right_idx] + m_img_snd[upper_left_idx] - m_img_snd[upper_right_idx] - m_img_snd[lower_left_idx]);
         }
         /** \brief Compute the number of finite elements within a given rectangle
           * \param[in] start_x x position of the start of the rectangle
@@ -639,12 +640,12 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         inline unsigned getFiniteElementsCountSE(unsigned start_x, unsigned start_y, unsigned end_x, unsigned end_y)
         {
-            const unsigned upper_left_idx  = start_y * (wdt + 1) + start_x;
-            const unsigned upper_right_idx = start_y * (wdt + 1) + end_x;
-            const unsigned lower_left_idx  = end_y * (wdt + 1) + start_x;
-            const unsigned lower_right_idx = end_y * (wdt + 1) + end_x;
+            const unsigned upper_left_idx  = start_y * (m_width + 1) + start_x;
+            const unsigned upper_right_idx = start_y * (m_width + 1) + end_x;
+            const unsigned lower_left_idx  = end_y * (m_width + 1) + start_x;
+            const unsigned lower_right_idx = end_y * (m_width + 1) + end_x;
 
-            return(img_fin[lower_right_idx] + img_fin[upper_left_idx] - img_fin[upper_right_idx] - img_fin[lower_left_idx]);
+            return(m_img_fin[lower_right_idx] + m_img_fin[upper_left_idx] - m_img_fin[upper_right_idx] - m_img_fin[lower_left_idx]);
         }
 
 
@@ -656,22 +657,22 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         void computeIntegralImages(const DataType* dat, unsigned srd_ele, unsigned srd_row)
         {
-            FirstType* previous_row = &img_fst[0];
-            FirstType* current_row  = previous_row +(wdt + 1);
-            memset(previous_row, 0, sizeof(FirstType) *(wdt + 1));
+            FirstType* previous_row = &m_img_fst[0];
+            FirstType* current_row  = previous_row +(m_width + 1);
+            memset(previous_row, 0, sizeof(FirstType) *(m_width + 1));
 
-            unsigned* count_previous_row = &img_fin[0];
-            unsigned* count_current_row  = count_previous_row + (wdt + 1);
-            memset(count_previous_row, 0, sizeof(unsigned) * (wdt + 1));
+            unsigned* count_previous_row = &m_img_fin[0];
+            unsigned* count_current_row  = count_previous_row + (m_width + 1);
+            memset(count_previous_row, 0, sizeof(unsigned) * (m_width + 1));
 
-            if(!com_snd)
+            if(!m_com_snd)
             {
-                for(unsigned row_idx = 0 ; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0 ; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = 0;
                     count_current_row[0] = 0;
 
-                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         count_current_row[col_idx + 1] = count_previous_row[col_idx + 1] + count_current_row[col_idx] - count_previous_row[col_idx];
@@ -685,24 +686,24 @@ template <class DataType> class IntegralImage2D <DataType, 1>
                     }
                     dat += srd_row;
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                 }
             }
             else
             {
-                SecondType* so_previous_row = &img_snd[0];
-                SecondType* so_current_row  = so_previous_row + (wdt + 1);
-                memset(so_previous_row, 0, sizeof(SecondType) * (wdt + 1));
+                SecondType* so_previous_row = &m_img_snd[0];
+                SecondType* so_current_row  = so_previous_row + (m_width + 1);
+                memset(so_previous_row, 0, sizeof(SecondType) * (m_width + 1));
 
-                for(unsigned row_idx = 0; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = 0;
                     so_current_row[0] = 0;
                     count_current_row[0] = 0;
 
-                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         so_current_row[col_idx + 1] = so_previous_row[col_idx + 1] + so_current_row[col_idx] - so_previous_row[col_idx];
@@ -718,11 +719,11 @@ template <class DataType> class IntegralImage2D <DataType, 1>
                     }
                     dat += srd_row;
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                     so_previous_row = so_current_row;
-                    so_current_row += (wdt + 1);
+                    so_current_row += (m_width + 1);
                 }
             }
         }
@@ -734,22 +735,22 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           */
         void computeIntegralImages(const DataType* dat, const uchar* msk, unsigned srd_ele, unsigned srd_row)
         {
-            FirstType* previous_row = &img_fst[0];
-            FirstType* current_row  = previous_row +(wdt + 1);
-            memset(previous_row, 0, sizeof(FirstType) * (wdt + 1));
+            FirstType* previous_row = &m_img_fst[0];
+            FirstType* current_row  = previous_row +(m_width + 1);
+            memset(previous_row, 0, sizeof(FirstType) * (m_width + 1));
 
-            unsigned* count_previous_row = &img_fin[0];
-            unsigned* count_current_row  = count_previous_row + (wdt + 1);
-            memset(count_previous_row, 0, sizeof(unsigned) * (wdt + 1));
+            unsigned* count_previous_row = &m_img_fin[0];
+            unsigned* count_current_row  = count_previous_row + (m_width + 1);
+            memset(count_previous_row, 0, sizeof(unsigned) * (m_width + 1));
 
-            if(!com_snd)
+            if(!m_com_snd)
             {
-                for(unsigned row_idx = 0 ; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0 ; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = FirstType(0.0);
                     count_current_row[0] = 0;
 
-                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         count_current_row[col_idx + 1] = count_previous_row[col_idx + 1] + count_current_row[col_idx] - count_previous_row[col_idx];
@@ -767,26 +768,26 @@ template <class DataType> class IntegralImage2D <DataType, 1>
                         msk_idx += 1;
                     }
                     dat += srd_row;
-                    msk += (wdt);
+                    msk += (m_width);
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                 }
             }
             else
             {
-                SecondType* so_previous_row = &img_snd[0];
-                SecondType* so_current_row  = so_previous_row + (wdt + 1);
-                memset(so_previous_row, 0, sizeof(SecondType) * (wdt + 1));
+                SecondType* so_previous_row = &m_img_snd[0];
+                SecondType* so_current_row  = so_previous_row + (m_width + 1);
+                memset(so_previous_row, 0, sizeof(SecondType) * (m_width + 1));
 
-                for(unsigned row_idx = 0 ; row_idx < hgt ; row_idx++)
+                for(unsigned row_idx = 0 ; row_idx < m_height ; row_idx++)
                 {
                     current_row[0] = FirstType(0.0);
                     so_current_row[0] = SecondType(0.0);
                     count_current_row[0] = 0;
 
-                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < wdt ; col_idx++)
+                    for(unsigned col_idx = 0, val_idx = 0, msk_idx = 0 ; col_idx < m_width ; col_idx++)
                     {
                         current_row[col_idx + 1] = previous_row[col_idx + 1] + current_row[col_idx] - previous_row[col_idx];
                         so_current_row[col_idx + 1] = so_previous_row[col_idx + 1] + so_current_row[col_idx] - so_previous_row[col_idx];
@@ -807,13 +808,13 @@ template <class DataType> class IntegralImage2D <DataType, 1>
                     }
 
                     dat += srd_row;
-                    msk += (wdt);
+                    msk += (m_width);
                     previous_row = current_row;
-                    current_row += (wdt + 1);
+                    current_row += (m_width + 1);
                     count_previous_row = count_current_row;
-                    count_current_row += (wdt + 1);
+                    count_current_row += (m_width + 1);
                     so_previous_row = so_current_row;
-                    so_current_row += (wdt + 1);
+                    so_current_row += (m_width + 1);
                 }
             }
         }

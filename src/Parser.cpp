@@ -324,7 +324,7 @@ void read_cameras_parameters(std::string filename, std::vector<std::string>& cam
 }
 
 Parser::Parser(const std::string & filename)
-	: filename_parameter_file(filename)
+	: m_filename_parameter_file(filename)
 {
 	if (is_SVS_file(filename))
 	{
@@ -334,19 +334,19 @@ Parser::Parser(const std::string & filename)
 	else
 	{
 		read_vsrs_config_file();
-		config.use_pose_trace = false;
+		m_config.use_pose_trace = false;
 	}
 
 	// Intelligent default for backwards compatibility
-	if (config.virtual_size == cv::Size(0, 0)) {
-		config.virtual_size = config.size;
+	if (m_config.virtual_size == cv::Size(0, 0)) {
+		m_config.virtual_size = m_config.size;
 	}
 
 	//get input cameras parameters
-	read_cameras_parameters(config.camerasParameters_in, config.InputCameraNames, config.params_real, config.sensor_size, &config.zfar, &config.znear);
+	read_cameras_parameters(m_config.camerasParameters_in, m_config.InputCameraNames, m_config.params_real, m_config.sensor_size, &m_config.zfar, &m_config.znear);
 
 	//get virtual cameras parameters to render
-	read_cameras_parameters(config.virtualCamerasParameters_in, config.VirtualCameraNames, config.params_virtual, config.sensor_size, nullptr, nullptr);
+	read_cameras_parameters(m_config.virtualCamerasParameters_in, m_config.VirtualCameraNames, m_config.params_virtual, m_config.sensor_size, nullptr, nullptr);
 
 	
 	generate_output_filenames();
@@ -357,15 +357,15 @@ Parser::~Parser()
 }
 
 void Parser::generate_output_filenames() {
-	if (config.outfilenames.size() != config.VirtualCameraNames.size() && config.outmaskedfilenames.empty()) { // ALL?
-		config.outfilenames = {};
-		for (int i = 0; i < static_cast<int>(config.VirtualCameraNames.size()); ++i) {
-			config.outfilenames.push_back(config.folder_out + config.VirtualCameraNames[i] + "." + config.extension);
+	if (m_config.outfilenames.size() != m_config.VirtualCameraNames.size() && m_config.outmaskedfilenames.empty()) { // ALL?
+		m_config.outfilenames = {};
+		for (int i = 0; i < static_cast<int>(m_config.VirtualCameraNames.size()); ++i) {
+			m_config.outfilenames.push_back(m_config.folder_out + m_config.VirtualCameraNames[i] + "." + m_config.extension);
 		}
 	}
 	else {
-		for (int i = 0; i < static_cast<int>(config.outfilenames.size()); ++i) {
-			config.outfilenames[i] = config.folder_out + config.outfilenames[i];
+		for (int i = 0; i < static_cast<int>(m_config.outfilenames.size()); ++i) {
+			m_config.outfilenames[i] = m_config.folder_out + m_config.outfilenames[i];
 		}
 	}
 }
@@ -388,67 +388,67 @@ void Parser::read_vsrs_config_file() {
 	std::vector<std::string> folders_out;
 	
 	//seek input camera file
-	seek_string(filename_parameter_file, 1, InputCameraParameterFile, "CameraParameterFile", "Camera parameter file");
+	seek_string(m_filename_parameter_file, 1, InputCameraParameterFile, "CameraParameterFile", "Camera parameter file");
 	//seek left/right camera
-	seek_string(filename_parameter_file, 1, config.texture_names, "LeftViewImageName", "Input RGB left file name");
-	seek_string(filename_parameter_file, 1, config.texture_names, "RightViewImageName", "Input RGB right file name");
-	seek_string(filename_parameter_file, 1, config.texture_names, "Left2ViewImageName", "Input RGB left file name");
-	seek_string(filename_parameter_file, 1, config.texture_names, "Right2ViewImageName", "Input RGB right file name");
+	seek_string(m_filename_parameter_file, 1, m_config.texture_names, "LeftViewImageName", "Input RGB left file name");
+	seek_string(m_filename_parameter_file, 1, m_config.texture_names, "RightViewImageName", "Input RGB right file name");
+	seek_string(m_filename_parameter_file, 1, m_config.texture_names, "Left2ViewImageName", "Input RGB left file name");
+	seek_string(m_filename_parameter_file, 1, m_config.texture_names, "Right2ViewImageName", "Input RGB right file name");
 	//seek l/r Depth images
-	seek_string(filename_parameter_file, 1, config.depth_names, "LeftDepthMapName", "Input depth left file name");
-	seek_string(filename_parameter_file, 1, config.depth_names, "RightDepthMapName", "Input depth right file name");
-	seek_string(filename_parameter_file, 1, config.depth_names, "Left2DepthMapName", "Input depth left file name");
-	seek_string(filename_parameter_file, 1, config.depth_names, "Right2DepthMapName", "Input depth right file name");
+	seek_string(m_filename_parameter_file, 1, m_config.depth_names, "LeftDepthMapName", "Input depth left file name");
+	seek_string(m_filename_parameter_file, 1, m_config.depth_names, "RightDepthMapName", "Input depth right file name");
+	seek_string(m_filename_parameter_file, 1, m_config.depth_names, "Left2DepthMapName", "Input depth left file name");
+	seek_string(m_filename_parameter_file, 1, m_config.depth_names, "Right2DepthMapName", "Input depth right file name");
 	//seek l/r input cameras names
-	seek_string(filename_parameter_file, 1, config.InputCameraNames, "LeftCameraName", "Input left camera name");
-	seek_string(filename_parameter_file, 1, config.InputCameraNames, "RightCameraName", "Input right camera name");
-	seek_string(filename_parameter_file, 1, config.InputCameraNames, "Left2CameraName", "Input left camera name");
-	seek_string(filename_parameter_file, 1, config.InputCameraNames, "Right2CameraName", "Input right camera name");
+	seek_string(m_filename_parameter_file, 1, m_config.InputCameraNames, "LeftCameraName", "Input left camera name");
+	seek_string(m_filename_parameter_file, 1, m_config.InputCameraNames, "RightCameraName", "Input right camera name");
+	seek_string(m_filename_parameter_file, 1, m_config.InputCameraNames, "Left2CameraName", "Input left camera name");
+	seek_string(m_filename_parameter_file, 1, m_config.InputCameraNames, "Right2CameraName", "Input right camera name");
 
 	//seek virtual camera file
-	seek_string(filename_parameter_file, 1, VirtualCameraParameterFile, "CameraParameterFile", "Camera parameter file");
+	seek_string(m_filename_parameter_file, 1, VirtualCameraParameterFile, "CameraParameterFile", "Camera parameter file");
 	//seek virtual cameras names
-	seek_string(filename_parameter_file, 1, config.VirtualCameraNames, "VirtualCameraName", "Output cameras names");
+	seek_string(m_filename_parameter_file, 1, m_config.VirtualCameraNames, "VirtualCameraName", "Output cameras names");
 	//seek folder for output
-	if (seek_string(filename_parameter_file, 1, folders_out, "OuputDir", "Output directory"))
-		config.folder_out = folders_out[0];
+	if (seek_string(m_filename_parameter_file, 1, folders_out, "OuputDir", "Output directory"))
+		m_config.folder_out = folders_out[0];
 	//seek filesnames for output
-	seek_string(filename_parameter_file, 1, config.outfilenames, "OutputVirtualViewImageName", "Output file names");
-	seek_string(filename_parameter_file, 1, config.outmaskedfilenames, "MaskedVirtualViewImageName", "Masked output file names");
+	seek_string(m_filename_parameter_file, 1, m_config.outfilenames, "OutputVirtualViewImageName", "Output file names");
+	seek_string(m_filename_parameter_file, 1, m_config.outmaskedfilenames, "MaskedVirtualViewImageName", "Masked output file names");
 
-	if (seek_float(filename_parameter_file, rescale, "Precision", "Precision") == 0)
+	if (seek_float(m_filename_parameter_file, rescale, "Precision", "Precision") == 0)
 		rescale = 4.0f;
 
 	//seek w,h (default = 1920x1080)
 	int w, h;
-	if (seek_int(filename_parameter_file, w, "SourceWidth", "") && seek_int(filename_parameter_file, h, "SourceHeight", ""))
-		config.size = cv::Size(w, h);
+	if (seek_int(m_filename_parameter_file, w, "SourceWidth", "") && seek_int(m_filename_parameter_file, h, "SourceHeight", ""))
+		m_config.size = cv::Size(w, h);
 
 	//seek zn, zf, l/r
 	float z_near_left, z_far_left, z_near_right, z_far_right;
-	seek_float(filename_parameter_file, z_near_left, "LeftNearestDepthValue", "");
-	seek_float(filename_parameter_file, z_far_left, "LeftFarthestDepthValue", "");
-	seek_float(filename_parameter_file, z_near_right, "RightNearestDepthValue", "");
-	seek_float(filename_parameter_file, z_far_right, "RightFarthestDepthValue", "");
-	config.zfar.push_back(z_far_left);
-	config.zfar.push_back(z_far_right);
-	config.znear.push_back(z_near_left);
-	config.znear.push_back(z_near_right);
+	seek_float(m_filename_parameter_file, z_near_left, "LeftNearestDepthValue", "");
+	seek_float(m_filename_parameter_file, z_far_left, "LeftFarthestDepthValue", "");
+	seek_float(m_filename_parameter_file, z_near_right, "RightNearestDepthValue", "");
+	seek_float(m_filename_parameter_file, z_far_right, "RightFarthestDepthValue", "");
+	m_config.zfar.push_back(z_far_left);
+	m_config.zfar.push_back(z_far_right);
+	m_config.znear.push_back(z_near_left);
+	m_config.znear.push_back(z_near_right);
 	//seek zn, zf, l/r
 	float z_near_left2, z_far_left2, z_near_right2, z_far_right2;
-	seek_float(filename_parameter_file, z_near_left2, "Left2NearestDepthValue", "");
-	seek_float(filename_parameter_file, z_far_left2, "Left2FarthestDepthValue", "");
-	seek_float(filename_parameter_file, z_near_right2, "Right2NearestDepthValue", "");
-	seek_float(filename_parameter_file, z_far_right2, "Right2FarthestDepthValue", "");
-	config.zfar.push_back(z_far_left2);
-	config.zfar.push_back(z_far_right2);
-	config.znear.push_back(z_near_left2);
-	config.znear.push_back(z_near_right2);
+	seek_float(m_filename_parameter_file, z_near_left2, "Left2NearestDepthValue", "");
+	seek_float(m_filename_parameter_file, z_far_left2, "Left2FarthestDepthValue", "");
+	seek_float(m_filename_parameter_file, z_near_right2, "Right2NearestDepthValue", "");
+	seek_float(m_filename_parameter_file, z_far_right2, "Right2FarthestDepthValue", "");
+	m_config.zfar.push_back(z_far_left2);
+	m_config.zfar.push_back(z_far_right2);
+	m_config.znear.push_back(z_near_left2);
+	m_config.znear.push_back(z_near_right2);
 
-	print_results(InputCameraParameterFile, config.texture_names, config.depth_names, VirtualCameraParameterFile, 2, 1);
+	print_results(InputCameraParameterFile, m_config.texture_names, m_config.depth_names, VirtualCameraParameterFile, 2, 1);
 	
-	config.camerasParameters_in = InputCameraParameterFile[0];
-	config.virtualCamerasParameters_in = VirtualCameraParameterFile[0];
+	m_config.camerasParameters_in = InputCameraParameterFile[0];
+	m_config.virtualCamerasParameters_in = VirtualCameraParameterFile[0];
 }
 
 
@@ -472,55 +472,55 @@ void Parser::read_SVS_config_file() {
 	std::vector<std::string> folders_out;
 
 	//seek input camera file
-	seek_string(filename_parameter_file, 1, InputCameraParameterFile, "InputCameraParameterFile", "Input camera parameter file");
+	seek_string(m_filename_parameter_file, 1, InputCameraParameterFile, "InputCameraParameterFile", "Input camera parameter file");
 	//seek input camera file
-	if (seek_string(filename_parameter_file, 1, InputZValuesFile, "ZValues", "Input z values file"))
-		config.zvalues = InputZValuesFile[0];
+	if (seek_string(m_filename_parameter_file, 1, InputZValuesFile, "ZValues", "Input z values file"))
+		m_config.zvalues = InputZValuesFile[0];
 	//seek number of input cameras
-	seek_int(filename_parameter_file, number_input_cameras, "InputCameraNumber", "Number of input cameras");
+	seek_int(m_filename_parameter_file, number_input_cameras, "InputCameraNumber", "Number of input cameras");
 	//seek n of input RGB images
-	seek_string(filename_parameter_file, number_input_cameras, config.texture_names, "ViewImagesNames", "Input RGB files names");
+	seek_string(m_filename_parameter_file, number_input_cameras, m_config.texture_names, "ViewImagesNames", "Input RGB files names");
 	//seek n of input Depth images
-	seek_string(filename_parameter_file, number_input_cameras, config.depth_names, "DepthMapsNames", "Input Depth files names");
+	seek_string(m_filename_parameter_file, number_input_cameras, m_config.depth_names, "DepthMapsNames", "Input Depth files names");
 	//seek n of input cameras names
-	seek_string(filename_parameter_file, number_input_cameras, config.InputCameraNames, "CamerasNames", "Input cameras names");
+	seek_string(m_filename_parameter_file, number_input_cameras, m_config.InputCameraNames, "CamerasNames", "Input cameras names");
 
 	//seek virtual camera file
-	seek_string(filename_parameter_file, 1, VirtualCameraParameterFile, "VirtualCameraParamaterFile", "virtual camera parameter file");
+	seek_string(m_filename_parameter_file, 1, VirtualCameraParameterFile, "VirtualCameraParamaterFile", "virtual camera parameter file");
 	//seek number of virtual cameras
-	seek_int(filename_parameter_file, number_output_cameras, "VirtualCameraNumber", "Number of virtual cameras");
+	seek_int(m_filename_parameter_file, number_output_cameras, "VirtualCameraNumber", "Number of virtual cameras");
 	//seek m of virtual cameras names
-	seek_string(filename_parameter_file, number_output_cameras, config.VirtualCameraNames, "VirtualCamerasNames", "Input cameras names");
+	seek_string(m_filename_parameter_file, number_output_cameras, m_config.VirtualCameraNames, "VirtualCamerasNames", "Input cameras names");
 	//seek folder for output
-	if (seek_string(filename_parameter_file, 1, folders_out, "OuputDir", "Output directory"))
-		config.folder_out = folders_out[0];
+	if (seek_string(m_filename_parameter_file, 1, folders_out, "OuputDir", "Output directory"))
+		m_config.folder_out = folders_out[0];
 	//seek filesnames for output
-	seek_string(filename_parameter_file, number_output_cameras, config.outfilenames, "OutputFiles", "Output file names");
-	seek_string(filename_parameter_file, number_output_cameras, config.outmaskedfilenames, "MaskedOutputFiles", "Masked output file names");
-	if (seek_float(filename_parameter_file, config.validity_threshold, "ValidityTheshold", "Validity threshold for masked output") == 0)
-		config.validity_threshold = 5000.f;
+	seek_string(m_filename_parameter_file, number_output_cameras, m_config.outfilenames, "OutputFiles", "Output file names");
+	seek_string(m_filename_parameter_file, number_output_cameras, m_config.outmaskedfilenames, "MaskedOutputFiles", "Masked output file names");
+	if (seek_float(m_filename_parameter_file, m_config.validity_threshold, "ValidityTheshold", "Validity threshold for masked output") == 0)
+		m_config.validity_threshold = 5000.f;
 
 	//seek w,h (default = 1920x1080)
 	int w, h;
-	if (seek_int(filename_parameter_file, w, "Width", "") && seek_int(filename_parameter_file, h, "Height", ""))
-		config.size = cv::Size(w, h);
+	if (seek_int(m_filename_parameter_file, w, "Width", "") && seek_int(m_filename_parameter_file, h, "Height", ""))
+		m_config.size = cv::Size(w, h);
 	//seek w,h (default = 1920x1080)
-	if (seek_int(filename_parameter_file, w, "VirtualWidth", "") && seek_int(filename_parameter_file, h, "VirtualHeight", ""))
-		config.virtual_size = cv::Size(w, h);
+	if (seek_int(m_filename_parameter_file, w, "VirtualWidth", "") && seek_int(m_filename_parameter_file, h, "VirtualHeight", ""))
+		m_config.virtual_size = cv::Size(w, h);
 	//seek extension (default = .png)
 	std::vector<std::string> exts;
-	if (seek_string(filename_parameter_file, 1, exts, "Extension", ""))
-		config.extension = exts[0];
+	if (seek_string(m_filename_parameter_file, 1, exts, "Extension", ""))
+		m_config.extension = exts[0];
 	// seek bitdepth (default = 8 for texture and 16 for depth)
-	seek_int(filename_parameter_file, config.bit_depth_color, "BitDepthColor", "Element bit depth of raw texture streams");
-	seek_int(filename_parameter_file, config.bit_depth_depth, "BitDepthDepth", "Element bit depth of raw depth streams");
+	seek_int(m_filename_parameter_file, m_config.bit_depth_color, "BitDepthColor", "Element bit depth of raw texture streams");
+	seek_int(m_filename_parameter_file, m_config.bit_depth_depth, "BitDepthDepth", "Element bit depth of raw depth streams");
 	//seek Rescale factor for super resolution
-	if (seek_float(filename_parameter_file, rescale, "Precision", "Precision") == 0)
+	if (seek_float(m_filename_parameter_file, rescale, "Precision", "Precision") == 0)
 		rescale = 4.0f;
 
 	//seek working color space
 	std::vector<std::string> cs;
-	if (seek_string(filename_parameter_file, 1, cs, "ColorSpace", "Working Color Space"))
+	if (seek_string(m_filename_parameter_file, 1, cs, "ColorSpace", "Working Color Space"))
 	{
 		if(cs[0] == "RGB") color_space = COLORSPACE_RGB;
 		else if (cs[0] == "YUV") color_space = COLORSPACE_YUV;
@@ -528,72 +528,72 @@ void Parser::read_SVS_config_file() {
 	}
 	//view synthesis method
 	std::vector<std::string> vs;
-	if (seek_string(filename_parameter_file, 1, vs, "ViewSynthesisMethod", "View Synthesis Method"))
+	if (seek_string(m_filename_parameter_file, 1, vs, "ViewSynthesisMethod", "View Synthesis Method"))
 	{
 		if (vs[0] == "Triangles") vs_method = SYNTHESIS_TRIANGLE;
 		else throw std::runtime_error("ViewSynthesisMethod");
 	}
 	//seek blending method
 	std::vector<std::string> bl;
-	if (seek_string(filename_parameter_file, 1, bl, "BlendingMethod", "Blending Method"))
+	if (seek_string(m_filename_parameter_file, 1, bl, "BlendingMethod", "Blending Method"))
 	{
-		if (bl[0] == "Simple") config.blending_method = BLENDING_SIMPLE;
-		else if (bl[0] == "MultiSpectral") config.blending_method = BLENDING_MULTISPEC;
+		if (bl[0] == "Simple") m_config.blending_method = BLENDING_SIMPLE;
+		else if (bl[0] == "MultiSpectral") m_config.blending_method = BLENDING_MULTISPEC;
 		else throw std::runtime_error("BlendingMethod");
 	}
 	//seek blending factors
-	if (seek_float(filename_parameter_file, config.blending_low_freq_factor, "BlendingLowFreqFactor", "Blending Low Freq Factor") == 0)
-		config.blending_low_freq_factor = 1.0f;
-	if (seek_float(filename_parameter_file, config.blending_high_freq_factor, "BlendingHighFreqFactor", "Blending High Freq Factor") == 0)
-		config.blending_high_freq_factor = 4.0f;
-	if (seek_float(filename_parameter_file, config.blending_factor, "BlendingFactor", "Blending Factor") == 0)
-		config.blending_factor = 1.0f;
+	if (seek_float(m_filename_parameter_file, m_config.blending_low_freq_factor, "BlendingLowFreqFactor", "Blending Low Freq Factor") == 0)
+		m_config.blending_low_freq_factor = 1.0f;
+	if (seek_float(m_filename_parameter_file, m_config.blending_high_freq_factor, "BlendingHighFreqFactor", "Blending High Freq Factor") == 0)
+		m_config.blending_high_freq_factor = 4.0f;
+	if (seek_float(m_filename_parameter_file, m_config.blending_factor, "BlendingFactor", "Blending Factor") == 0)
+		m_config.blending_factor = 1.0f;
 	//seek sensor size (default: image width)
-	if (seek_float(filename_parameter_file, config.sensor_size, "SensorSize", "Sensor size") == 0)
-		config.sensor_size = static_cast<float>(w);
+	if (seek_float(m_filename_parameter_file, m_config.sensor_size, "SensorSize", "Sensor size") == 0)
+		m_config.sensor_size = static_cast<float>(w);
 
     //seek projection types
     std::vector<std::string> inputProjectionType;
-    if (seek_string(filename_parameter_file, 1, inputProjectionType, "InputProjectionType", "Input Projection Type"))
+    if (seek_string(m_filename_parameter_file, 1, inputProjectionType, "InputProjectionType", "Input Projection Type"))
     {
-        if (inputProjectionType[0] == "Perspective") config.input_projection_type = PROJECTION_PERSPECTIVE;
-        else if (inputProjectionType[0] == "Equirectangular") config.input_projection_type = PROJECTION_EQUIRECTANGULAR;
+        if (inputProjectionType[0] == "Perspective") m_config.input_projection_type = PROJECTION_PERSPECTIVE;
+        else if (inputProjectionType[0] == "Equirectangular") m_config.input_projection_type = PROJECTION_EQUIRECTANGULAR;
         else throw std::runtime_error("InputProjectionType");
     }
     std::vector<std::string> virtualProjectionType;
-    if (seek_string(filename_parameter_file, 1, virtualProjectionType, "VirtualProjectionType", "Virtual Projection Type"))
+    if (seek_string(m_filename_parameter_file, 1, virtualProjectionType, "VirtualProjectionType", "Virtual Projection Type"))
     {
-        if (virtualProjectionType[0] == "Perspective") config.virtual_projection_type = PROJECTION_PERSPECTIVE;
-        else if (virtualProjectionType[0] == "Equirectangular") config.virtual_projection_type = PROJECTION_EQUIRECTANGULAR;
+        if (virtualProjectionType[0] == "Perspective") m_config.virtual_projection_type = PROJECTION_PERSPECTIVE;
+        else if (virtualProjectionType[0] == "Equirectangular") m_config.virtual_projection_type = PROJECTION_EQUIRECTANGULAR;
         else throw std::runtime_error("VirtualProjectionType");
     }
 
 	// Frame range
-	if (seek_int(filename_parameter_file, config.start_frame, "StartFrame", "First frame (zero-based)") == 0) {
-		config.start_frame = 0;
+	if (seek_int(m_filename_parameter_file, m_config.start_frame, "StartFrame", "First frame (zero-based)") == 0) {
+		m_config.start_frame = 0;
 	}
-	if (seek_int(filename_parameter_file, config.number_of_frames, "NumberOfFrames", "Number of frames to process") == 0) {
-		config.number_of_frames = 1;
+	if (seek_int(m_filename_parameter_file, m_config.number_of_frames, "NumberOfFrames", "Number of frames to process") == 0) {
+		m_config.number_of_frames = 1;
 	}
 
     //Read pose trace file
     std::vector<std::string> name_pose_trace_file;
-    if (seek_string(filename_parameter_file, 1, name_pose_trace_file, "VirtualPoseTraceName", "Name of pose trace file")) {
-        config.pose_trace = pose_traces::ReadPoseTrace(name_pose_trace_file[0] );
+    if (seek_string(m_filename_parameter_file, 1, name_pose_trace_file, "VirtualPoseTraceName", "Name of pose trace file")) {
+        m_config.pose_trace = pose_traces::ReadPoseTrace(name_pose_trace_file[0] );
 
-        if( static_cast<unsigned>(config.number_of_frames) > config.pose_trace.size() )
+        if( static_cast<unsigned>(m_config.number_of_frames) > m_config.pose_trace.size() )
             throw std::runtime_error("Error: Number of frames to process is larger then number of entries in pose trace file");
 
-        std::cout << std::endl << "using pose trace with " << config.pose_trace.size() << " entries" << std::endl;
-        config.use_pose_trace = true;
+        std::cout << std::endl << "using pose trace with " << m_config.pose_trace.size() << " entries" << std::endl;
+        m_config.use_pose_trace = true;
     }
     else
-        config.use_pose_trace = false;
+        m_config.use_pose_trace = false;
 
-	print_results(InputCameraParameterFile, config.texture_names, config.depth_names, VirtualCameraParameterFile, number_input_cameras, number_output_cameras);
+	print_results(InputCameraParameterFile, m_config.texture_names, m_config.depth_names, VirtualCameraParameterFile, number_input_cameras, number_output_cameras);
 
-	config.camerasParameters_in = InputCameraParameterFile[0];
-	config.virtualCamerasParameters_in = VirtualCameraParameterFile[0];
+	m_config.camerasParameters_in = InputCameraParameterFile[0];
+	m_config.virtualCamerasParameters_in = VirtualCameraParameterFile[0];
 
 }
 
@@ -601,15 +601,15 @@ void Parser::read_ZValues()
 {
 	using namespace svs;
 
-	if (config.zvalues != "")
-		for (int i = 0; i < static_cast<int>(config.InputCameraNames.size()); ++i) {
+	if (m_config.zvalues != "")
+		for (int i = 0; i < static_cast<int>(m_config.InputCameraNames.size()); ++i) {
 			float zf, zn;
-			if (!seek_znear_zfar(config.zvalues, zf, config.depth_names[i], "FarthestDepthValue", "zfar"))
+			if (!seek_znear_zfar(m_config.zvalues, zf, m_config.depth_names[i], "FarthestDepthValue", "zfar"))
 				zf = 2000.0f;
-			if (!seek_znear_zfar(config.zvalues, zn, config.depth_names[i], "NearestDepthValue", "znear"))
+			if (!seek_znear_zfar(m_config.zvalues, zn, m_config.depth_names[i], "NearestDepthValue", "znear"))
 				zn = 500.0f;
-			config.zfar.push_back(zf);
-			config.znear.push_back(zn);
+			m_config.zfar.push_back(zf);
+			m_config.znear.push_back(zn);
 		}
 }
 
@@ -622,7 +622,7 @@ void Parser::print_results(
 	const int number_D_cameras
 	) const {
 	printf("results\n");
-	printf("Parameter file: %s\n", filename_parameter_file.c_str());
+	printf("Parameter file: %s\n", m_filename_parameter_file.c_str());
 	for (int i = 0; i < static_cast<int>(InputCameraParameterFile.size()); ++i)
 		printf("%s\n", InputCameraParameterFile[i].c_str());
 	printf("%d\n", number_RGB_cameras);
@@ -630,21 +630,21 @@ void Parser::print_results(
 		printf("%s\n", texture_names[i].c_str());
 	for (int i = 0; i < static_cast<int>(depth_names.size()); ++i)
 		printf("%s\n", depth_names[i].c_str());
-	for (int i = 0; i < static_cast<int>(config.InputCameraNames.size()); ++i)
-		printf("%s\n", config.InputCameraNames[i].c_str());
+	for (int i = 0; i < static_cast<int>(m_config.InputCameraNames.size()); ++i)
+		printf("%s\n", m_config.InputCameraNames[i].c_str());
 	for (int i = 0; i < static_cast<int>(VirtualCameraParameterFile.size()); ++i)
 		printf("%s\n", VirtualCameraParameterFile[i].c_str());
 	printf("%d\n", number_D_cameras);
-	for (int i = 0; i < static_cast<int>(config.VirtualCameraNames.size()); ++i)
-		printf("%s\n", config.VirtualCameraNames[i].c_str());
-	printf("%s\n", config.folder_out.c_str());
-	for (int i = 0; i < static_cast<int>(config.outfilenames.size()); ++i) {
-		printf("%s\n", config.outfilenames[i].c_str());
+	for (int i = 0; i < static_cast<int>(m_config.VirtualCameraNames.size()); ++i)
+		printf("%s\n", m_config.VirtualCameraNames[i].c_str());
+	printf("%s\n", m_config.folder_out.c_str());
+	for (int i = 0; i < static_cast<int>(m_config.outfilenames.size()); ++i) {
+		printf("%s\n", m_config.outfilenames[i].c_str());
 	}
-	for (int i = 0; i < static_cast<int>(config.outmaskedfilenames.size()); ++i) {
-		printf("%s\n", config.outmaskedfilenames[i].c_str());
+	for (int i = 0; i < static_cast<int>(m_config.outmaskedfilenames.size()); ++i) {
+		printf("%s\n", m_config.outmaskedfilenames[i].c_str());
 	}
-	printf("%d %d\n", config.size.width, config.size.height);
-	printf("%d %d\n", config.virtual_size.width, config.virtual_size.height);
-	printf("%db color, %db depth\n", config.bit_depth_color, config.bit_depth_depth);
+	printf("%d %d\n", m_config.size.width, m_config.size.height);
+	printf("%d %d\n", m_config.virtual_size.width, m_config.virtual_size.height);
+	printf("%db color, %db depth\n", m_config.bit_depth_color, m_config.bit_depth_depth);
 }

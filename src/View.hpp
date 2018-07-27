@@ -97,10 +97,10 @@ public:
 private:
 	void validate() const;
 
-	cv::Mat3f _color;
-	cv::Mat1f _depth;
-	cv::Mat1f _quality;
-	cv::Mat1f _validity;
+	cv::Mat3f m_color;
+	cv::Mat1f m_depth;
+	cv::Mat1f m_quality;
+	cv::Mat1f m_validity;
 };
 
 /**
@@ -136,18 +136,18 @@ public:
 
 	void load();
 	void unload();
-	float get_max_depth() const { return z_far; };
-	float get_min_depth() const { return z_near; };
+	float get_max_depth() const { return m_z_far; };
+	float get_min_depth() const { return m_z_near; };
 
 private:
-	std::string filepath_color;
-	std::string filepath_depth;
-	cv::Size size;
-	int bit_depth_color;
-	int bit_depth_depth;
-	float z_near;
-	float z_far;
-	int frame;
+	std::string m_filepath_color;
+	std::string m_filepath_depth;
+	cv::Size m_size;
+	int m_bit_depth_color;
+	int m_bit_depth_depth;
+	float m_z_near;
+	float m_z_far;
+	int m_frame;
 };
 
 #endif

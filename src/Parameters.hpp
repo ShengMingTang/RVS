@@ -91,28 +91,28 @@ public:
 	*/
     void adapt_initial_rotation( const cv::Matx33f& relative_rotation )
     {
-        rotation = relative_rotation * rotation0;
+        m_rotation = relative_rotation * m_rotation0;
     }
 	/**
 	@param relative_translation
 	*/
     void adapt_initial_translation( const cv::Vec3f& relative_translation )
     {
-        translation = relative_translation + translation0;
+        m_translation = relative_translation + m_translation0;
     }
 
 private:
 	/**External parameter of rotation*/
-	cv::Matx33f rotation0, rotation;
+	cv::Matx33f m_rotation0, m_rotation;
 
 	/**External parameter of translation*/
-	cv::Vec3f translation0, translation;
+	cv::Vec3f m_translation0, m_translation;
 
 	/**Internal parameters*/
-	cv::Matx33f camera_matrix;
+	cv::Matx33f m_camera_matrix;
 
 	/**Size of the sensor, in the same unit as camera_matrix*/
-	float sensor;
+	float m_sensor;
 };
 
 #endif

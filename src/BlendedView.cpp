@@ -59,8 +59,8 @@ extern bool with_opengl;
 BlendedView::~BlendedView() {}
 
 BlendedViewMultiSpec::BlendedViewMultiSpec(float exp_low_freq, float exp_high_freq)
-	: low_freq(exp_low_freq)
-	, high_freq(exp_high_freq)
+	: m_low_freq(exp_low_freq)
+	, m_high_freq(exp_high_freq)
 {}
 
 BlendedViewMultiSpec::~BlendedViewMultiSpec() {}
@@ -78,16 +78,16 @@ void BlendedViewMultiSpec::blend(View const& view)
 	auto high_view = View(high_color, view.get_depth(), view.get_quality(), view.get_validity());
 
 	// Blend low and high frequency separately
-	low_freq.blend(low_view);
-	high_freq.blend(high_view);
+	m_low_freq.blend(low_view);
+	m_high_freq.blend(high_view);
 
 	// Combine result
-	assign(low_freq.get_color() + high_freq.get_color(), cv::Mat1f(), low_freq.get_quality(), low_freq.get_validity());
+	assign(m_low_freq.get_color() + m_high_freq.get_color(), cv::Mat1f(), m_low_freq.get_quality(), m_low_freq.get_validity());
 }
 
 BlendedViewSimple::BlendedViewSimple(float blending_exp)
-	: is_empty(true)
-	, blending_exp(blending_exp)
+	: m_is_empty(true)
+	, m_blending_exp(blending_exp)
 {
 	assign(cv::Mat3f(), cv::Mat1f(), cv::Mat1f(), cv::Mat1f());
 }
@@ -169,15 +169,15 @@ void BlendedViewSimple::blend(View const& view)
 	}
 #endif
 	if (!with_opengl) {
-		if (is_empty) {
-			is_empty = false;
+		if (m_is_empty) {
+			m_is_empty = false;
 			assign(view.get_color(), cv::Mat1b(), view.get_quality(), view.get_validity());
-			_depth_mask = view.get_depth_mask();
+			m_depth_mask = view.get_depth_mask();
 		}
 		else {
 			std::vector<cv::Mat> colors = { get_color(), view.get_color() };
 			std::vector<cv::Mat> qualities = { get_quality(), view.get_quality() };
-			std::vector<cv::Mat> depth_masks = { _depth_mask, view.get_depth_mask() };
+			std::vector<cv::Mat> depth_masks = { m_depth_mask, view.get_depth_mask() };
 
 			cv::Mat quality;
 			cv::Mat depth_prolongation_mask;
@@ -189,10 +189,10 @@ void BlendedViewSimple::blend(View const& view)
 				/*out*/ quality,
 				/*out*/ depth_prolongation_mask,
 				/*out*/ inpaint_mask,
-				blending_exp);
+				m_blending_exp);
 
 			assign(color, cv::Mat1f(), quality, max(get_validity(), view.get_validity()));
-			_depth_mask = depth_prolongation_mask;
+			m_depth_mask = depth_prolongation_mask;
 		}
 	}
 }

@@ -104,10 +104,10 @@ void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f
 	memory_use -= _validity.size().area() * _validity.elemSize();
 #endif
 
-	_color = color;
-	_depth = depth;
-	_quality = quality;
-	_validity = validity;
+	m_color = color;
+	m_depth = depth;
+	m_quality = quality;
+	m_validity = validity;
 	validate();
 
 #if DUMP_MEMORY_USE
@@ -123,39 +123,39 @@ void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f
 cv::Mat3f View::get_color() const
 {
 	validate();
-	CV_Assert(!_color.empty());
-	return _color;
+	CV_Assert(!m_color.empty());
+	return m_color;
 }
 
 // Return the depth map (same size as texture)
 cv::Mat1f View::get_depth() const 
 {
 	validate();
-	CV_Assert(!_depth.empty());
-	return _depth;
+	CV_Assert(!m_depth.empty());
+	return m_depth;
 }
 
 // Return the quality map (same size as texture)
 cv::Mat1f View::get_quality() const
 {
 	validate();
-	CV_Assert(!_quality.empty());
-	return _quality;
+	CV_Assert(!m_quality.empty());
+	return m_quality;
 }
 
 // Return the validity map (same size as texture)
 cv::Mat1f View::get_validity() const
 {
 	validate();
-	CV_Assert(!_validity.empty());
-	return _validity;
+	CV_Assert(!m_validity.empty());
+	return m_validity;
 }
 
 // Return the size of the texture and depth map
 cv::Size View::get_size() const
 {
 	validate();
-	return _color.size();
+	return m_color.size();
 }
 
 // Return a mask with all valid depth values
@@ -182,10 +182,10 @@ cv::Mat1b View::get_validity_mask(float threshold) const
 
 void View::validate() const
 {
-	auto size = _color.size();
-	CV_Assert(_depth.empty() || _depth.size() == size);
-	CV_Assert(_quality.empty() || _quality.size() == size);
-	CV_Assert(_validity.size() == _quality.size());
+	auto size = m_color.size();
+	CV_Assert(m_depth.empty() || m_depth.size() == size);
+	CV_Assert(m_quality.empty() || m_quality.size() == size);
+	CV_Assert(m_validity.size() == m_quality.size());
 }
 
 InputView::InputView() {}
@@ -200,22 +200,22 @@ InputView::InputView(
 	float z_near,
 	float z_far,
 	int frame)
-	: filepath_color(filepath_color)
-	, filepath_depth(filepath_depth)
-	, size(size)
-	, bit_depth_color(bit_depth_color)
-	, bit_depth_depth(bit_depth_depth)
-	, z_near(z_near)
-	, z_far(z_far)
-	, frame(frame)
+	: m_filepath_color(filepath_color)
+	, m_filepath_depth(filepath_depth)
+	, m_size(size)
+	, m_bit_depth_color(bit_depth_color)
+	, m_bit_depth_depth(bit_depth_depth)
+	, m_z_near(z_near)
+	, m_z_far(z_far)
+	, m_frame(frame)
 {
 }
 
 void InputView::load()
 {
 	assign(
-		read_color(filepath_color, size, bit_depth_color, frame),
-		read_depth(filepath_depth, size, bit_depth_depth, z_near, z_far, frame),
+		read_color(m_filepath_color, m_size, m_bit_depth_color, m_frame),
+		read_depth(m_filepath_depth, m_size, m_bit_depth_depth, m_z_near, m_z_far, m_frame),
 		cv::Mat1f(),
 		cv::Mat1f());
 }

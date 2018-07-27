@@ -109,12 +109,12 @@ private:
 	void dump_maps(std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender);
 
 	/** File containing the parameters of the view synthesis*/
-	std::string filename;
+	std::string m_filename;
 
 	/** Config of the view synthesis*/
-	Config config;
+	Config m_config;
 
 	/** Input reference views */
-	std::vector<InputView> input_images;
+	std::vector<InputView> m_input_images;
 };
 

@@ -72,7 +72,7 @@ extern bool with_opengl;
 
 Pipeline::Pipeline(std::string filename)
 {
-	this->filename = filename;
+	this->m_filename = filename;
 
 #ifndef NDEBUG
 	cv::setBreakOnError(true);
@@ -87,33 +87,33 @@ void Pipeline::execute()
 {
 	parse();
 
-	for (int frame = config.start_frame; frame < config.start_frame + config.number_of_frames; ++frame) {
-		if (config.number_of_frames > 1) {
+	for (int frame = m_config.start_frame; frame < m_config.start_frame + m_config.number_of_frames; ++frame) {
+		if (m_config.number_of_frames > 1) {
 			std::clog << std::string(5, '=') << " FRAME " << frame << ' ' << std::string(80, '=') << std::endl;
 		}
 
 		load_images(frame);
-		compute_views(frame - config.start_frame);
+		compute_views(frame - m_config.start_frame);
 	}
 }
 
 void Pipeline::load_images(int frame) {
-	input_images.resize(config.params_real.size());
+	m_input_images.resize(m_config.params_real.size());
 
-	if (config.znear.empty()) {
+	if (m_config.znear.empty()) {
 		throw std::runtime_error("We lost compatibility with \"RGB\" depth maps. z_far and z_near are required.");
 	}
 
-	for (std::size_t idx = 0; idx != input_images.size(); ++idx)
+	for (std::size_t idx = 0; idx != m_input_images.size(); ++idx)
 	{
-		input_images[idx] = InputView(
-			config.texture_names[idx],
-			config.depth_names[idx],
-			config.size,
-			config.bit_depth_color,
-			config.bit_depth_depth,
-			config.znear[idx],
-			config.zfar[idx],
+		m_input_images[idx] = InputView(
+			m_config.texture_names[idx],
+			m_config.depth_names[idx],
+			m_config.size,
+			m_config.bit_depth_color,
+			m_config.bit_depth_depth,
+			m_config.znear[idx],
+			m_config.zfar[idx],
 			frame);
 	}
 }
@@ -125,16 +125,16 @@ void Pipeline::compute_views(int frame) {
 		FBO->init(cv::Size(int(rescale*config.virtual_size.width), int(rescale*config.virtual_size.height)));
 	}
 #endif
-	for (std::size_t virtual_idx = 0; virtual_idx != config.params_virtual.size(); ++virtual_idx) {
+	for (std::size_t virtual_idx = 0; virtual_idx != m_config.params_virtual.size(); ++virtual_idx) {
 		PROF_START("One view computed");
 		std::unique_ptr<BlendedView> blender;
 
-		if (config.blending_method == BLENDING_SIMPLE)
-			blender.reset(new BlendedViewSimple(config.blending_factor));
-		else if (config.blending_method == BLENDING_MULTISPEC)
+		if (m_config.blending_method == BLENDING_SIMPLE)
+			blender.reset(new BlendedViewSimple(m_config.blending_factor));
+		else if (m_config.blending_method == BLENDING_MULTISPEC)
 			blender.reset(new BlendedViewMultiSpec(
-				config.blending_low_freq_factor,
-				config.blending_high_freq_factor));
+				m_config.blending_low_freq_factor,
+				m_config.blending_high_freq_factor));
 		else throw std::logic_error("Unknown blending method");
 
 		// Project according to parameters of the virtual view
@@ -148,21 +148,21 @@ void Pipeline::compute_views(int frame) {
 			spaceTransformer.reset(new PUTransformer());
 		}
 
-		Parameters& params_virtual = config.params_virtual[virtual_idx];
-		if(config.use_pose_trace)
+		Parameters& params_virtual = m_config.params_virtual[virtual_idx];
+		if(m_config.use_pose_trace)
 		{
-			params_virtual.adapt_initial_rotation( config.pose_trace[config.start_frame + frame].rotation );
-			params_virtual.adapt_initial_translation( config.pose_trace[config.start_frame + frame].translation );
+			params_virtual.adapt_initial_rotation( m_config.pose_trace[m_config.start_frame + frame].rotation );
+			params_virtual.adapt_initial_translation( m_config.pose_trace[m_config.start_frame + frame].translation );
 		}
 		
-		spaceTransformer->set_targetPosition(params_virtual, config.virtual_size, config.virtual_projection_type);
+		spaceTransformer->set_targetPosition(params_virtual, m_config.virtual_size, m_config.virtual_projection_type);
 
 
-		for (std::size_t input_idx = 0; input_idx != input_images.size(); ++input_idx) {
+		for (std::size_t input_idx = 0; input_idx != m_input_images.size(); ++input_idx) {
 			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
 
 			// Select type of un-projection 
-			spaceTransformer->set_inputPosition(config.params_real[input_idx], config.size, config.input_projection_type);
+			spaceTransformer->set_inputPosition(m_config.params_real[input_idx], m_config.size, m_config.input_projection_type);
 
 			// Select view synthesis method
 			std::unique_ptr<SynthesizedView> synthesizer;
@@ -176,7 +176,7 @@ void Pipeline::compute_views(int frame) {
 
 			// Memory optimization: Load the input image
 			PROF_START("loading");
-			input_images[input_idx].load();
+			m_input_images[input_idx].load();
 			PROF_END("loading");
 
 #if WITH_OPENGL
@@ -186,7 +186,7 @@ void Pipeline::compute_views(int frame) {
 #endif
 
 			// Synthesize view
-			synthesizer->compute(input_images[input_idx]);
+			synthesizer->compute(m_input_images[input_idx]);
 
 			// Blend with previous results
 			PROF_START("blending");
@@ -205,7 +205,7 @@ void Pipeline::compute_views(int frame) {
 #endif
 
 			// Memory optimization: Unload the input image 
-			input_images[input_idx].unload();
+			m_input_images[input_idx].unload();
 		}
 		
 #if WITH_OPENGL
@@ -219,21 +219,21 @@ void Pipeline::compute_views(int frame) {
 		PROF_END("inpainting");
 
 		PROF_START("downscale");
-		resize(color, color, config.virtual_size);
+		resize(color, color, m_config.virtual_size);
 		PROF_END("downscale");
 
-		if (!config.outfilenames.empty()) {
+		if (!m_config.outfilenames.empty()) {
 			PROF_START("write");
-			write_color(config.outfilenames[virtual_idx], color, config.bit_depth_color, frame);
+			write_color(m_config.outfilenames[virtual_idx], color, m_config.bit_depth_color, frame);
 			PROF_END("write");
 		}
 
-		if (!config.outmaskedfilenames.empty()) {
+		if (!m_config.outmaskedfilenames.empty()) {
 			PROF_START("masking");
-			auto mask = blender->get_validity_mask(config.validity_threshold);
-			resize(mask, mask, config.virtual_size, cv::INTER_NEAREST);
+			auto mask = blender->get_validity_mask(m_config.validity_threshold);
+			resize(mask, mask, m_config.virtual_size, cv::INTER_NEAREST);
 			color.setTo(cv::Vec3f::all(0.5f), mask);
-			write_color(config.outmaskedfilenames[virtual_idx], color, config.bit_depth_color, frame);
+			write_color(m_config.outmaskedfilenames[virtual_idx], color, m_config.bit_depth_color, frame);
 			PROF_END("masking");
 		}
 		PROF_END("One view computed");
@@ -249,8 +249,8 @@ void Pipeline::compute_views(int frame) {
 
 void Pipeline::parse()
 {
-	Parser p(filename);
-	this->config = p.get_config();
+	Parser p(m_filename);
+	this->m_config = p.get_config();
 }
 
 void Pipeline::dump_maps(std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender)
@@ -262,13 +262,13 @@ void Pipeline::dump_maps(std::size_t input_idx, std::size_t virtual_idx, View co
 	cv::Mat1w validity; // triangle shape
 	std::ostringstream filepath;
 
-	cv::cvtColor(input_images[input_idx].get_color(), rgb, cv::COLOR_YCrCb2BGR);
+	cv::cvtColor(m_input_images[input_idx].get_color(), rgb, cv::COLOR_YCrCb2BGR);
 	rgb.convertTo(color, CV_8U, 255.);
-	input_images[input_idx].get_depth().convertTo(depth, CV_16U, 2000.);
+	m_input_images[input_idx].get_depth().convertTo(depth, CV_16U, 2000.);
 
 	filepath.str(""); filepath << "dump-input-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
 	filepath.str(""); filepath << "dump-input-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
-	filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), input_images[input_idx].get_depth_mask());
+	filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), m_input_images[input_idx].get_depth_mask());
 
 	cv::cvtColor(synthesizer.get_color(), rgb, cv::COLOR_YCrCb2BGR);
 	rgb.convertTo(color, CV_8U, 255.);

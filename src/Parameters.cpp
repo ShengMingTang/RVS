@@ -49,7 +49,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <stdexcept>
 
 Parameters::Parameters()
-	: sensor(std::numeric_limits<float>::quiet_NaN()) 
+	: m_sensor(std::numeric_limits<float>::quiet_NaN()) 
 {}
 
 /** Camera parameters
@@ -60,13 +60,13 @@ All the parameters are internally stocked in the OMAF coordinate system
 @param sensor_size Size of the sensor, in the same unit as camera_matrix
 */
 Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor, CoordinateSystem system)
-	: camera_matrix(camera_matrix)
-	, sensor(sensor)
+	: m_camera_matrix(camera_matrix)
+	, m_sensor(sensor)
 {
 	if (system == CoordinateSystem::MPEG_I_OMAF) {
 		// This is the internal coordinate system, so accept extrinsics without transformation
-		this->rotation = rotation;
-		this->translation = translation;
+		this->m_rotation = rotation;
+		this->m_translation = translation;
 	}
 	else if (system == CoordinateSystem::VSRS) {
 		// Affine transformation: x --> R^T (x - t)
@@ -81,31 +81,31 @@ Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::M
 			-1.f, 0.f, 0.f,   // left
 			0.f, -1.f, 0.f);  // up
 
-		this->rotation = P * rotation * P.t();
-		this->translation = P * translation;
-		this->rotation0 = this->rotation;
-		this->translation0 = this->translation;
+		this->m_rotation = P * rotation * P.t();
+		this->m_translation = P * translation;
+		this->m_rotation0 = this->m_rotation;
+		this->m_translation0 = this->m_translation;
 
 	}
 	else throw std::logic_error("Unknown coordinate system");
 }
 
 cv::Matx33f const& Parameters::get_rotation() const {
-	assert(sensor > 0.f); 
-	return rotation; 
+	assert(m_sensor > 0.f); 
+	return m_rotation; 
 }
 
 cv::Vec3f Parameters::get_translation() const {
-	assert(sensor > 0.f); 
-	return translation; 
+	assert(m_sensor > 0.f); 
+	return m_translation; 
 }
 
 cv::Matx33f const& Parameters::get_camera_matrix() const {
-	assert(sensor > 0.f);
-	return camera_matrix; 
+	assert(m_sensor > 0.f);
+	return m_camera_matrix; 
 }
 
 float Parameters::get_sensor() const {
-	assert(sensor > 0.f);
-	return sensor; 
+	assert(m_sensor > 0.f);
+	return m_sensor; 
 }

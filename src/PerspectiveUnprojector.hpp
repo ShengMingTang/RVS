@@ -74,7 +74,7 @@ public:
 	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const;
 
 private:
-	Parameters parameters;
+	Parameters m_parameters;
 };
 
 #endif

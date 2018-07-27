@@ -72,20 +72,20 @@ public:
 
 	/**\brief Get the View number idx*/
 	View operator[](size_t idx) {
-		return real_images[idx];
+		return m_real_images[idx];
 	}
 
 	/**
 	\brief Returns the input views
 	*/
 	std::vector<View>& get_images() {
-		return real_images;
+		return m_real_images;
 	}
 
 	/**
 	\brief Returns the configuration (see Config) 
 	*/
-	Config get_config() { return config; };
+	Config get_config() { return m_config; };
 
 
 
@@ -115,12 +115,12 @@ public:
 
 private:
 
-	const std::string filename_parameter_file;
+	const std::string m_filename_parameter_file;
 
-	Config config;
+	Config m_config;
 
 
-	std::vector<View> real_images;
+	std::vector<View> m_real_images;
 
 };
 

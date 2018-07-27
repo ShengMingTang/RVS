@@ -129,13 +129,13 @@ public:
 	void blend(View const& view);
 
 private:
-	bool is_empty;
+	bool m_is_empty;
 
 	/** The value of a in the formula \f$color=(\sum_i quality_i^a*color_i)/(\sum_i quality_i)\f$ or \f$color=color_{argmax(quality_i)}\f$ if \f$a<0\f$ */
-	float blending_exp;
+	float m_blending_exp;
 
 	// Depth mask
-	cv::Mat1b _depth_mask;
+	cv::Mat1b m_depth_mask;
 };
 
 /**
@@ -170,8 +170,8 @@ public:
 	void blend(View const& view);
 
 private:
-	BlendedViewSimple low_freq;
-	BlendedViewSimple high_freq;
+	BlendedViewSimple m_low_freq;
+	BlendedViewSimple m_high_freq;
 };
 
 #endif

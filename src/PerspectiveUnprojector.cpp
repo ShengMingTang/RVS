@@ -51,7 +51,7 @@ auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveUnprojector::PerspectiveUnprojector(Parameters const& parameters)
 	: Unprojector(parameters)
-	, parameters(parameters)
+	, m_parameters(parameters)
 {
 }
 
@@ -59,10 +59,10 @@ cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth
 {
 	assert(image_pos.size() == depth.size());
 
-	if (image_pos.cols != parameters.get_sensor())
+	if (image_pos.cols != m_parameters.get_sensor())
 		throw std::runtime_error("Situation where sensor size is different from input view width is currently not supported");
 	
-	auto M = parameters.get_camera_matrix();
+	auto M = m_parameters.get_camera_matrix();
 	auto fx = M(0, 0);
 	auto fy = M(1, 1);
 	auto px = M(0, 2);

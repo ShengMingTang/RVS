@@ -85,7 +85,7 @@ public:
 	cv::Matx33f const& get_camera_matrix() const;
 
 private:
-	Parameters parameters;
+	Parameters m_parameters;
 };
 
 #endif

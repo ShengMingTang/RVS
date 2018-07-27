@@ -52,16 +52,16 @@ auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveProjector::PerspectiveProjector(Parameters const& parameters, cv::Size size)
 	: Projector(size)
-	, parameters(parameters)
+	, m_parameters(parameters)
 {
 }
 
 cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
 {
-	if (world_pos.cols != parameters.get_sensor())
+	if (world_pos.cols != m_parameters.get_sensor())
 		throw std::runtime_error("Situation where sensor size is different from input view width is currently not supported");
 
-	auto M = parameters.get_camera_matrix();
+	auto M = m_parameters.get_camera_matrix();
 	auto fx = M(0, 0);
 	auto fy = M(1, 1);
 	auto px = M(0, 2);
@@ -96,5 +96,5 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 
 cv::Matx33f const & PerspectiveProjector::get_camera_matrix() const
 {
-	return parameters.get_camera_matrix();
+	return m_parameters.get_camera_matrix();
 }

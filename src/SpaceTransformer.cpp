@@ -65,9 +65,9 @@ OpenGLTransformer::OpenGLTransformer()
 
 cv::Vec3f SpaceTransformer::get_translation() const
 {
-	auto t_from = input_param.get_translation();
-	auto R_to = output_param.get_rotation();
-	auto t_to = output_param.get_translation();
+	auto t_from = m_input_parameters.get_translation();
+	auto R_to = m_output_parameters.get_rotation();
+	auto t_to = m_output_parameters.get_translation();
 	
 	auto t = -R_to.t()*(t_to - t_from);
 
@@ -76,8 +76,8 @@ cv::Vec3f SpaceTransformer::get_translation() const
 
 cv::Matx33f SpaceTransformer::get_rotation() const
 {
-	auto R_from = input_param.get_rotation();
-	auto R_to = output_param.get_rotation();
+	auto R_from = m_input_parameters.get_rotation();
+	auto R_to = m_output_parameters.get_rotation();
 
 	auto R = R_to.t()*R_from;
 
@@ -86,26 +86,26 @@ cv::Matx33f SpaceTransformer::get_rotation() const
 
 cv::Matx33f OpenGLTransformer::get_input_camera_matrix() const
 {
-	return input_param.get_camera_matrix();
+	return m_input_parameters.get_camera_matrix();
 }
 
 cv::Matx33f OpenGLTransformer::get_output_camera_matrix() const
 {
-	return output_param.get_camera_matrix();
+	return m_output_parameters.get_camera_matrix();
 }
 
 void OpenGLTransformer::set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type)
 {
-	this->output_param = params_virtual;
-	this->size = virtual_size;
+	this->m_output_parameters = params_virtual;
+	this->m_size = virtual_size;
 	this->output_projection_type = virtual_projection_type;
 	this->shader_name = "translate_rotate_ERP";
 }
 
 void OpenGLTransformer::set_inputPosition(Parameters params_real, cv::Size /*input_size*/, ProjectionType input_projection_type_)
 {
-	this->input_param = params_real;
-	this->sensor_size = params_real.get_sensor();
+	this->m_input_parameters = params_real;
+	this->m_sensor_size = params_real.get_sensor();
 	this->input_projection_type = input_projection_type_;
 	if (input_projection_type_ != this->output_projection_type) {
 		this->shader_name = "translate_rotate_ERP";
@@ -115,20 +115,20 @@ void OpenGLTransformer::set_inputPosition(Parameters params_real, cv::Size /*inp
 void PUTransformer::set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type)
 {
 	if (virtual_projection_type == PROJECTION_PERSPECTIVE)
-		this->projector.reset(new PerspectiveProjector(params_virtual, virtual_size));
+		this->m_projector.reset(new PerspectiveProjector(params_virtual, virtual_size));
 	else if (virtual_projection_type == PROJECTION_EQUIRECTANGULAR)
-		this->projector.reset(new erp::Projector(params_virtual, virtual_size));
-	this->size = virtual_size;
-	this->output_param = params_virtual;
+		this->m_projector.reset(new erp::Projector(params_virtual, virtual_size));
+	this->m_size = virtual_size;
+	this->m_output_parameters = params_virtual;
 }
 
 void PUTransformer::set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type)
 {
 	if (input_projection_type == PROJECTION_PERSPECTIVE)
-		this->unprojector.reset(new PerspectiveUnprojector(params_real));
+		this->m_unprojector.reset(new PerspectiveUnprojector(params_real));
 	else if (input_projection_type == PROJECTION_EQUIRECTANGULAR)
-		this->unprojector.reset(new erp::Unprojector(params_real, input_size));
+		this->m_unprojector.reset(new erp::Unprojector(params_real, input_size));
 
-	this->input_param = params_real;
-	this->sensor_size = params_real.get_sensor();
+	this->m_input_parameters = params_real;
+	this->m_sensor_size = params_real.get_sensor();
 }

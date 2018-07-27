@@ -78,10 +78,10 @@ erp::Unprojector::Unprojector(Parameters const& parameters, const cv::Size& size
 
 void erp::Unprojector::create(cv::Size size)
 {
-    if( verticesXYZNormalized.size() == size )
+    if( m_verticesXYZNormalized.size() == size )
         return;
 
-    phiTheta.create(size);
+    m_phiTheta.create(size);
 
     int height = size.height;
     int width = size.width;
@@ -90,7 +90,7 @@ void erp::Unprojector::create(cv::Size size)
 	auto full_width = std::max(width, 2 * height);
 	auto offset = (full_width - width) / 2;
 
-    verticesXYZNormalized.create(size);
+    m_verticesXYZNormalized.create(size);
     for (int i = 0; i < height; ++i)
     {
         float vPos;
@@ -111,9 +111,9 @@ void erp::Unprojector::create(cv::Size size)
 	    float hPos = 0.5f + j;
             float phi  = erp::calculate_phi( offset + hPos, full_width );
 
-            phiTheta(i,j) = cv::Vec2f(phi, theta);
+            m_phiTheta(i,j) = cv::Vec2f(phi, theta);
             
-            verticesXYZNormalized(i, j) = erp::calculate_euclidian_coordinates( phiTheta(i,j) );
+            m_verticesXYZNormalized(i, j) = erp::calculate_euclidian_coordinates( m_phiTheta(i,j) );
         }
     }
 
@@ -127,13 +127,13 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat1f radiusMap) const
 {
     cv::Size size = radiusMap.size();
 
-    CV_Assert( size == verticesXYZNormalized.size() );
+    CV_Assert( size == m_verticesXYZNormalized.size() );
 
     cv::Mat3f verticesXYZ(size);
 
     for( int i=0; i < verticesXYZ.rows; ++i )
         for( int j =0; j < verticesXYZ.cols; ++j )
-            verticesXYZ(i,j) = radiusMap(i,j) * verticesXYZNormalized(i,j);
+            verticesXYZ(i,j) = radiusMap(i,j) * m_verticesXYZNormalized(i,j);
 
     return verticesXYZ;
 }
