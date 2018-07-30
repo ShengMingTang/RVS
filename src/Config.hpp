@@ -122,7 +122,8 @@ public:
 	/**
 	\brief Destructor
 	*/
-	~Config() {  };
+	~Config() {}
+
 	/** Input camera names to lookup in the config file */
 	std::vector<std::string> InputCameraNames;
 
@@ -201,7 +202,7 @@ public:
 	float blending_high_freq_factor = 4.0f;
 
 	/** Blending factor in BlendedViewSimple */
-	float blending_factor = 1.0f;
+	float blending_factor = 5.f;
 
 	/** Input projection type */
     ProjectionType input_projection_type   = PROJECTION_PERSPECTIVE;

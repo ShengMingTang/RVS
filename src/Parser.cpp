@@ -417,7 +417,7 @@ void Parser::read_vsrs_config_file() {
 	seek_string(m_filename_parameter_file, 1, m_config.outmaskedfilenames, "MaskedVirtualViewImageName", "Masked output file names");
 
 	if (seek_float(m_filename_parameter_file, g_rescale, "Precision", "Precision") == 0)
-		g_rescale = 4.0f;
+		g_rescale = 1.f;
 
 	//seek w,h (default = 1920x1080)
 	int w, h;
@@ -516,7 +516,7 @@ void Parser::read_SVS_config_file() {
 	seek_int(m_filename_parameter_file, m_config.bit_depth_depth, "BitDepthDepth", "Element bit depth of raw depth streams");
 	//seek Rescale factor for super resolution
 	if (seek_float(m_filename_parameter_file, g_rescale, "Precision", "Precision") == 0)
-		g_rescale = 4.0f;
+		g_rescale = 1.f;
 
 	//seek working color space
 	std::vector<std::string> cs;
@@ -547,7 +547,7 @@ void Parser::read_SVS_config_file() {
 	if (seek_float(m_filename_parameter_file, m_config.blending_high_freq_factor, "BlendingHighFreqFactor", "Blending High Freq Factor") == 0)
 		m_config.blending_high_freq_factor = 4.0f;
 	if (seek_float(m_filename_parameter_file, m_config.blending_factor, "BlendingFactor", "Blending Factor") == 0)
-		m_config.blending_factor = 1.0f;
+		m_config.blending_factor = 5.f;
 	//seek sensor size (default: image width)
 	if (seek_float(m_filename_parameter_file, m_config.sensor_size, "SensorSize", "Sensor size") == 0)
 		m_config.sensor_size = static_cast<float>(w);
