@@ -50,6 +50,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "EquirectangularProjection.hpp"
 #include "PerspectiveProjector.hpp"
 #include "PoseTraces.hpp"
+#include "JsonParser.hpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -286,4 +287,38 @@ FUNC( TestRotationMatrixToFromEulerAngles )
             }
 
 
+}
+
+FUNC(TestJsonParser)
+{
+	std::istringstream stream(R"(
+{
+	"Content_name": "ClassroomVideo",
+	"BoundingBox_center" : [0.0, 42.0, -1e3],
+	"Fps" : 30,
+	"cameras" :
+	[
+		{
+			"Name": "v0",
+			"Background" : 0
+		},
+		{
+		}
+	]
+})");
+	
+	auto root = json::Node::readFrom(stream);
+	EQUAL(root.at("Content_name").asString(), "ClassroomVideo");	
+	auto center = root.at("BoundingBox_center");
+	EQUAL(center.size(), 3);
+	EQUAL(center.at(0).asDouble(), 0.0);
+	EQUAL(center.at(1).asDouble(), 42.0);
+	EQUAL(center.at(2).asDouble(), -1e3);
+	EQUAL(root.at("Fps").asDouble(), 30.0);
+	auto cameras = root.at("cameras");
+	EQUAL(cameras.size(), 2);
+	auto cam0 = cameras.at(0);
+	EQUAL(cam0.at("Name").asString(), "v0");
+	EQUAL(cam0.at("Background").asDouble(), 0.0);
+	auto cam1 = cameras.at(1);
 }

@@ -156,6 +156,7 @@ set(PROJECT_SOURCES
 	src/BlendedView.cpp
 	src/Config.cpp
 	src/Parameters.cpp
+	src/JsonParser.cpp
 	src/Parser.cpp
 	src/Pipeline.cpp
 	src/SynthesizedView.cpp
@@ -177,6 +178,7 @@ set(PROJECT_SOURCES
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
 	src/Config.hpp
+	src/JsonParser.hpp
 	src/Parser.hpp
 	src/Pipeline.hpp
 	src/SynthesizedView.hpp
