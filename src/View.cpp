@@ -68,7 +68,7 @@ namespace
 		while (std::getline(stream, line)) {
 			for (auto key : keys) {
 				if (key == line.substr(0, key.size())) {
-					std::clog << line << '\n';
+					std::cout << line << '\n';
 					break;
 				}
 			}
@@ -89,7 +89,7 @@ View::~View()
 	memory_use -= _color.size().area() * _color.elemSize();
 	memory_use -= _depth.size().area() * _depth.elemSize();
 	memory_use -= _validity.size().area() * _validity.elemSize();
-	std::clog << __FUNCTION__ << ": " << std::ldexp(double(memory_use), -30) << " GB\n";
+	std::cout << __FUNCTION__ << ": " << std::ldexp(double(memory_use), -30) << " GB\n";
 	logProcessStatus(); 
 #endif
 }
@@ -113,7 +113,7 @@ void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f
 	memory_use += _color.size().area() * _color.elemSize();
 	memory_use += _depth.size().area() * _depth.elemSize();
 	memory_use += _validity.size().area() * _validity.elemSize();
-	std::clog << __FUNCTION__ << ": " << std::ldexp(double(memory_use), -30) << " GB\n";
+	std::cout << __FUNCTION__ << ": " << std::ldexp(double(memory_use), -30) << " GB\n";
 	logProcessStatus();
 #endif
 }

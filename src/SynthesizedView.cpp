@@ -216,16 +216,16 @@ void SynthesizedView::compute(View& input)
 		transform(input.get_color(), scaled_uv, virtual_depth, output_size, wrapping_method);
 
 #if DUMP_VALUES
-		std::clog << "(i, j) == (" << DUMP_I << ", " << DUMP_J << ")" << '\n';
-		std::clog << "input_uv(i, j) == " << input_uv(DUMP_I, DUMP_J) << '\n';
-		std::clog << "input_get_depth()(i, j) == " << input.get_depth()(DUMP_I, DUMP_J) << '\n';
-		std::clog << "input_xyz(i, j) == " << input_xyz(DUMP_I, DUMP_J) << '\n';
-		std::clog << "R == " << R << '\n';
-		std::clog << "t == " << t << '\n';
-		std::clog << "virtual_xyz(i, j) == " << virtual_xyz(DUMP_I, DUMP_J) << '\n';
-		std::clog << "virtual_uv(i, j) == " << virtual_uv(DUMP_I, DUMP_J) << '\n';
-		std::clog << "virtual_depth(i, j) == " << virtual_depth(DUMP_I, DUMP_J) << '\n';
-		std::clog << "scaled_uv(i, j) == " << scaled_uv(DUMP_I, DUMP_J) << std::endl;
+		std::cout << "(i, j) == (" << DUMP_I << ", " << DUMP_J << ")" << '\n';
+		std::cout << "input_uv(i, j) == " << input_uv(DUMP_I, DUMP_J) << '\n';
+		std::cout << "input_get_depth()(i, j) == " << input.get_depth()(DUMP_I, DUMP_J) << '\n';
+		std::cout << "input_xyz(i, j) == " << input_xyz(DUMP_I, DUMP_J) << '\n';
+		std::cout << "R == " << R << '\n';
+		std::cout << "t == " << t << '\n';
+		std::cout << "virtual_xyz(i, j) == " << virtual_xyz(DUMP_I, DUMP_J) << '\n';
+		std::cout << "virtual_uv(i, j) == " << virtual_uv(DUMP_I, DUMP_J) << '\n';
+		std::cout << "virtual_depth(i, j) == " << virtual_depth(DUMP_I, DUMP_J) << '\n';
+		std::cout << "scaled_uv(i, j) == " << scaled_uv(DUMP_I, DUMP_J) << std::endl;
 #endif // DUMP_VALUES
 	}
 

@@ -81,7 +81,7 @@ namespace testing
 		auto filesize = static_cast<std::size_t>(stream.tellg());
 		stream.seekg(0, std::ios::beg);
 		auto framesize = size.area() * 3 / 2 * sizeof(T);
-		std::clog << "size == " << size << ", sizeof(T) == " << sizeof(T) << ", filesize == " << filesize << ", framesize == " << framesize << std::endl;
+		std::cout << "size == " << size << ", sizeof(T) == " << sizeof(T) << ", filesize == " << filesize << ", framesize == " << framesize << std::endl;
 		YAFFUT_CHECK(filesize && filesize % framesize == 0);
 
 		// Allocate planes
@@ -149,7 +149,7 @@ namespace testing
 			psnr[i_region] = 10. * std::log10(max_level * max_level / mean_sq_error);
 		}
 
-		std::clog << "PSNRs: " << psnr[0] << ", " << psnr[1] << std::endl;
+		std::cout << "PSNRs: " << psnr[0] << ", " << psnr[1] << std::endl;
 		YAFFUT_CHECK(psnr[0] > threshold0);
 		YAFFUT_CHECK(psnr[1] > threshold1);
 
@@ -165,7 +165,7 @@ namespace testing
 		cv::Size size, int bits,
 		double threshold0, double threshold1)
 	{
-		std::clog << "Comparing \"" << filepath_actual << "\" " << size << " with \"" << filepath_reference << "\" " << size << std::endl;
+		std::cout << "Comparing \"" << filepath_actual << "\" " << size << " with \"" << filepath_reference << "\" " << size << std::endl;
 		auto actual = readYUV420<T>(filepath_actual, size);
 		auto reference = readYUV420<T>(filepath_reference, size);
 		compareWithReferenceView(actual, reference, bits, threshold0, threshold1);
