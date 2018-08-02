@@ -50,15 +50,15 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveUnprojector::PerspectiveUnprojector(Parameters const& parameters)
-	: m_parameters(parameters)
+	: Unprojector(parameters)
 {}
 
 cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
 {
 	assert(image_pos.size() == depth.size());
 
-	auto f = m_parameters.getFocal();
-	auto p = m_parameters.getPrinciplePoint();
+	auto f = getParameters().getFocal();
+	auto p = getParameters().getPrinciplePoint();
 
 	cv::Mat3f world_pos(image_pos.size(), cv::Vec3f::all(NaN));
 

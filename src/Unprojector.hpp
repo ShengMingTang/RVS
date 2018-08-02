@@ -59,7 +59,8 @@ Project the pixels from image space and depth map to euclidian coordinate system
 class Unprojector
 {
 public:
-	/**\brief Destructor*/
+	Unprojector(Parameters const& parameters);
+
 	virtual ~Unprojector();
 
 	/** 
@@ -68,6 +69,15 @@ public:
 	@param depth The depth increases with distance from virtual camera
 	@return Result in OMAF Referential: x forward, y left, z up*/
 	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const = 0;
+
+	/** Get camera parameters */
+	Parameters const& getParameters() const;
+
+	/** Generate image positions */
+	virtual cv::Mat2f generateImagePos() const;
+
+private:
+	Parameters const& m_parameters;
 };
 
 #endif

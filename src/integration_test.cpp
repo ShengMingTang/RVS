@@ -59,7 +59,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <opencv2/imgproc.hpp>
 
-extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #endif

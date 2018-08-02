@@ -45,7 +45,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "SpaceTransformer.hpp"
-#include "EquirectangularProjection.hpp"
+#include "EquirectangularProjector.hpp"
+#include "EquirectangularUnprojector.hpp"
 #include "PerspectiveProjector.hpp"
 #include "PerspectiveUnprojector.hpp"
 
@@ -113,7 +114,7 @@ void PUTransformer::set_inputPosition(Parameters const *parameters)
 
 	switch (parameters->getProjectionType()) {
 	case ProjectionType::equirectangular:
-		m_unprojector = std::make_unique<erp::Unprojector>(*parameters);
+		m_unprojector = std::make_unique<EquirectangularUnprojector>(*parameters);
 		break;
 	case ProjectionType::perspective:
 		m_unprojector = std::make_unique<PerspectiveUnprojector>(*parameters);
@@ -128,10 +129,15 @@ void PUTransformer::set_targetPosition(Parameters const *parameters)
 
 	switch (parameters->getProjectionType()) {
 	case ProjectionType::equirectangular:
-		m_projector = std::make_unique<erp::Projector>(*parameters);
+		m_projector = std::make_unique<EquirectangularProjector>(*parameters);
 		break;
 	case ProjectionType::perspective:
 		m_projector = std::make_unique<PerspectiveProjector>(*parameters);
 		break;
 	}
+}
+
+cv::Mat2f PUTransformer::generateImagePos() const
+{
+	return m_unprojector->generateImagePos();
 }

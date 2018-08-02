@@ -50,7 +50,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "iostream"
 
-extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #include "RFBO.hpp"

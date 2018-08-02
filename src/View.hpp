@@ -112,9 +112,6 @@ public:
 	/** Constructor.
 	
 	Loads an input view and its depth map.
-
-	@param frame Frame to load.
-	@param parameters Camera and video parameters
 	*/
 	InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters);
 };

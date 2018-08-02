@@ -45,7 +45,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "Parameters.hpp"
-#include "EquirectangularProjection.hpp"
+#include "PoseTraces.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -134,6 +134,11 @@ cv::Vec2f Parameters::getVerRange() const
 {
 	assert(m_projectionType == ProjectionType::equirectangular);
 	return m_verRange;
+}
+
+bool Parameters::isFullHorRange() const
+{
+	return m_isFullHorRange;
 }
 
 cv::Vec2f Parameters::getFocal() const
@@ -236,6 +241,12 @@ void Parameters::setHorRangeFrom(json::Node root)
 {
 	if (m_projectionType == ProjectionType::equirectangular) {
 		m_horRange = asFloatVec<2>(root.require("Hor_range"));
+
+		m_isFullHorRange = false;
+		try {
+			m_isFullHorRange = asIntVec<2>(root.require("Hor_range")) == cv::Vec2i(-180, 180);
+		}
+		catch (std::runtime_error&) {}
 	}
 }
 

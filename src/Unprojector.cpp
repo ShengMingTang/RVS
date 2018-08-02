@@ -46,4 +46,26 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Unprojector.hpp"
 
+Unprojector::Unprojector(Parameters const& parameters)
+	: m_parameters(parameters)
+{}
+
 Unprojector::~Unprojector() {}
+
+Parameters const& Unprojector::getParameters() const
+{
+	return m_parameters;
+}
+
+cv::Mat2f Unprojector::generateImagePos() const
+{
+	auto image_pos = cv::Mat2f(getParameters().getSize());
+
+	for (int i = 0; i != image_pos.rows; ++i) {
+		for (int j = 0; j != image_pos.cols; ++j) {
+			image_pos(i, j) = cv::Vec2f(j + 0.5f, i + 0.5f);
+		}
+	}
+
+	return image_pos;
+}

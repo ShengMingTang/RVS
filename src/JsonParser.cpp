@@ -58,10 +58,35 @@ Bart Sonneveldt, bart.sonneveldt@philips.com
 
 namespace json
 {
-	void skipWhitespace(std::istream& stream);
-	void matchCharacter(std::istream& stream, std::istream::int_type expected);
-	void matchText(std::istream& stream, std::string const& text);
-	std::shared_ptr<Value> readValue(std::istream& stream);
+	namespace
+	{
+		void skipWhitespace(std::istream& stream)
+		{
+			while (!stream.eof() && std::isspace(stream.peek())) {
+				stream.get();
+			}
+		}
+
+		void matchCharacter(std::istream& stream, std::istream::int_type expected)
+		{
+			auto actual = stream.get();
+
+			if (actual != expected) {
+				std::ostringstream what;
+				what << "Expected '" << static_cast<char>(expected) << "' but found '" << static_cast<char>(actual) << "' (0x" << std::hex << actual << ")";
+				throw std::runtime_error(what.str());
+			}
+		}
+
+		void matchText(std::istream& stream, std::string const& text)
+		{
+			for (auto ch : text) {
+				matchCharacter(stream, ch);
+			}
+		}
+	}
+
+	static std::shared_ptr<Value> readValue(std::istream& stream);
 
 	struct Value
 	{
@@ -322,32 +347,7 @@ namespace json
 		: m_value(value)
 	{}
 
-	void skipWhitespace(std::istream& stream)
-	{
-		while (!stream.eof() && std::isspace(stream.peek())) {
-			stream.get();
-		}
-	}
-
-	void matchCharacter(std::istream& stream, std::istream::int_type expected)
-	{
-		auto actual = stream.get();
-
-		if (actual != expected) {
-			std::ostringstream what;
-			what << "Expected '" << static_cast<char>(expected) << "' but found '" << static_cast<char>(actual) << "' (0x" << std::hex << actual << ")";
-			throw std::runtime_error(what.str());
-		}
-	}
-
-	void matchText(std::istream& stream, std::string const& text)
-	{
-		for (auto ch : text) {
-			matchCharacter(stream, ch);
-		}
-	}
-
-	std::shared_ptr<Value> readValue(std::istream& stream)
+	static std::shared_ptr<Value> readValue(std::istream& stream)
 	{
 		skipWhitespace(stream);
 		auto ch = stream.peek();

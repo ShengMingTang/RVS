@@ -46,4 +46,13 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Projector.hpp"
 
+Projector::Projector(Parameters const& parameters)
+	: m_parameters(parameters)
+{}
+
 Projector::~Projector() {}
+
+Parameters const& Projector::getParameters() const
+{
+	return m_parameters;
+}

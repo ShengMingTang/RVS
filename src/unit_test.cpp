@@ -47,8 +47,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #define YAFFUT_MAIN
 #include "yaffut.hpp"
 
-#include "EquirectangularProjection.hpp"
 #include "PerspectiveProjector.hpp"
+#include "EquirectangularProjector.hpp"
+#include "EquirectangularUnprojector.hpp"
 #include "PoseTraces.hpp"
 #include "JsonParser.hpp"
 
@@ -78,69 +79,7 @@ namespace testing
 
 } // namespace
 
-
-FUNC( TestERP_ConvertImageCoordinateToFromPhiTheta )
-{
-    const double eps = 1e-6;
-    
-    int N = 10;
-    for( int j = 0; j < N; ++j )
-    {
-        float hPosExpected = j + 0.5f;
-        float phi = erp::calculate_phi( hPosExpected, N);
-
-        float hPosActual = erp::calculate_horizontal_image_coordinate(phi, N);
-        CHECK(std::abs(hPosExpected - hPosActual) < eps);
-    }
-
-    for( int i = 0; i < N; ++i )
-    {
-        float vPosExpected = i + 0.5f;
-        float theta = erp::calculate_theta( vPosExpected, N);
-
-        float vPosActual = erp::calculate_vertical_image_coordinate(theta, N);
-		CHECK(std::abs(vPosExpected - vPosActual) < eps);
-    }
-
-
-}
-
-FUNC( TestERP_CoordinateTransform )
-{
-    const double eps = 1e-6;
-    const int N = 10;
-    
-    // exclude poles: 0,N
-    for( int i =1; i< N; ++i )      
-        for(int j = 0; j<N; ++j )
-        {
-            float vPos = i + 0.5f;
-            float hPos = j + 0.5f;
-
-            float theta = erp::calculate_theta( vPos, N);
-            float phi   = erp::calculate_phi( hPos, N);
-
-            auto sphericalExpected = cv::Vec2f(phi, theta);
-
-            auto xyzNorm           = erp::calculate_euclidian_coordinates( sphericalExpected );
-            auto sphericalActual   = erp::calculate_spherical_coordinates( xyzNorm);
-
-            auto err0 = testing::DistanceOnUnitCircle( sphericalExpected[0] , sphericalActual[0] );
-            auto err1 = testing::DistanceOnUnitCircle( sphericalExpected[1] , sphericalActual[1] );
-
-            if( err0 > eps || err1 > eps )
-            {
-                cout << i << " " << j << endl;
-                cout << sphericalExpected << endl;
-                cout << sphericalActual << endl;
-                cout << endl;
-                CHECK(false);
-            }
-        }
-
-}
-
-FUNC( TestERP_BackProject)
+FUNC(TestERP_BackProject)
 {
     const double eps = 1e-7;
 
@@ -164,11 +103,12 @@ FUNC( TestERP_BackProject)
 	auto root = json::Node::readFrom(text);
 	auto parameters = Parameters::readFrom(root);
 
-    erp::Unprojector unprojector(parameters);
+    EquirectangularUnprojector unprojector(parameters);
     
+	auto imagePos = unprojector.generateImagePos();
     cv::Mat1f radiusMap = cv::Mat1f::ones(parameters.getSize());
 
-    auto vertices = unprojector.unproject(radiusMap);
+    auto vertices = unprojector.unproject(imagePos, radiusMap);
 
     const double radiusExpected = 1.0;
 
@@ -177,9 +117,7 @@ FUNC( TestERP_BackProject)
 	}
 }
 
-
-
-FUNC( TestERP_Project)
+FUNC(TestERP_Project)
 {
     double eps = 1e-7;
     g_rescale = 1.f;
@@ -204,21 +142,19 @@ FUNC( TestERP_Project)
 	auto root = json::Node::readFrom(text);
 	auto parameters = Parameters::readFrom(root);
 
-    erp::Unprojector unprojector(parameters);
-    
+    EquirectangularUnprojector unprojector(parameters);
+	auto imagePos = unprojector.generateImagePos();
     cv::Mat1f imRadius = cv::Mat1f::ones(parameters.getSize());
+    auto imXYZ = unprojector.unproject(imagePos, imRadius);
 
-    auto imXYZ = unprojector.unproject(imRadius);
-
-    float radiusExpected = 2.f;
-    
+    float radiusExpected = 2.f;    
     cv::Mat3f imXYZnew = imXYZ * radiusExpected;
 
-	erp::Projector projector(parameters);
+	EquirectangularProjector projector(parameters);
     cv::Mat1f imRadiusActual;
 	WrappingMethod wrapping_method;
     cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual, wrapping_method);
-	CHECK(wrapping_method == WrappingMethod::none);
+	CHECK(wrapping_method == WrappingMethod::horizontal);
 
 
     eps *= parameters.getSize().area();
@@ -290,33 +226,33 @@ FUNC(Test_PerspectiveProjector)
 
 FUNC( TestRotationMatrixToFromEulerAngles )
 {
-    using namespace pose_traces::detail;
-    
-    const double eps = 1e-7;
+	using namespace pose_traces::detail;
 
-    int N = 16;
-    
-    for( int i0 = 0; i0 <= N; ++i0 )                // closed interval
-        for( int i1 = 1; i1 <  N; ++i1 )            // open interval
-            for( int i2 = 0; i2 <= N; ++i2 )        // closed interval
-            {
+	const double eps = 1e-7;
 
-                float yaw   = float( i0 * CV_2PI / N - CV_PI  );
-                float pitch = float( i1 * CV_PI  / N - CV_PI/2);
-                float roll  = float( i2 * CV_2PI / N - CV_PI  );
+	int N = 16;
 
-                auto eulerExpected  = cv::Vec3f(yaw, pitch, roll );
-                auto R              = EulerAnglesToRotationMatrix( eulerExpected );
-                auto eulerActual    = RotationMatrixToEulerAngles(R);
+	for( int i0 = 0; i0 <= N; ++i0 )                // closed interval
+		for( int i1 = 1; i1 <  N; ++i1 )            // open interval
+			for( int i2 = 0; i2 <= N; ++i2 )        // closed interval
+			{
 
-                double err = cv::norm( testing::DistanceOnUnitCircle(eulerExpected, eulerActual) );
-                if( err > eps )
-                {
-                    cout << i0 << " "<< i1 << " "<< i2 << " " << err << endl ;
-                    CHECK(false);
-                }
+				float yaw   = float( i0 * CV_2PI / N - CV_PI  );
+				float pitch = float( i1 * CV_PI  / N - CV_PI/2);
+				float roll  = float( i2 * CV_2PI / N - CV_PI  );
 
-            }
+				auto eulerExpected  = cv::Vec3f(yaw, pitch, roll );
+				auto R              = EulerAnglesToRotationMatrix( eulerExpected );
+				auto eulerActual    = RotationMatrixToEulerAngles(R);
+
+				double err = cv::norm( testing::DistanceOnUnitCircle(eulerExpected, eulerActual) );
+				if( err > eps )
+				{
+					cout << i0 << " "<< i1 << " "<< i2 << " " << err << endl ;
+					CHECK(false);
+				}
+
+			}
 
 
 }

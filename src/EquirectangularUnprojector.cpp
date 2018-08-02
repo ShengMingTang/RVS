@@ -42,80 +42,53 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#ifndef _TIMER_HPP_
-#define _TIMER_HPP_
+#include "EquirectangularUnprojector.hpp"
 
-/**
-@file Timer.hpp
-*/
+EquirectangularUnprojector::EquirectangularUnprojector(Parameters const& parameters)
+	: Unprojector(parameters)
+{}
 
-#ifdef WITH_EASY_PROFILER
-#include <easy/profiler.h>
-#else 
-#include <chrono>
-#include <map>
-#include <string>
+cv::Mat3f EquirectangularUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+{
+	auto world_pos = cv::Mat3f(image_pos.size());
+	auto size = getParameters().getSize();
+	auto hor_range = getParameters().getHorRange();
+	auto ver_range = getParameters().getVerRange();
 
-/**
-\brief Profiler class
+	auto const radperdeg = 0.01745329252f;
+	auto phi0 = hor_range[1];
+	auto theta0 = ver_range[1];
+	auto dphi_du = -radperdeg * (hor_range[1] - hor_range[0]) / size.width;
+	auto dtheta_dv = -radperdeg * (ver_range[1] - ver_range[0]) / size.height;
 
-If WITH_EASY_PROFILER flag is on, saves the computation time wit a easy profiler file
+	for (int i = 0; i != image_pos.rows; ++i) {
+		for (int j = 0; j != image_pos.cols; ++j) {
+			auto uv = image_pos(i, j);
 
-Else the computation time is displayed during the execution
-*/
-class Timer {
-public:
-	/**\brief Start the profiling here
-	@param timername Name of the profiled block*/
-	static void start(std::string timername);
+			// Spherical coordinates
+			auto phi = phi0 + dphi_du * uv[0];
+			auto theta = theta0 + dtheta_dv * uv[1];
 
-	/**\brief End the profiling 
-	@param timername Name of the profiled block*/
-	static void end(std::string timername);
+			// World position
+			world_pos(i, j) = depth(i, j) * cv::Vec3f(
+				std::cos(theta) * std::cos(phi),
+				std::cos(theta) * std::sin(phi),
+				std::sin(theta));
+		}
+	}
 
-	static void begin();
+	return world_pos;
+}
 
-	static void finalize();
+cv::Mat2f EquirectangularUnprojector::generateImagePos() const
+{
+	auto image_pos = Unprojector::generateImagePos();
+	float const eps = 1e-3f;
 
-private:
-	Timer();
+	for (int j = 0; j != image_pos.cols; ++j) {
+		image_pos(0, j)[1] = eps;
+		image_pos(image_pos.rows - 1, j)[1] = image_pos.rows - eps;
+	}
 
-public:
-
-	typedef std::chrono::time_point<std::chrono::system_clock> timepoint;
-	typedef std::string timername;
-	typedef int threadid;
-
-	static std::map <threadid, std::map<timername, timepoint >> chronos;
-};
-#endif
-
-#ifdef WITH_EASY_PROFILER
-#define PROF_START_1_ARGS(TIMERNAME) EASY_BLOCK((TIMERNAME));
-#define PROF_START_2_ARGS(TIMERNAME, OPT_COLOR) EASY_BLOCK((TIMERNAME), (OPT_COLOR));
-#define PROF_END(TIMERNAME) EASY_END_BLOCK;
-#ifdef WITH_EASY_PROFILER_TO_FILE
-void Timer_Finalize();
-#define PROF_BEGIN() EASY_PROFILER_ENABLE;
-#define PROF_FINALIZE() Timer_Finalize();
-#else
-#define PROF_BEGIN() profiler::startListen();
-#define PROF_FINALIZE() profiler::stopListen();
-#endif
-#else 
-#define PROF_START_1_ARGS(TIMERNAME) Timer::start((TIMERNAME));
-#define PROF_START_2_ARGS(TIMERNAME, OPT_COLOR) Timer::start((TIMERNAME), (OPT_COLOR));
-#define PROF_END(TIMERNAME) Timer::end((TIMERNAME));
-#define PROF_BEGIN() Timer::begin();
-#define PROF_FINALIZE() Timer::finalize();
-#endif
-
-#define GET_3TH_ARG(arg1, arg2, arg3, ...) arg3
-
-#define PROF_START_MACRO_CHOOSER(...) \
-    GET_3TH_ARG(__VA_ARGS__, PROF_START_2_ARGS, \
-		PROF_START_1_ARGS, )
-
-#define PROF_START(...) PROF_START_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
-
-#endif
+	return image_pos;
+}

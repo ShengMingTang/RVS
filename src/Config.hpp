@@ -90,6 +90,9 @@ extern float g_rescale;
 /**Working color space (RGB or YUV). Independent of the input or output formats*/
 extern ColorSpace g_color_space;
 
+/** Enable OpenGL acceleration */
+extern bool g_with_opengl;
+
 /**
 \brief Configuration parameters
 */

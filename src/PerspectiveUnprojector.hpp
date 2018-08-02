@@ -71,10 +71,7 @@ public:
 	@param depth Perspective depth map
 	@return Map of the pixels in euclidian coordinates
 	*/
-	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const;
-
-private:
-	Parameters m_parameters;
+	cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const override;
 };
 
 #endif

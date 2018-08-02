@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
 * License, included below. This software may be subject to other third party
 * and contributor rights, including patent rights, and no such rights are
 * granted under this license.
@@ -42,80 +42,53 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#ifndef _TIMER_HPP_
-#define _TIMER_HPP_
-
 /**
-@file Timer.hpp
+@file EquirectangularProjector.hpp
 */
 
-#ifdef WITH_EASY_PROFILER
-#include <easy/profiler.h>
-#else 
-#include <chrono>
-#include <map>
-#include <string>
+#include "EquirectangularProjector.hpp"
 
-/**
-\brief Profiler class
+EquirectangularProjector::EquirectangularProjector(Parameters const& parameters)
+	: Projector(parameters)
+{}
 
-If WITH_EASY_PROFILER flag is on, saves the computation time wit a easy profiler file
+cv::Mat2f EquirectangularProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
+{
+	depth = cv::Mat1f(world_pos.size());
 
-Else the computation time is displayed during the execution
-*/
-class Timer {
-public:
-	/**\brief Start the profiling here
-	@param timername Name of the profiled block*/
-	static void start(std::string timername);
+	auto image_pos = cv::Mat2f(world_pos.size());
+	auto size = getParameters().getSize();
+	auto hor_range = getParameters().getHorRange();
+	auto ver_range = getParameters().getVerRange();
 
-	/**\brief End the profiling 
-	@param timername Name of the profiled block*/
-	static void end(std::string timername);
+	auto const degperrad = 57.295779513f;
+	auto u0 = size.width * hor_range[1] / (hor_range[1] - hor_range[0]);
+	auto v0 = size.height * ver_range[1] / (ver_range[1] - ver_range[0]);
+	auto du_dphi = -degperrad * size.width  / (hor_range[1] - hor_range[0]);
+	auto dv_dtheta = -degperrad * size.height / (ver_range[1] - ver_range[0]);
 
-	static void begin();
+	for (int i = 0; i != world_pos.rows; ++i) {
+		for (int j = 0; j != world_pos.cols; ++j) {
+			auto xyz = world_pos(i, j);
 
-	static void finalize();
+			// Radius is depth
+			auto radius = static_cast<float>(cv::norm(xyz));
+			depth(i, j) = radius;
 
-private:
-	Timer();
+			// Spherical coordinates
+			auto phi = std::atan2(xyz[1], xyz[0]);
+			auto theta = std::asin(xyz[2] / radius);
 
-public:
+			// Image coordinates
+			image_pos(i, j) = cv::Vec2f(
+				u0 + du_dphi * phi,
+				v0 + dv_dtheta * theta);
+		}
+	}
 
-	typedef std::chrono::time_point<std::chrono::system_clock> timepoint;
-	typedef std::string timername;
-	typedef int threadid;
+	wrapping_method = getParameters().isFullHorRange()
+		? WrappingMethod::horizontal
+		: WrappingMethod::none;
 
-	static std::map <threadid, std::map<timername, timepoint >> chronos;
-};
-#endif
-
-#ifdef WITH_EASY_PROFILER
-#define PROF_START_1_ARGS(TIMERNAME) EASY_BLOCK((TIMERNAME));
-#define PROF_START_2_ARGS(TIMERNAME, OPT_COLOR) EASY_BLOCK((TIMERNAME), (OPT_COLOR));
-#define PROF_END(TIMERNAME) EASY_END_BLOCK;
-#ifdef WITH_EASY_PROFILER_TO_FILE
-void Timer_Finalize();
-#define PROF_BEGIN() EASY_PROFILER_ENABLE;
-#define PROF_FINALIZE() Timer_Finalize();
-#else
-#define PROF_BEGIN() profiler::startListen();
-#define PROF_FINALIZE() profiler::stopListen();
-#endif
-#else 
-#define PROF_START_1_ARGS(TIMERNAME) Timer::start((TIMERNAME));
-#define PROF_START_2_ARGS(TIMERNAME, OPT_COLOR) Timer::start((TIMERNAME), (OPT_COLOR));
-#define PROF_END(TIMERNAME) Timer::end((TIMERNAME));
-#define PROF_BEGIN() Timer::begin();
-#define PROF_FINALIZE() Timer::finalize();
-#endif
-
-#define GET_3TH_ARG(arg1, arg2, arg3, ...) arg3
-
-#define PROF_START_MACRO_CHOOSER(...) \
-    GET_3TH_ARG(__VA_ARGS__, PROF_START_2_ARGS, \
-		PROF_START_1_ARGS, )
-
-#define PROF_START(...) PROF_START_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
-
-#endif
+	return image_pos;
+}

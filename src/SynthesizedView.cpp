@@ -51,7 +51,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <algorithm>
 #include <iostream>
 
-extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #include "RFBO.hpp"
@@ -66,19 +65,6 @@ const int DUMP_J = 960;
 
 namespace
 {
-	cv::Mat2f uvCoordinates(cv::Size size)
-	{
-		auto result = cv::Mat2f(size);
-
-		for (int i = 0; i != result.rows; ++i) {
-			for (int j = 0; j != result.cols; ++j) {
-				result(i, j) = cv::Vec2f(j + 0.5f, i + 0.5f);
-			}
-		}
-
-		return result;
-	}
-
 	// Affine transformation: x -> Rx + t
 	cv::Mat3f affine_transform(cv::Mat3f x, cv::Matx33f R, cv::Vec3f t)
 	{
@@ -185,13 +171,13 @@ void SynthesizedView::compute(View& input)
 	}
 #endif
 	if (!g_with_opengl) {
-		auto pu_transformer = static_cast<const PUTransformer*>(m_space_transformer);
+		auto const& pu_transformer = static_cast<const PUTransformer*>(m_space_transformer);
 
 		// Generate image coordinates 
 		auto input_size = input.get_size();
-		auto input_uv = uvCoordinates(input_size); // TODO: Move into PerspectiveUnproject
+		auto input_uv = pu_transformer->generateImagePos();
 		
-												   // Unproject: input view image to input view world coordinates
+		// Unproject: input view image to input view world coordinates
 		auto input_xyz = pu_transformer->unproject(input_uv, input.get_depth());
 		
 		// Rotate and translate from input (real) to output (virtual) view

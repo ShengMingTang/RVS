@@ -57,10 +57,10 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 Use opencv cv::imwrite() function to load non .YUV images.
 
-@param filename Name of the image file to write
+@param filepath Name of the image file to write
 @param image Image to write
-@param bit_depth Bit depth of the image to write (for YUV)
 @param frame Frame number (for YUV)
+@param parameters Camera and video parameters
 */
 void write_color(std::string filepath, cv::Mat3f image, int frame, Parameters const& parameters);
 

@@ -50,9 +50,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "SynthesizedView.hpp"
 #include "inpainting.hpp"
 #include "image_writing.hpp"
-#include "PerspectiveUnprojector.hpp"
-#include "PerspectiveProjector.hpp"
-#include "EquirectangularProjection.hpp"
 
 #include <iostream>
 #include <vector>
@@ -61,7 +58,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #include "RFBO.hpp"

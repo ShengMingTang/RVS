@@ -166,11 +166,12 @@ set(PROJECT_SOURCES
 	src/image_writing.cpp
 	src/inpainting.cpp
 	src/transform.cpp
-	src/EquirectangularProjection.cpp
 	src/Unprojector.cpp
 	src/Projector.cpp
 	src/PerspectiveUnprojector.cpp
 	src/PerspectiveProjector.cpp
+	src/EquirectangularUnprojector.cpp
+	src/EquirectangularProjector.cpp
 	src/PoseTraces.cpp
 	src/SpaceTransformer.cpp)
 
@@ -189,11 +190,12 @@ set(PROJECT_HEADERS
 	src/inpainting.hpp
 	src/transform.hpp
 	src/IntegralImage2D.h
-	src/EquirectangularProjection.hpp
 	src/Unprojector.hpp
 	src/Projector.hpp
 	src/PerspectiveUnprojector.hpp
 	src/PerspectiveProjector.hpp
+	src/EquirectangularUnprojector.hpp
+	src/EquirectangularProjector.hpp
 	src/PoseTraces.hpp
 	src/SpaceTransformer.hpp)
 

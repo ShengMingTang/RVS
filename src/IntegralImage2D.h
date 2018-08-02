@@ -168,22 +168,21 @@ template <class DataType, unsigned Dimension> class IntegralImage2D
           * \param[in] srd_ele the element stride of the data
           * \param[in] srd_row the row stride of the data
           */
-        void setInput(const DataType* dat, const uchar* msk, unsigned wd, unsigned hg, unsigned srd_ele, unsigned srd_row)
+        void setInput(const DataType* dat, const uchar* msk, unsigned wdt, unsigned hgt, unsigned srd_ele, unsigned srd_row)
         {
-            if((wd + 1) * (hg + 1) > m_img_fst.size())
+            if((wdt + 1) * (hgt + 1) > m_img_fst.size())
             {
-                this->m_height = hg;
-                this->m_width = wd;
+                this->m_height = hgt;
+                this->m_width = wdt;
 
-                m_img_fst.resize((wd + 1) * (hg + 1));
-                m_img_fin.resize((wd + 1) * (hg + 1));
+                m_img_fst.resize((wdt + 1) * (hgt + 1));
+                m_img_fin.resize((wdt + 1) * (hgt + 1));
                 if(m_com_snd)
-                    m_img_snd.resize((wd + 1) * (hg + 1));
+                    m_img_snd.resize((wdt + 1) * (hgt + 1));
             }
             computeIntegralImages(dat, msk, srd_ele, srd_row);
         }
         /** \brief sets the computation for second order integral images on or off.
-          * \param compute_second_order_integral_images
           */
         void setSecondOrderComputation(bool in_com_snd) { m_com_snd = in_com_snd; }
 
@@ -534,24 +533,23 @@ template <class DataType> class IntegralImage2D <DataType, 1>
           * \param[in] srd_ele the element stride of the data
           * \param[in] srd_row the row stride of the data
           */
-        void setInput(const DataType* dat, const uchar* msk, unsigned wd, unsigned hg, unsigned srd_ele, unsigned srd_row)
+        void setInput(const DataType* dat, const uchar* msk, unsigned wdt, unsigned hgt, unsigned srd_ele, unsigned srd_row)
         {
-            if((wd + 1) * (hg + 1) > m_img_fst.size())
+            if((wdt + 1) * (hgt + 1) > m_img_fst.size())
             {
-                this->m_height = hg;
-                this->m_width = wd;
+                this->m_height = hgt;
+                this->m_width = wdt;
 
-                m_img_fst.resize((wd + 1) * (hg + 1));
-                m_img_fin.resize((wd + 1) * (hg + 1));
+                m_img_fst.resize((wdt + 1) * (hgt + 1));
+                m_img_fin.resize((wdt + 1) * (hgt + 1));
                 if(m_com_snd)
-                    m_img_snd.resize((wd + 1) * (hg + 1));
+                    m_img_snd.resize((wdt + 1) * (hgt + 1));
             }
             computeIntegralImages(dat, msk, srd_ele, srd_row);
         }
 
 
         /** \brief sets the computation for second order integral images on or off.
-          * \param compute_second_order_integral_images
           */
         void setSecondOrderComputation(bool in_com_snd) { m_com_snd = in_com_snd; }
 

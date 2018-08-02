@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
 * License, included below. This software may be subject to other third party
 * and contributor rights, including patent rights, and no such rights are
 * granted under this license.
@@ -42,80 +42,37 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#ifndef _TIMER_HPP_
-#define _TIMER_HPP_
-
 /**
-@file Timer.hpp
+@file EquirectangularProjector.hpp
 */
 
-#ifdef WITH_EASY_PROFILER
-#include <easy/profiler.h>
-#else 
-#include <chrono>
-#include <map>
-#include <string>
+#ifndef _EQUIRECTANGULAR_PROJECTOR_HPP_
+#define _EQUIRECTANGULAR_PROJECTOR_HPP_
 
-/**
-\brief Profiler class
+#include "Projector.hpp"
+#include "Config.hpp"
 
-If WITH_EASY_PROFILER flag is on, saves the computation time wit a easy profiler file
-
-Else the computation time is displayed during the execution
-*/
-class Timer {
+/**\brief EquirectangularProjector*/
+class EquirectangularProjector : public Projector
+{
 public:
-	/**\brief Start the profiling here
-	@param timername Name of the profiled block*/
-	static void start(std::string timername);
+	/**\brief Constructor
+	@param parameters Parameters of the View
+	*/
+	EquirectangularProjector(Parameters const& parameters);
 
-	/**\brief End the profiling 
-	@param timername Name of the profiled block*/
-	static void end(std::string timername);
+	/**\brief Project from 3D to images coordinates and outputs a depth map
 
-	static void begin();
+	world_pos in OMAF Referential: x forward, y left, z up
+	depth [out] is equal to x
+	result in image coordinates: u right, v down
 
-	static void finalize();
-
-private:
-	Timer();
-
-public:
-
-	typedef std::chrono::time_point<std::chrono::system_clock> timepoint;
-	typedef std::string timername;
-	typedef int threadid;
-
-	static std::map <threadid, std::map<timername, timepoint >> chronos;
+	@param world_pos 3D coordinates of the pixels
+	@param depth Output perpective depth map
+	@param wrapping_method
+	@return Map of the pixels in image coordinates
+	*/
+	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const override;
 };
-#endif
-
-#ifdef WITH_EASY_PROFILER
-#define PROF_START_1_ARGS(TIMERNAME) EASY_BLOCK((TIMERNAME));
-#define PROF_START_2_ARGS(TIMERNAME, OPT_COLOR) EASY_BLOCK((TIMERNAME), (OPT_COLOR));
-#define PROF_END(TIMERNAME) EASY_END_BLOCK;
-#ifdef WITH_EASY_PROFILER_TO_FILE
-void Timer_Finalize();
-#define PROF_BEGIN() EASY_PROFILER_ENABLE;
-#define PROF_FINALIZE() Timer_Finalize();
-#else
-#define PROF_BEGIN() profiler::startListen();
-#define PROF_FINALIZE() profiler::stopListen();
-#endif
-#else 
-#define PROF_START_1_ARGS(TIMERNAME) Timer::start((TIMERNAME));
-#define PROF_START_2_ARGS(TIMERNAME, OPT_COLOR) Timer::start((TIMERNAME), (OPT_COLOR));
-#define PROF_END(TIMERNAME) Timer::end((TIMERNAME));
-#define PROF_BEGIN() Timer::begin();
-#define PROF_FINALIZE() Timer::finalize();
-#endif
-
-#define GET_3TH_ARG(arg1, arg2, arg3, ...) arg3
-
-#define PROF_START_MACRO_CHOOSER(...) \
-    GET_3TH_ARG(__VA_ARGS__, PROF_START_2_ARGS, \
-		PROF_START_1_ARGS, )
-
-#define PROF_START(...) PROF_START_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 #endif

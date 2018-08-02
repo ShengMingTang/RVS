@@ -63,7 +63,8 @@ Unroject the pixels from euclidian coordinate system to image space and depth ma
 class Projector
 {
 public:
-	/**\brief Destructor*/
+	Projector(Parameters const& parameters);
+
 	virtual ~Projector();
 
 	/** 
@@ -73,6 +74,12 @@ public:
 	@return Result in image coordinates: u right, v down
 	 */
 	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const = 0;
+
+	/** Get camera parameters */
+	Parameters const& getParameters() const;
+
+private:
+	Parameters const& m_parameters;
 };
 
 #endif

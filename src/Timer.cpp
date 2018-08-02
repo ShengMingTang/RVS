@@ -60,7 +60,7 @@ void Timer_Finalize() {
 #else
 #include <omp.h>
 std::map <Timer::threadid, std::map<Timer::timername, Timer::timepoint >> Timer::chronos;
-void Timer::start(std::string timername, uint32_t /*opt_color*/) {
+void Timer::start(std::string timername) {
 	chronos[omp_get_thread_num()][timername] = std::chrono::system_clock::now();
 }
 

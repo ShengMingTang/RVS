@@ -51,13 +51,13 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
-	: m_parameters(parameters)
+	: Projector(parameters)
 {}
 
 cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
 {
-	auto f = m_parameters.getFocal();
-	auto p = m_parameters.getPrinciplePoint();
+	auto f = getParameters().getFocal();
+	auto p = getParameters().getPrinciplePoint();
 
 	cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
 	depth = cv::Mat1f(world_pos.size(), NaN);

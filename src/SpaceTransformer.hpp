@@ -81,6 +81,9 @@ public:
 	void set_targetPosition(Parameters const *params_virtual) override;
 	void set_inputPosition(Parameters const *params_real) override;
 
+	/** Generate input image positions */
+	cv::Mat2f generateImagePos() const;
+
 private:
 	std::unique_ptr<Unprojector> m_unprojector;
 	std::unique_ptr<Projector> m_projector;

@@ -58,10 +58,8 @@ class PerspectiveProjector : public Projector
 public:
 	/**\brief Constructor
 	@param parameters Parameters of the View
-	@param size Size of the View
 	*/
 	PerspectiveProjector(Parameters const& parameters);
-
 
 	/**\brief Project from 3D to images coordinates and outputs a depth map
 
@@ -74,15 +72,7 @@ public:
 	@param wrapping_method
 	@return Map of the pixels in image coordinates
 	*/
-	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
-
-	/**\brief get the camera matrix
-	@return Camera matrix
-	*/
-	cv::Matx33f const& get_camera_matrix() const;
-
-private:
-	Parameters m_parameters;
+	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const override;
 };
 
 #endif

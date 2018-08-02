@@ -44,7 +44,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-extern bool g_with_opengl;
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #endif

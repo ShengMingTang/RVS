@@ -102,11 +102,14 @@ public:
 	/** Depth map bit depth */
 	int getDepthBitDepth() const;
 
-	/** Horizontal angular range */
+	/** Horizontal angular range (degrees) */
 	cv::Vec2f getHorRange() const;
 
-	/** Vertical angular range */
+	/** Vertical angular range (degrees) */
 	cv::Vec2f getVerRange() const;
+
+	/** Is full horizontal angular range? */
+	bool isFullHorRange() const;
 
 	/** Intrinsic parameter of focal length (perspective) */
 	cv::Vec2f getFocal() const;
@@ -149,6 +152,7 @@ private:
 	int m_bitDepthDepth;
 	cv::Vec2f m_horRange;
 	cv::Vec2f m_verRange;
+	bool m_isFullHorRange;
 	cv::Rect m_cropRegion;
 	cv::Vec2f m_focal;
 	cv::Vec2f m_principlePoint;
