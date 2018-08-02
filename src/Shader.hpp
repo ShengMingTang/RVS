@@ -42,7 +42,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _SHADER_HPP_
+#define _SHADER_HPP_
+
 #ifdef WITH_OPENGL
 
 #include "gl_core_4.5.hpp"
@@ -124,4 +126,5 @@ private:
 
 
 
+#endif
 #endif

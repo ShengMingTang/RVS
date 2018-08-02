@@ -42,6 +42,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
+#ifndef _IMAGE_LOADING_HPP_
+#define _IMAGE_LOADING_HPP_
+
 #include <string>
 #include <opencv2/core.hpp>
 
@@ -94,3 +97,5 @@ Use openCV cv::imread() function to read non .YUV images.
 Result may have NaN values to indicate missing depth values
 */
 cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, int frame);
+
+#endif

@@ -44,6 +44,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
+#ifndef _PIPELINE_HPP_
+#define _PIPELINE_HPP_
+
 #include "View.hpp"
 #include "Config.hpp"
 
@@ -107,3 +110,4 @@ private:
 	Config m_config;
 };
 
+#endif

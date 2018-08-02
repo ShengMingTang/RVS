@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _HELPERS_GL_HPP_
+#define _HELPERS_GL_HPP_
 
 #if WITH_OPENGL
 
@@ -220,3 +221,5 @@ void setGLContext();
 
 void rd_start_capture_frame();
 void rd_end_capture_frame();
+
+#endif

@@ -35,13 +35,11 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
-Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
-Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
-Bart Kroon, bart.kroon@philips.com
-Bart Sonneveldt, bart.sonneveldt@philips.com
+  Bart Kroon, bart.kroon@philips.com
+  Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
 #ifndef _JSON_PARSER_HPP_

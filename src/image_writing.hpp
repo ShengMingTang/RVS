@@ -42,6 +42,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
+#ifndef _IMAGE_WRITING_HPP_
+#define _IMAGE_WRITING_HPP_
+
 #include "Parameters.hpp"
 
 /**
@@ -60,3 +63,5 @@ Use opencv cv::imwrite() function to load non .YUV images.
 @param frame Frame number (for YUV)
 */
 void write_color(std::string filepath, cv::Mat3f image, int frame, Parameters const& parameters);
+
+#endif

@@ -42,7 +42,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#pragma once
+#ifndef _RFBO_HPP_
+#define _RFBO_HPP_
 
 #if WITH_OPENGL
 #include "helpersGL.hpp"
@@ -118,4 +119,5 @@ private:
 	bool initialized = false;
 };
 
+#endif
 #endif
