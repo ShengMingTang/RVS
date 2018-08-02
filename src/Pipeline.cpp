@@ -45,7 +45,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "Pipeline.hpp"
-#include "Parser.hpp"
 #include "Timer.hpp"
 #include "BlendedView.hpp"
 #include "SynthesizedView.hpp"
@@ -70,190 +69,183 @@ extern bool g_with_opengl;
 
 #define DUMP_MAPS false
 
-Pipeline::Pipeline(std::string filename)
+Pipeline::Pipeline(std::string const& filepath)
+	: m_config(Config::loadFromFile(filepath))
 {
-	this->m_filename = filename;
-
 #ifndef NDEBUG
 	cv::setBreakOnError(true);
 #endif
 }
 
-Pipeline::~Pipeline()
-{
-}
-
 void Pipeline::execute()
 {
-	parse();
-
-	for (int frame = m_config.start_frame; frame < m_config.start_frame + m_config.number_of_frames; ++frame) {
+	for (auto virtualFrame = 0; virtualFrame < m_config.number_of_frames; ++virtualFrame) {
+		auto inputFrame = m_config.start_frame + virtualFrame;
 		if (m_config.number_of_frames > 1) {
-			std::clog << std::string(5, '=') << " FRAME " << frame << ' ' << std::string(80, '=') << std::endl;
+			std::cout << std::string(5, '=') << " FRAME " << inputFrame << ' ' << std::string(80, '=') << std::endl;
 		}
-
-		load_images(frame);
-		compute_views(frame - m_config.start_frame);
+		for (auto virtualView = 0; virtualView != m_config.VirtualCameraNames.size(); ++virtualView) {
+			computeView(inputFrame, virtualFrame, virtualView);
+		}
 	}
 }
 
-void Pipeline::load_images(int frame) {
-	m_input_images.resize(m_config.params_real.size());
+void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
+{
+	PROF_START("computeView");
 
-	if (m_config.znear.empty()) {
-		throw std::runtime_error("We lost compatibility with \"RGB\" depth maps. z_far and z_near are required.");
+	// Virtual view parameters for this frame and view
+	auto params_virtual = m_config.params_virtual[virtualView];
+	if (!m_config.pose_trace.empty()) {
+		auto pose = m_config.pose_trace[inputFrame];
+		params_virtual.adaptPose(pose.translation, pose.rotation);
 	}
 
-	for (std::size_t idx = 0; idx != m_input_images.size(); ++idx)
-	{
-		m_input_images[idx] = InputView(
-			m_config.texture_names[idx],
-			m_config.depth_names[idx],
-			m_config.size,
-			m_config.bit_depth_color,
-			m_config.bit_depth_depth,
-			m_config.znear[idx],
-			m_config.zfar[idx],
-			frame);
-	}
-}
-
-void Pipeline::compute_views(int frame) {
+	// Initialize OpenGL frame buffer objects
 #if WITH_OPENGL
+	auto intermediateSize = cv::Size(
+		int(g_rescale*params_virtual.getSize().width),
+		int(g_rescale*params_virtual.getSize().height));
 	if (g_with_opengl) {
 		auto FBO = RFBO::getInstance();
-		FBO->init(cv::Size(int(g_rescale*m_config.virtual_size.width), int(g_rescale*m_config.virtual_size.height)));
+		FBO->init(intermediateSize);
 	}
 #endif
-	for (std::size_t virtual_idx = 0; virtual_idx != m_config.params_virtual.size(); ++virtual_idx) {
-		PROF_START("One view computed");
-		std::unique_ptr<BlendedView> blender;
 
-		if (m_config.blending_method == BLENDING_SIMPLE)
-			blender.reset(new BlendedViewSimple(m_config.blending_factor));
-		else if (m_config.blending_method == BLENDING_MULTISPEC)
-			blender.reset(new BlendedViewMultiSpec(
-				m_config.blending_low_freq_factor,
-				m_config.blending_high_freq_factor));
-		else throw std::logic_error("Unknown blending method");
+	// Setup a view blender
+	auto blender = createBlender();
 
-		// Project according to parameters of the virtual view
-		std::unique_ptr<SpaceTransformer> spaceTransformer;
+	// Partial setup of a space transformer
+	auto spaceTransformer = createSpaceTransformer();
+	spaceTransformer->set_targetPosition(&params_virtual);
+
+	// For each input view
+	for (auto inputView = 0; inputView != m_config.InputCameraNames.size(); ++inputView) {
+		std::cout << inputFrame << '.' << inputView << " => " << virtualFrame << '.' << virtualView << std::endl;
+		auto const& params_real = m_config.params_real[inputView];
+
+		// Complete setup of space transformer
+		spaceTransformer->set_inputPosition(&params_real);
+
+		// Setup a view synthesizer
+		auto synthesizer = createSynthesizer();
+		synthesizer->setSpaceTransformer(spaceTransformer.get());
+
+		// Load the input image
+		PROF_START("loading");
+		InputView inputImage(
+			m_config.texture_names[inputView], 
+			m_config.depth_names[inputView], 
+			inputFrame, params_real);
+		PROF_END("loading");
+
+		// Start OpenGL instrumentation (if any)
 #if WITH_OPENGL
 		if (g_with_opengl) {
-			spaceTransformer.reset(new OpenGLTransformer());
+			rd_start_capture_frame();
 		}
 #endif
-		if (!g_with_opengl) {
-			spaceTransformer.reset(new PUTransformer());
-		}
+		// Synthesize view
+		synthesizer->compute(inputImage);
 
-		Parameters& params_virtual = m_config.params_virtual[virtual_idx];
-		if(m_config.use_pose_trace)
-		{
-			params_virtual.adapt_initial_rotation( m_config.pose_trace[m_config.start_frame + frame].rotation );
-			params_virtual.adapt_initial_translation( m_config.pose_trace[m_config.start_frame + frame].translation );
-		}
-		
-		spaceTransformer->set_targetPosition(params_virtual, m_config.virtual_size, m_config.virtual_projection_type);
+		// Blend with previous results
+		PROF_START("blending");
+		blender->blend(*synthesizer);
+		PROF_END("blending");
 
-
-		for (std::size_t input_idx = 0; input_idx != m_input_images.size(); ++input_idx) {
-			std::clog << __FUNCTION__ << ": frame=" << frame << ", input_idx=" << input_idx << ", virtual_idx=" << virtual_idx << std::endl;
-
-			// Select type of un-projection 
-			spaceTransformer->set_inputPosition(m_config.params_real[input_idx], m_config.size, m_config.input_projection_type);
-
-			// Select view synthesis method
-			std::unique_ptr<SynthesizedView> synthesizer;
-			if (m_config.vs_method == SYNTHESIS_TRIANGLE)
-				synthesizer.reset(new SynthetisedViewTriangle);
-			else
-				throw std::logic_error("Unknown synthesis method");
-
-			// Bind to projectors
-			synthesizer->setSpaceTransformer(spaceTransformer.get());
-
-			// Memory optimization: Load the input image
-			PROF_START("loading");
-			m_input_images[input_idx].load();
-			PROF_END("loading");
-
+		// End OpenGL instrumentation (if any)
 #if WITH_OPENGL
-			if (g_with_opengl) {
-				rd_start_capture_frame();
-			}
-#endif
-
-			// Synthesize view
-			synthesizer->compute(m_input_images[input_idx]);
-
-			// Blend with previous results
-			PROF_START("blending");
-			blender->blend(*synthesizer);
-			PROF_END("blending");
-
-#if WITH_OPENGL
-			if (g_with_opengl) {
-				rd_end_capture_frame();
-			}
+		if (g_with_opengl) {
+			rd_end_capture_frame();
+		}
 #endif
 
 #if DUMP_MAPS
-			// Dump texture, depth, quality and validity maps for analysis (with DUMP_MAPS enabled)
-			dump_maps(input_idx, virtual_idx, *synthesizer, *blender);
+		// Dump texture, depth, quality and validity maps for analysis (with DUMP_MAPS enabled)
+		dumpMaps(inputImage, inputView, virtualView, *synthesizer, *blender);
 #endif
-
-			// Memory optimization: Unload the input image 
-			m_input_images[input_idx].unload();
-		}
+	}
 		
+	// Download maps from GPU
 #if WITH_OPENGL
-		if (g_with_opengl) {
-			blender->assignFromGL2CV(cv::Size(int(g_rescale*m_config.virtual_size.width), int(g_rescale*m_config.virtual_size.height)));
-		}
+	if (g_with_opengl) {
+		blender->assignFromGL2CV(intermediateSize);
+	}
 #endif
 
-		PROF_START("inpainting");
-		cv::Mat3f color = inpaint(blender->get_color(), blender->get_inpaint_mask(), true);
-		PROF_END("inpainting");
+	// Perform inpainting
+	PROF_START("inpainting");
+	cv::Mat3f color = inpaint(blender->get_color(), blender->get_inpaint_mask(), true);
+	PROF_END("inpainting");
 
-		PROF_START("downscale");
-		resize(color, color, m_config.virtual_size);
-		PROF_END("downscale");
+	// Downscale (when g_Precision != 1)
+	PROF_START("downscale");
+	resize(color, color, params_virtual.getSize());
+	PROF_END("downscale");
 
-		if (!m_config.outfilenames.empty()) {
-			PROF_START("write");
-			write_color(m_config.outfilenames[virtual_idx], color, m_config.bit_depth_color, frame);
-			PROF_END("write");
-		}
+	// Write regular output (activated by OutputFiles)
+	if (!m_config.outfilenames.empty()) {
+		PROF_START("write");
+		write_color(m_config.outfilenames[virtualView], color, virtualFrame, params_virtual);
+		PROF_END("write");
+	}
 
-		if (!m_config.outmaskedfilenames.empty()) {
-			PROF_START("masking");
-			auto mask = blender->get_validity_mask(m_config.validity_threshold);
-			resize(mask, mask, m_config.virtual_size, cv::INTER_NEAREST);
-			color.setTo(cv::Vec3f::all(0.5f), mask);
-			write_color(m_config.outmaskedfilenames[virtual_idx], color, m_config.bit_depth_color, frame);
-			PROF_END("masking");
-		}
-		PROF_END("One view computed");
+	// Compute mask (activated by OutputMasks or MaskedOutputFiles)
+	cv::Mat1b mask;
+	if (!m_config.outmaskedfilenames.empty()) {
+		mask = blender->get_validity_mask(m_config.validity_threshold);
+		resize(mask, mask, params_virtual.getSize(), cv::INTER_NEAREST);
+	}
+
+	// Write masked output (MaskedOutputFiles)
+	if (!m_config.outmaskedfilenames.empty()) {
+		color.setTo(cv::Vec3f::all(0.5f), mask);
+		write_color(m_config.outmaskedfilenames[virtualView], color, virtualFrame, params_virtual);
+	}
 
 #if WITH_OPENGL
-		if (g_with_opengl) {
+	if (g_with_opengl) {
 		auto FBO = RFBO::getInstance();
 		FBO->free();
-		}
+	}
 #endif
+
+	PROF_END("computeView");
+}
+
+std::unique_ptr<BlendedView> Pipeline::createBlender()
+{
+	switch (m_config.blending_method) {
+	case BlendingMethod::simple:
+		return std::make_unique<BlendedViewSimple>(m_config.blending_factor);
+	case BlendingMethod::multispectral:
+		return std::make_unique<BlendedViewMultiSpec>(m_config.blending_low_freq_factor, m_config.blending_high_freq_factor);
+	default:
+		throw std::logic_error("Unknown blending method");
 	}
 }
 
-void Pipeline::parse()
+std::unique_ptr<SynthesizedView> Pipeline::createSynthesizer()
 {
-	Parser p(m_filename);
-	this->m_config = p.get_config();
+	switch (m_config.vs_method) {
+	case ViewSynthesisMethod::triangles:
+		return std::make_unique<SynthetisedViewTriangle>();
+	default:
+		throw std::logic_error("Unknown view synthesis method");
+	}
 }
 
-void Pipeline::dump_maps(std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender)
+std::unique_ptr<SpaceTransformer> Pipeline::createSpaceTransformer()
+{
+#if WITH_OPENGL
+	if (g_with_opengl) {
+		return std::make_unique<OpenGLTransformer>();
+	}
+#endif
+	return std::make_unique<PUTransformer>();
+}
+
+void Pipeline::dumpMaps(View const& input_image, std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender)
 {
 	cv::Mat3f rgb;
 	cv::Mat3b color;
@@ -262,13 +254,13 @@ void Pipeline::dump_maps(std::size_t input_idx, std::size_t virtual_idx, View co
 	cv::Mat1w validity; // triangle shape
 	std::ostringstream filepath;
 
-	cv::cvtColor(m_input_images[input_idx].get_color(), rgb, cv::COLOR_YCrCb2BGR);
+	cv::cvtColor(input_image.get_color(), rgb, cv::COLOR_YCrCb2BGR);
 	rgb.convertTo(color, CV_8U, 255.);
-	m_input_images[input_idx].get_depth().convertTo(depth, CV_16U, 2000.);
+	input_image.get_depth().convertTo(depth, CV_16U, 2000.);
 
 	filepath.str(""); filepath << "dump-input-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
 	filepath.str(""); filepath << "dump-input-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
-	filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), m_input_images[input_idx].get_depth_mask());
+	filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), input_image.get_depth_mask());
 
 	cv::cvtColor(synthesizer.get_color(), rgb, cv::COLOR_YCrCb2BGR);
 	rgb.convertTo(color, CV_8U, 255.);

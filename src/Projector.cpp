@@ -46,26 +46,4 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Projector.hpp"
 
-Projector::Projector()
-{
-}
-
-
-Projector::Projector(cv::Size size)
-:	m_size(size)
-{
-}
-
 Projector::~Projector() {}
-
-
-cv::Size Projector::get_size() const
-{
-	return m_size;
-}
-
-cv::Matx33f const & Projector::get_camera_matrix() const
-{
-	auto static const eye = cv::Matx33f::eye();
-	return eye;
-}

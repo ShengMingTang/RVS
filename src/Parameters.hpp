@@ -45,74 +45,113 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #ifndef _PARAMETERS_HPP_
 #define _PARAMETERS_HPP_
 
+#include "JsonParser.hpp"
 #include <opencv2/core.hpp>
-
-/**\brief Coordinate system of the cameras configuration file*/
-enum class CoordinateSystem
-{
-	VSRS,
-	MPEG_I_OMAF,
-	MPEG_H_3DAudio = MPEG_I_OMAF
-};
 
 /**
 @file Parameters.hpp
-\brief Definition of external and internal camera paramters
+\brief Definition of extrinsic and intrinsic camera parameters as well as video parameters
 */
 
-/** Camera parameters*/
+/**\brief Projection type
+
+\see Projector*/
+enum class ProjectionType {
+	perspective = 0,
+	equirectangular = 1
+};
+
+/** Camera and video parameters */
 class Parameters {
 public:
-	Parameters();
-
 	/** Camera parameters
-	@param rotation External parameter of rotation
-	@param translation External parameter of translation
-	@param camera_matrix Internal parameters
-	@param sensor Size of the sensor, in the same unit as camera_matrix
-	@param system CoordinateSystem of those parameters
+	@param parameters The camera and video parameters of this camera	
 	*/
-	Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor, CoordinateSystem system);
+	static Parameters readFrom(json::Node parameters);
 
-	/**External parameter of rotation*/
-	cv::Matx33f const& get_rotation() const;
+	/** The projection type */
+	ProjectionType getProjectionType() const;
 
-	/**External parameter of translation*/
-	cv::Vec3f get_translation() const;
+	/** Extrinsic parameter of rotation as a matrix */
+	cv::Matx33f getRotation() const;
 
-	/**Internal parameters*/
-	cv::Matx33f const& get_camera_matrix() const;
+	/** Extrinsic parameter of translation */
+	cv::Vec3f getPosition() const;
 
-	/**Size of the sensor, in the same unit as camera_matrix*/
-	float get_sensor() const;
+	/** Depth range
 
-	/**
-	@param relative_rotation
-	*/
-    void adapt_initial_rotation( const cv::Matx33f& relative_rotation )
-    {
-        m_rotation = relative_rotation * m_rotation0;
-    }
-	/**
-	@param relative_translation
-	*/
-    void adapt_initial_translation( const cv::Vec3f& relative_translation )
-    {
-        m_translation = relative_translation + m_translation0;
-    }
+	perspective: [znear, zfar]
+	equirectangular: [Rmin, Rmax] */
+	cv::Vec2f getDepthRange() const;
+
+	/** Padded image size (before cropping) */
+	cv::Size getPaddedSize() const;
+
+	/** Image size after cropping */
+	cv::Size getSize() const;
+
+	/** Image parameter of crop region:
+
+	perspective: principle point relates to uncropped region
+	equirectangular: angular ranges relate to cropped region */
+	cv::Rect getCropRegion() const;
+
+	/** Texture bit depth */
+	int getColorBitDepth() const;
+
+	/** Depth map bit depth */
+	int getDepthBitDepth() const;
+
+	/** Horizontal angular range */
+	cv::Vec2f getHorRange() const;
+
+	/** Vertical angular range */
+	cv::Vec2f getVerRange() const;
+
+	/** Intrinsic parameter of focal length (perspective) */
+	cv::Vec2f getFocal() const;
+
+	/** Intrinsic parameter of principle point (perspective)
+	
+	The value returned is already adjusted to refer to the cropped region. */
+	cv::Vec2f getPrinciplePoint() const;
+
+	/** Intrinsic parameters as a matrix */
+	cv::Matx33f getCameraMatrix() const;
+
+	/** Adapt camera pose from a pose trace
+	
+	This requires the initial rotation to be zero */
+	void adaptPose(cv::Vec3f relativePosition, cv::Matx33f rotation);
 
 private:
-	/**External parameter of rotation*/
-	cv::Matx33f m_rotation0, m_rotation;
+	Parameters();
 
-	/**External parameter of translation*/
-	cv::Vec3f m_translation0, m_translation;
+	void setProjectionFrom(json::Node root);
+	void setPositionFrom(json::Node root);
+	void setRotationFrom(json::Node root);
+	void setDepthRangeFrom(json::Node root);
+	void setResolutionFrom(json::Node root);
+	void setBitDepthColorFrom(json::Node root);
+	void setBitDepthDepthFrom(json::Node root);
+	void setHorRangeFrom(json::Node root);
+	void setVerRangeFrom(json::Node root);
+	void setCropRegionFrom(json::Node root);
+	void setFocalFrom(json::Node root);
+	void setPrinciplePointFrom(json::Node root);
 
-	/**Internal parameters*/
-	cv::Matx33f m_camera_matrix;
-
-	/**Size of the sensor, in the same unit as camera_matrix*/
-	float m_sensor;
+	ProjectionType m_projectionType;
+	cv::Vec3f m_position;
+	cv::Matx33f m_rotation;
+	cv::Vec2f m_depthRange;
+	cv::Size m_resolution;
+	int m_bitDepthColor;
+	int m_bitDepthDepth;
+	cv::Vec2f m_horRange;
+	cv::Vec2f m_verRange;
+	cv::Rect m_cropRegion;
+	cv::Vec2f m_focal;
+	cv::Vec2f m_principlePoint;
 };
 
 #endif

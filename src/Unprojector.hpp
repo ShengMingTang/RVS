@@ -52,8 +52,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Parameters.hpp"
 
-#include <opencv2/core.hpp>
-
 /**\brief Unprojector. 
 
 Project the pixels from image space and depth map to euclidian coordinate system.
@@ -61,13 +59,6 @@ Project the pixels from image space and depth map to euclidian coordinate system
 class Unprojector
 {
 public:
-	/**\brief Constructor*/
-    Unprojector();
-
-	/**\brief Constructor
-	@param parameters Parameters of the view*/
-    Unprojector(Parameters const& parameters);
-	
 	/**\brief Destructor*/
 	virtual ~Unprojector();
 
@@ -77,15 +68,6 @@ public:
 	@param depth The depth increases with distance from virtual camera
 	@return Result in OMAF Referential: x forward, y left, z up*/
 	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const = 0;
-
-
-	/**\brief Return the camera matrix
-	@return The camera matrix
-	*/
-	cv::Matx33f const& get_camera_matrix() const;
-
-private:
-	Parameters m_parameters;
 };
 
 #endif

@@ -45,7 +45,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #ifndef _VIEW_HPP_
 #define _VIEW_HPP_
 
-#include <opencv2/core.hpp>
+#include "Parameters.hpp"
 
 /**
 @file View.hpp
@@ -109,45 +109,14 @@ Class representing a loaded image and depth map
 class InputView : public View
 {
 public:
-	/** Empty input view */
-	InputView();
-
-	/** 
-	Constructor.
+	/** Constructor.
+	
 	Loads an input view and its depth map.
-	@param filepath_color Color file to be loaded. The format can be png/jpeg or yuv
-	@param filepath_depth Depth map to be loaded. The format has to be yuv.
-	@param size Size of the image to be loaded.
-	@param bit_depth_color Depth of raw texture stream, if input files are in yuv format
-	@param bit_depth_depth Depth of raw depth stream, if input files are in yuv format
-	@param z_near Lowest depth value
-	@param z_far Highest depth value
+
 	@param frame Frame to load.
+	@param parameters Camera and video parameters
 	*/
-	InputView(
-		std::string filepath_color, 
-		std::string filepath_depth, 
-		cv::Size size, 
-		int bit_depth_color, 
-		int bit_depth_depth,
-		float z_near,
-		float z_far,
-		int frame);
-
-	void load();
-	void unload();
-	float get_max_depth() const { return m_z_far; };
-	float get_min_depth() const { return m_z_near; };
-
-private:
-	std::string m_filepath_color;
-	std::string m_filepath_depth;
-	cv::Size m_size;
-	int m_bit_depth_color;
-	int m_bit_depth_depth;
-	float m_z_near;
-	float m_z_far;
-	int m_frame;
+	InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters);
 };
 
 #endif

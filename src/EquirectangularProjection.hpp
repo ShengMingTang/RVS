@@ -113,16 +113,10 @@ cv::Vec2f calculate_spherical_coordinates( const cv::Vec3f& xyz_norm );
 class Unprojector : public ::Unprojector
 {
 public:
-	/**\brief Constructor
-	@param parameters Parameters of the View
-	@param size Size of the View 
-	*/
-    Unprojector(Parameters const& parameters, const cv::Size& size);
-
 	/**\brief Create the image of spherical coordinates and normalized euclidian coordinates
-	@param size Size of the View
+	@param parameters Parameters of the View
 	*/
-    void create(cv::Size size);
+    Unprojector(Parameters const& parameters);
 
 	/**\brief Project in 3D the normalized euclidian coordinates thanks to the radius map
 	@param image_pos Not implemented yet
@@ -151,11 +145,7 @@ private:
 class Projector : public ::Projector
 {
 public:
-	/**\brief Constructor
-	@param parameters Parameters of the View
-	@param size Size of the View
-	*/
-    Projector(Parameters const& parameters, cv::Size size);
+	Projector(Parameters const& parameters);
 
 	/**\brief Project from 3D to images coordinates and outputs a radius map
 	@param verticesXYZ 3D coordinates of the pixels
@@ -165,6 +155,9 @@ public:
 	\see calculate_horizontal_image_coordinate(), calculate_vertical_image_coordinate(), calculate_spherical_coordinates()
 	*/
     cv::Mat2f project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, WrappingMethod& wrapping_method) const override;
+
+private:
+	Parameters m_parameters;
 };
 
 } // namespace

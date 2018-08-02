@@ -42,7 +42,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#include <opencv2/core.hpp>
+#include "Parameters.hpp"
 
 /**
 @file image_writing.hpp
@@ -59,4 +59,4 @@ Use opencv cv::imwrite() function to load non .YUV images.
 @param bit_depth Bit depth of the image to write (for YUV)
 @param frame Frame number (for YUV)
 */
-void write_color(std::string filename, const cv::Mat3f image, int bit_depth, int frame);
+void write_color(std::string filepath, cv::Mat3f image, int frame, Parameters const& parameters);

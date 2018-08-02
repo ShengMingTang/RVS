@@ -46,20 +46,4 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Unprojector.hpp"
 
-Unprojector::Unprojector()
-{
-}
-
-
-Unprojector::Unprojector(Parameters const& parameters)
-	: m_parameters(parameters)
-{
-}
-
 Unprojector::~Unprojector() {}
-
-
-cv::Matx33f const & Unprojector::get_camera_matrix() const
-{
-	return m_parameters.get_camera_matrix();
-}

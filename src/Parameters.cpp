@@ -45,67 +45,229 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "Parameters.hpp"
+#include "EquirectangularProjection.hpp"
 
+#include <cassert>
+#include <iostream>
 #include <stdexcept>
 
-Parameters::Parameters()
-	: m_sensor(std::numeric_limits<float>::quiet_NaN()) 
-{}
-
-/** Camera parameters
-All the parameters are internally stocked in the OMAF coordinate system
-@param rotation External parameter of rotation
-@param translation External parameter of translation
-@param camera_matrix Internal parameters
-@param sensor_size Size of the sensor, in the same unit as camera_matrix
-*/
-Parameters::Parameters(cv::Matx33f const& rotation, cv::Vec3f translation, cv::Matx33f const& camera_matrix, float sensor, CoordinateSystem system)
-	: m_camera_matrix(camera_matrix)
-	, m_sensor(sensor)
+void Parameters::adaptPose(cv::Vec3f relativePosition, cv::Matx33f rotation)
 {
-	if (system == CoordinateSystem::MPEG_I_OMAF) {
-		// This is the internal coordinate system, so accept extrinsics without transformation
-		this->m_rotation = rotation;
-		this->m_translation = translation;
+	m_position += relativePosition;
+	m_rotation = rotation;
+}
+
+Parameters::Parameters() {}
+
+Parameters Parameters::readFrom(json::Node root)
+{
+	Parameters parameters;
+
+	parameters.setProjectionFrom(root);
+	parameters.setPositionFrom(root);
+	parameters.setRotationFrom(root);
+	parameters.setDepthRangeFrom(root);
+	parameters.setResolutionFrom(root);
+	parameters.setBitDepthColorFrom(root);
+	parameters.setBitDepthDepthFrom(root);
+	parameters.setHorRangeFrom(root);
+	parameters.setVerRangeFrom(root);
+	parameters.setCropRegionFrom(root);
+	parameters.setFocalFrom(root);
+	parameters.setPrinciplePointFrom(root);	
+
+	return parameters;
+}
+
+ProjectionType Parameters::getProjectionType() const
+{
+	return m_projectionType;
+}
+
+cv::Matx33f Parameters::getRotation() const
+{
+	return m_rotation;
+}
+
+cv::Vec3f Parameters::getPosition() const
+{
+	return m_position;
+}
+
+cv::Vec2f Parameters::getDepthRange() const
+{
+	return m_depthRange;
+}
+
+cv::Size Parameters::getPaddedSize() const
+{
+	return m_resolution;
+}
+
+cv::Size Parameters::getSize() const
+{
+	return m_cropRegion.size();
+}
+
+cv::Rect Parameters::getCropRegion() const
+{
+	return m_cropRegion;
+}
+
+int Parameters::getColorBitDepth() const
+{
+	return m_bitDepthColor;
+}
+
+int Parameters::getDepthBitDepth() const
+{
+	return m_bitDepthDepth;
+}
+
+cv::Vec2f Parameters::getHorRange() const
+{
+	assert(m_projectionType == ProjectionType::equirectangular);
+	return m_horRange;
+}
+
+cv::Vec2f Parameters::getVerRange() const
+{
+	assert(m_projectionType == ProjectionType::equirectangular);
+	return m_verRange;
+}
+
+cv::Vec2f Parameters::getFocal() const
+{
+	assert(m_projectionType == ProjectionType::perspective);
+	return m_focal;
+}
+
+cv::Vec2f Parameters::getPrinciplePoint() const
+{
+	assert(m_projectionType == ProjectionType::perspective);
+	return m_principlePoint - cv::Vec2f(cv::Point2f(m_cropRegion.tl()));
+}
+
+cv::Matx33f Parameters::getCameraMatrix() const
+{
+	auto f = getFocal();
+	auto p = getPrinciplePoint();
+
+	return cv::Matx33f(
+		f[0],  0.f, p[0],
+		 0.f, f[1], p[1],
+		 0.f,  0.f,  1.f);
+}
+
+void Parameters::setProjectionFrom(json::Node root)
+{
+	auto projection = root.require("Projection");
+
+	if (projection.asString() == "Equirectangular") {
+		m_projectionType = ProjectionType::equirectangular;
 	}
-	else if (system == CoordinateSystem::VSRS) {
-		// Affine transformation: x --> R^T (x - t)
-		// But now "x" is OMAF Referential: x forward, y left, z up,
-		// and "t" and "R" has VSRS system: x right, y down, z forward
-		// We need a P such that x == P x_VSRS:
-		// x --> P R_VSRS^T P^T (x - P t_VSRS)
-
-		//   right   down    forward
-		auto P = cv::Matx33f(
-			0.f, 0.f, 1.f,	// forward
-			-1.f, 0.f, 0.f,   // left
-			0.f, -1.f, 0.f);  // up
-
-		this->m_rotation = P * rotation * P.t();
-		this->m_translation = P * translation;
-		this->m_rotation0 = this->m_rotation;
-		this->m_translation0 = this->m_translation;
-
+	else if (projection.asString() == "Perspective") {
+		m_projectionType = ProjectionType::perspective;
 	}
-	else throw std::logic_error("Unknown coordinate system");
+	else {
+		throw std::runtime_error("Unknown projection type");
+	}
 }
 
-cv::Matx33f const& Parameters::get_rotation() const {
-	assert(m_sensor > 0.f); 
-	return m_rotation; 
+namespace
+{
+	template<int N> cv::Vec<float, N> asFloatVec(json::Node node)
+	{
+		if (node.size() != N) {
+			throw std::runtime_error("JSON parser: Expected a vector of floats");
+		}
+		cv::Vec<float, N> v;
+		for (int i = 0; i != N; ++i) {
+			v[i] = node.at(i).asFloat();
+		}
+		return v;
+	}
+
+	template<int N> cv::Vec<int, N> asIntVec(json::Node node)
+	{
+		if (node.size() != N) {
+			throw std::runtime_error("JSON parser: Expected a vector of floats");
+		}
+		cv::Vec<int, N> v;
+		for (int i = 0; i != N; ++i) {
+			v[i] = node.at(i).asInt();
+		}
+		return v;
+	}
 }
 
-cv::Vec3f Parameters::get_translation() const {
-	assert(m_sensor > 0.f); 
-	return m_translation; 
+void Parameters::setPositionFrom(json::Node root)
+{
+	m_position = asFloatVec<3>(root.require("Position"));
 }
 
-cv::Matx33f const& Parameters::get_camera_matrix() const {
-	assert(m_sensor > 0.f);
-	return m_camera_matrix; 
+void Parameters::setRotationFrom(json::Node root)
+{
+	auto rotation = asFloatVec<3>(root.require("Rotation"));
+	m_rotation = pose_traces::detail::EulerAnglesToRotationMatrix(rotation);
 }
 
-float Parameters::get_sensor() const {
-	assert(m_sensor > 0.f);
-	return m_sensor; 
+void Parameters::setDepthRangeFrom(json::Node root)
+{
+	m_depthRange = asFloatVec<2>(root.require("Depth_range"));
+}
+
+void Parameters::setResolutionFrom(json::Node root)
+{
+	m_resolution = cv::Size(asIntVec<2>(root.require("Resolution")));
+}
+
+void Parameters::setBitDepthColorFrom(json::Node root)
+{
+	m_bitDepthColor = root.require("BitDepthColor").asInt();
+}
+
+void Parameters::setBitDepthDepthFrom(json::Node root)
+{
+	m_bitDepthDepth = root.require("BitDepthDepth").asInt();
+}
+
+void Parameters::setHorRangeFrom(json::Node root)
+{
+	if (m_projectionType == ProjectionType::equirectangular) {
+		m_horRange = asFloatVec<2>(root.require("Hor_range"));
+	}
+}
+
+void Parameters::setVerRangeFrom(json::Node root)
+{
+	if (m_projectionType == ProjectionType::equirectangular) {
+		m_verRange = asFloatVec<2>(root.require("Ver_range"));
+	}
+}
+
+void Parameters::setCropRegionFrom(json::Node root)
+{
+	auto node = root.optional("Crop_region");
+	if (node) {
+		auto values = asIntVec<4>(node);
+		m_cropRegion = cv::Rect(values[0], values[1], values[2], values[3]);
+	}
+	else {
+		m_cropRegion = cv::Rect(cv::Point(), m_resolution);
+	}
+}
+
+void Parameters::setFocalFrom(json::Node root)
+{
+	if (m_projectionType == ProjectionType::perspective) {
+		m_focal = asFloatVec<2>(root.require("Focal"));
+	}
+}
+
+void Parameters::setPrinciplePointFrom(json::Node root)
+{
+	if (m_projectionType == ProjectionType::perspective) {
+		m_principlePoint = asFloatVec<2>(root.require("Principle_point"));
+	}
 }

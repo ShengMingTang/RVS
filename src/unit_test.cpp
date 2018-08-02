@@ -90,7 +90,7 @@ FUNC( TestERP_ConvertImageCoordinateToFromPhiTheta )
         float phi = erp::calculate_phi( hPosExpected, N);
 
         float hPosActual = erp::calculate_horizontal_image_coordinate(phi, N);
-        ALMOST( hPosExpected, hPosActual, eps);
+        CHECK(std::abs(hPosExpected - hPosActual) < eps);
     }
 
     for( int i = 0; i < N; ++i )
@@ -99,7 +99,7 @@ FUNC( TestERP_ConvertImageCoordinateToFromPhiTheta )
         float theta = erp::calculate_theta( vPosExpected, N);
 
         float vPosActual = erp::calculate_vertical_image_coordinate(theta, N);
-        ALMOST( vPosExpected, vPosActual, eps);
+		CHECK(std::abs(vPosExpected - vPosActual) < eps);
     }
 
 
@@ -143,21 +143,38 @@ FUNC( TestERP_CoordinateTransform )
 FUNC( TestERP_BackProject)
 {
     const double eps = 1e-7;
-	Parameters parameters;
-    cv::Size size(30,30);
+
+	std::istringstream text(R"({
+			"Name": "v0",
+			"Projection": "Equirectangular",
+			"Position": [0, 0, 0],
+			"Rotation": [0, 0, 0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Depth_range": [0, 1],
+			"Resolution": [30, 30],
+			"BitDepthColor": 13,
+			"BitDepthDepth": 15,
+			"ColorSpace": "YUV420",
+			"DepthColorSpace": "YUV420",
+			"Hor_range": [-180, 180],
+			"Ver_range": [-90, 90]
+	})");
+
+	auto root = json::Node::readFrom(text);
+	auto parameters = Parameters::readFrom(root);
+
+    erp::Unprojector unprojector(parameters);
     
-    erp::Unprojector unprojector(parameters, size);
-    unprojector.create(size);
-    
-    cv::Mat1f radiusMap = cv::Mat1f::ones(size);
+    cv::Mat1f radiusMap = cv::Mat1f::ones(parameters.getSize());
 
     auto vertices = unprojector.unproject(radiusMap);
 
     const double radiusExpected = 1.0;
 
-    for( auto v : vertices )
-        ALMOST( radiusExpected,  cv::norm(v) , eps );
-
+	for (auto v : vertices) {
+		CHECK(std::abs(radiusExpected - cv::norm(v)) < eps);
+	}
 }
 
 
@@ -167,13 +184,29 @@ FUNC( TestERP_Project)
     double eps = 1e-7;
     g_rescale = 1.f;
 
-	Parameters const parameters;
-    const cv::Size size(5, 5);
+	std::istringstream text(R"({
+			"Name": "v0",
+			"Projection": "Equirectangular",
+			"Position": [0, 0, 0],
+			"Rotation": [0, 0, 0],
+			"Depthmap": 1,
+			"Background": 0,
+			"Depth_range": [0, 1],
+			"Resolution": [5, 5],
+			"BitDepthColor": 13,
+			"BitDepthDepth": 15,
+			"ColorSpace": "YUV420",
+			"DepthColorSpace": "YUV420",
+			"Hor_range": [-180, 180],
+			"Ver_range": [-90, 90]
+	})");
+
+	auto root = json::Node::readFrom(text);
+	auto parameters = Parameters::readFrom(root);
+
+    erp::Unprojector unprojector(parameters);
     
-    erp::Unprojector unprojector(parameters, size);
-    unprojector.create(size);
-    
-    cv::Mat1f imRadius = cv::Mat1f::ones(size);
+    cv::Mat1f imRadius = cv::Mat1f::ones(parameters.getSize());
 
     auto imXYZ = unprojector.unproject(imRadius);
 
@@ -181,77 +214,76 @@ FUNC( TestERP_Project)
     
     cv::Mat3f imXYZnew = imXYZ * radiusExpected;
 
-	erp::Projector projector(parameters, size);
+	erp::Projector projector(parameters);
     cv::Mat1f imRadiusActual;
 	WrappingMethod wrapping_method;
     cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual, wrapping_method);
-	CHECK(wrapping_method == WrappingMethod::NONE);
+	CHECK(wrapping_method == WrappingMethod::none);
 
 
-    eps *= size.area();
+    eps *= parameters.getSize().area();
     double errorRadius = cv::sum( cv::abs( imRadiusActual  - radiusExpected ) ).val[0];
     
-    ALMOST( 0.0, errorRadius, eps );
+    CHECK(errorRadius < eps);
 }
 
 FUNC(Test_PerspectiveProjector)
 {
-	// Aribitrary extrinsics
-	auto const R = cv::Matx33f::randn(3, 3);
-	auto const t = cv::Vec3f(5.f, 3.f, 9.f);
+	std::istringstream text(R"({
+			"Name"				: "v0",
+			"Projection"		: "Perspective",
+			"Position"			: [5, 3, 9],
+			"Rotation"			: [10, 5, -3],
+			"Depthmap"			: 1,
+			"Background"		: 0,
+			"Depth_range"		: [0, 1],
+			"Resolution"		: [4, 2],
+			"Focal"				: [6, 6],
+			"Principle_point"	: [1, 1],
+			"BitDepthColor"		: 10,
+			"BitDepthDepth"		: 10,
+			"ColorSpace"		: "YUV420",
+			"DepthColorSpace"	: "YUV420"
+	})");
 
-	// Example values
-	auto const w = 4.f;
-	auto const h = 2.f;
-	auto const f = 6.f;
-	auto const p_x = 1.f; // assymmetric
-	auto const p_y = 1.f;
-	auto const far_away = 42.f;
-
-	// Intrinsics
-	auto const M = cv::Matx33f(
-		 f , 0.f, p_x,
-		0.f,  f , p_y,
-		0.f, 0.f, 1.f);
-
-	// Intrinsic and extrinsic camera parameters
-	auto const parameters = Parameters(R, t, M, w, CoordinateSystem::MPEG_I_OMAF);
+	auto root = json::Node::readFrom(text);
+	auto parameters = Parameters::readFrom(root);
 
 	// Construct projector
-	PerspectiveProjector projector(parameters, cv::Size(13, 17));
+	PerspectiveProjector projector(parameters);
 	
 	// Example world positions
 	// OMAF Referential: x forward, y left, z up
 	cv::Mat3f world_pos(1, 4);
-	world_pos(0, 0) = cv::Vec3f(far_away, 0.f, 0.f); // straight ahead, far away
-	world_pos(0, 1) = cv::Vec3f(f, 0.f, 0.f); // principle point
-	world_pos(0, 2) = cv::Vec3f(f, p_x, p_y); // top-left corner of sensor
-	world_pos(0, 3) = cv::Vec3f(f, p_x - w, p_y - h); // botom-right corner of sensor
+	world_pos(0, 0) = cv::Vec3f(42.f, 0.f, 0.f); // straight ahead, far away
+	world_pos(0, 1) = cv::Vec3f(6.f, 0.f, 0.f); // principle point on sensor
+	world_pos(0, 2) = cv::Vec3f(6.f, 1.f, 1.f); // top-left corner of sensor
+	world_pos(0, 3) = cv::Vec3f(6.f, -3.f, -1.f); // botom-right corner of sensor
 
 	// Reference image positions and depth values
 	cv::Mat2f reference_image_pos(1, 4);
-	reference_image_pos(0, 0) = cv::Vec2f(p_x, p_y);
-	reference_image_pos(0, 1) = cv::Vec2f(p_x, p_y);
+	reference_image_pos(0, 0) = cv::Vec2f(1.f, 1.f); // p
+	reference_image_pos(0, 1) = cv::Vec2f(1.f, 1.f); // p
 	reference_image_pos(0, 2) = cv::Vec2f(0.f, 0.f);
-	reference_image_pos(0, 3) = cv::Vec2f(w, h);
+	reference_image_pos(0, 3) = cv::Vec2f(4.f, 2.f); // (w, h)
 	cv::Mat1f reference_depth(1, 4);
-	reference_depth(0, 0) = far_away;
-	reference_depth(0, 1) = f;
-	reference_depth(0, 2) = f;
-	reference_depth(0, 3) = f;
+	reference_depth(0, 0) = 42.f;
+	reference_depth(0, 1) = 6.f;
+	reference_depth(0, 2) = 6.f;
+	reference_depth(0, 3) = 6.f;
 
 	// Project
 	cv::Mat1f actual_depth;
 	WrappingMethod wrapping_method;
 	auto actual_image_pos = projector.project(world_pos, actual_depth, wrapping_method);
-	CHECK(wrapping_method == WrappingMethod::NONE);
+	CHECK(wrapping_method == WrappingMethod::none);
 
 	// Check projections results against reference
 	auto image_pos_error = norm(reference_image_pos, actual_image_pos);
 	auto depth_error = norm(reference_depth, actual_depth);
 
-	ALMOST(image_pos_error, 0, 1e-12);
-	ALMOST(depth_error, 0, 1e-12);
+	CHECK(image_pos_error < 1e-12);
+	CHECK(depth_error < 1e-12);
 }
 
 
@@ -308,17 +340,17 @@ FUNC(TestJsonParser)
 })");
 	
 	auto root = json::Node::readFrom(stream);
-	EQUAL(root.at("Content_name").asString(), "ClassroomVideo");	
-	auto center = root.at("BoundingBox_center");
+	EQUAL(root.optional("Content_name").asString(), "ClassroomVideo");	
+	auto center = root.optional("BoundingBox_center");
 	EQUAL(center.size(), 3);
 	EQUAL(center.at(0).asDouble(), 0.0);
 	EQUAL(center.at(1).asDouble(), 42.0);
 	EQUAL(center.at(2).asDouble(), -1e3);
-	EQUAL(root.at("Fps").asDouble(), 30.0);
-	auto cameras = root.at("cameras");
+	EQUAL(root.optional("Fps").asDouble(), 30.0);
+	auto cameras = root.optional("cameras");
 	EQUAL(cameras.size(), 2);
 	auto cam0 = cameras.at(0);
-	EQUAL(cam0.at("Name").asString(), "v0");
-	EQUAL(cam0.at("Background").asDouble(), 0.0);
+	EQUAL(cam0.optional("Name").asString(), "v0");
+	EQUAL(cam0.optional("Background").asDouble(), 0.0);
 	auto cam1 = cameras.at(1);
 }

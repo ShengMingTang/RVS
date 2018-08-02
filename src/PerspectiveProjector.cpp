@@ -50,22 +50,14 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <iostream>
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
-PerspectiveProjector::PerspectiveProjector(Parameters const& parameters, cv::Size size)
-	: Projector(size)
-	, m_parameters(parameters)
-{
-}
+PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
+	: m_parameters(parameters)
+{}
 
 cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
 {
-	if (world_pos.cols != m_parameters.get_sensor())
-		throw std::runtime_error("Situation where sensor size is different from input view width is currently not supported");
-
-	auto M = m_parameters.get_camera_matrix();
-	auto fx = M(0, 0);
-	auto fy = M(1, 1);
-	auto px = M(0, 2);
-	auto py = M(1, 2);
+	auto f = m_parameters.getFocal();
+	auto p = m_parameters.getPrinciplePoint();
 
 	cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
 	depth = cv::Mat1f(world_pos.size(), NaN);
@@ -79,22 +71,15 @@ cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& 
 
 			if (xyz[0] > 0.f) {
 				auto uv = cv::Vec2f(
-					-fx * xyz[1] / xyz[0] + px,
-					-fy * xyz[2] / xyz[0] + py);
+					-f[0] * xyz[1] / xyz[0] + p[0],
+					-f[1] * xyz[2] / xyz[0] + p[1]);
 
 				image_pos(i, j) = uv;
-
-				if (uv[0] >= 0.f && uv[1] >= 0 && uv[0] <= image_pos.cols && uv[1] <= image_pos.rows)
-					depth(i, j) = xyz[0];
+				depth(i, j) = xyz[0];
 			}
 		}
 	}
 
-	wrapping_method = WrappingMethod::NONE;
+	wrapping_method = WrappingMethod::none;
 	return image_pos;
-}
-
-cv::Matx33f const & PerspectiveProjector::get_camera_matrix() const
-{
-	return m_parameters.get_camera_matrix();
 }

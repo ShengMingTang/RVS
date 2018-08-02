@@ -50,23 +50,15 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
 PerspectiveUnprojector::PerspectiveUnprojector(Parameters const& parameters)
-	: Unprojector(parameters)
-	, m_parameters(parameters)
-{
-}
+	: m_parameters(parameters)
+{}
 
 cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
 {
 	assert(image_pos.size() == depth.size());
 
-	if (image_pos.cols != m_parameters.get_sensor())
-		throw std::runtime_error("Situation where sensor size is different from input view width is currently not supported");
-	
-	auto M = m_parameters.get_camera_matrix();
-	auto fx = M(0, 0);
-	auto fy = M(1, 1);
-	auto px = M(0, 2);
-	auto py = M(1, 2);
+	auto f = m_parameters.getFocal();
+	auto p = m_parameters.getPrinciplePoint();
 
 	cv::Mat3f world_pos(image_pos.size(), cv::Vec3f::all(NaN));
 
@@ -81,8 +73,8 @@ cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth
 			if (d > 0.f) {
 				world_pos(i, j) = cv::Vec3f(
 					d,
-					-(d / fx) * (uv[0] - px),
-					-(d / fy) * (uv[1] - py));
+					-(d / f[0]) * (uv[0] - p[0]),
+					-(d / f[1]) * (uv[1] - p[1]));
 			}
 		}
 	}

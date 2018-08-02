@@ -60,7 +60,7 @@ public:
 	@param parameters Parameters of the View
 	@param size Size of the View
 	*/
-	PerspectiveProjector(Parameters const& parameters, cv::Size size);
+	PerspectiveProjector(Parameters const& parameters);
 
 
 	/**\brief Project from 3D to images coordinates and outputs a depth map

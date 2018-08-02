@@ -45,7 +45,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "View.hpp"
-#include "Parser.hpp"
 #include "inpainting.hpp"
 #include "image_loading.hpp"
 
@@ -188,39 +187,18 @@ void View::validate() const
 	CV_Assert(m_validity.size() == m_quality.size());
 }
 
-InputView::InputView() {}
-
 // Load a color image and depth map
-InputView::InputView(
-	std::string filepath_color,
-	std::string filepath_depth,
-	cv::Size size,
-	int bit_depth_color,
-	int bit_depth_depth,
-	float z_near,
-	float z_far,
-	int frame)
-	: m_filepath_color(filepath_color)
-	, m_filepath_depth(filepath_depth)
-	, m_size(size)
-	, m_bit_depth_color(bit_depth_color)
-	, m_bit_depth_depth(bit_depth_depth)
-	, m_z_near(z_near)
-	, m_z_far(z_far)
-	, m_frame(frame)
+InputView::InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters)
 {
-}
+	// Load images
+	auto color = read_color(filepath_color, parameters.getPaddedSize(), parameters.getColorBitDepth(), frame);
+	auto depth = read_depth(filepath_depth, parameters.getPaddedSize(), parameters.getDepthBitDepth(), parameters.getDepthRange()[0], parameters.getDepthRange()[1], frame);
 
-void InputView::load()
-{
-	assign(
-		read_color(m_filepath_color, m_size, m_bit_depth_color, m_frame),
-		read_depth(m_filepath_depth, m_size, m_bit_depth_depth, m_z_near, m_z_far, m_frame),
-		cv::Mat1f(),
-		cv::Mat1f());
-}
+	// Crop padded images
+	if (parameters.getSize() != parameters.getPaddedSize()) {
+		color = color(parameters.getCropRegion()).clone();
+		depth = depth(parameters.getCropRegion()).clone();
+	}
 
-void InputView::unload()
-{
-	assign(cv::Mat3f(), cv::Mat1f(), cv::Mat1f(), cv::Mat1f());
+	assign(color, depth, cv::Mat1f(), cv::Mat1f());
 }

@@ -94,6 +94,8 @@ BlendedViewSimple::BlendedViewSimple(float blending_exp)
 
 BlendedViewSimple::~BlendedViewSimple() {}
 
+const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
+
 void BlendedViewSimple::blend(View const& view)
 { 
 #if WITH_OPENGL

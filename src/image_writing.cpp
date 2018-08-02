@@ -65,7 +65,7 @@ namespace
 
 	void write_color_YUV(std::string filename, cv::Mat3f image, int bit_depth, int frame)
 	{
-		if (g_color_space == COLORSPACE_RGB)
+		if (g_color_space == ColorSpace::RGB)
 			cv::cvtColor(image, image, CV_BGR2YCrCb);
 
 		cv::Mat ycbcr;
@@ -90,7 +90,7 @@ namespace
 
 	void write_color_RGB(std::string filename, cv::Mat3f image, int bit_depth)
 	{
-		if (g_color_space == COLORSPACE_YUV)
+		if (g_color_space == ColorSpace::YUV)
 			cv::cvtColor(image, image, CV_YCrCb2BGR);
 
 		cv::Mat out;
@@ -100,12 +100,24 @@ namespace
 	}
 }
 
-void write_color(std::string filename, cv::Mat3f image, int bit_depth, int frame)
+void write_color(std::string filepath, cv::Mat3f image, int frame, Parameters const& parameters)
 {
-	if (filename.find("yuv") != std::string::npos)
-		write_color_YUV(filename, image, bit_depth, frame);
-	else if (frame == 0)
-		write_color_RGB(filename, image, bit_depth <= 8 ? 8 : 16);
-	else
+	// Add padding
+	if (parameters.getPaddedSize() != parameters.getSize()) {
+		auto padded = cv::Mat3f(parameters.getPaddedSize(), cv::Vec3f::all(0.f));
+		padded(parameters.getCropRegion()) = image;
+		image = padded;
+	}
+
+	// Write padded image
+	if (filepath.find(".yuv") != std::string::npos) {
+		write_color_YUV(filepath, image, parameters.getColorBitDepth(), frame);
+	}
+	else if (frame == 0) {
+		write_color_RGB(filepath, image, parameters.getColorBitDepth() <= 8 ? 8 : 16);
+	}
+	else {
 		throw std::runtime_error("Writing multiple frames as images not (yet) supported");
+	}
+
 }

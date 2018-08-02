@@ -47,6 +47,10 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "View.hpp"
 #include "Config.hpp"
 
+class BlendedView;
+class SynthesizedView;
+class SpaceTransformer;
+
 /**
 @file Pipeline.hpp
 \brief The file containing the pipeline functions
@@ -70,11 +74,7 @@ public:
 	\brief Constructor
 	@param filename Config file (in VSRS config file format or SVS config fileformat)
 	*/
-	Pipeline(std::string filename);
-	/**
-	\brief Destructor
-	*/
-	~Pipeline();
+	Pipeline(std::string const& filepath);
 
 	/**
 	\brief Execution of the view synthesis
@@ -83,38 +83,27 @@ public:
 	*/
 	void execute();
 
-private:
+private:	
 	/**
-	\brief Parse the config file
-	*/
-	void parse();
-
-	/**
-	\brief Loads all the input views
-	@param frame Frame number to load (for YUV image)
-	*/
-	void load_images(int frame);
-
-	/**
-	\brief Computes all the virtual views
+	\brief Computes one frame of a virtual view
 
 	Executes the view view computation (warping, blending, inpainting) and writing.
-	@param frame Frame number of the frame being computed (for YUV image)
+	@param inputFrame Input frame number of the frame to compute
+	@param virtualFrame Virtual (output) frame number of the frame to compute
+	@param virtualView Index of the virtual view to compute
 	*/
-	void compute_views(int frame);
+	void computeView(int inputFrame, int virtualFrame, int virtualView);
+
+	std::unique_ptr<BlendedView> createBlender();
+	std::unique_ptr<SynthesizedView> createSynthesizer();
+	std::unique_ptr<SpaceTransformer> createSpaceTransformer();
 
 	/**
 	\brief Dump maps for analysis purposes
 	*/
-	void dump_maps(std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender);
-
-	/** File containing the parameters of the view synthesis*/
-	std::string m_filename;
+	void dumpMaps(View const& input_image, std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender);
 
 	/** Config of the view synthesis*/
 	Config m_config;
-
-	/** Input reference views */
-	std::vector<InputView> m_input_images;
 };
 

@@ -46,7 +46,9 @@ Bart Sonneveldt, bart.sonneveldt@philips.com
 
 #include "JsonParser.hpp"
 
+#include <cassert>
 #include <cctype>
+#include <cmath>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -165,7 +167,9 @@ namespace json
 
 	struct Null : public Value
 	{
-		Null(std::istream& stream) : Value(Node::Type::null)
+		Null() : Value(Node::Type::null) {}
+
+		Null(std::istream& stream) : Null()
 		{
 			matchText(stream, "null");
 		}
@@ -195,40 +199,124 @@ namespace json
 		}
 	}
 
+	void Node::setOverrides(Node overrides)
+	{
+		assert(type() == Type::object && overrides.type() == Type::object);
+		m_overrides = std::dynamic_pointer_cast<Object>(overrides.m_value);
+	}
+
 	Node::Type Node::type() const
 	{
 		return m_value->type;
 	}
 
-	Node Node::at(std::string key) const
+	Node Node::optional(std::string const& key) const
 	{
-		return { dynamic_cast<Object&>(*m_value).value.at(key) };
+		if (m_overrides) {
+			try {
+				return{ m_overrides->value.at(key) };
+			}
+			catch (std::out_of_range&) {}
+		}
+		try {
+			return{ dynamic_cast<Object&>(*m_value).value.at(key) };
+		}
+		catch (std::out_of_range&) {
+			return{ std::make_shared<Null>() };
+		}
+		catch (std::bad_cast&) {
+			std::ostringstream what;
+			what << "JSON parser: Querying optional key '" << key << "', but node is not an object";
+			throw std::runtime_error(what.str());
+		}
+	}
+
+	Node Node::require(std::string const& key) const
+	{
+		auto node = optional(key);
+		if (node)
+			return node;
+		std::ostringstream stream;
+		stream << "JSON parser: Parameter " << key << " is required but missing";
+		throw std::runtime_error(stream.str());
 	}
 
 	Node Node::at(std::size_t index) const
 	{
-		return{ dynamic_cast<Array&>(*m_value).value.at(index) };
+		if (type() != Type::array) {
+			throw std::runtime_error("JSON parser: Expected an array");
+		}
+		return{ dynamic_cast<Array&>(*m_value).value.at(index) };		
 	}
 
 	std::size_t Node::size() const
 	{
-		return dynamic_cast<Array&>(*m_value).value.size();
+		switch (type()) {
+		case Type::array:
+			return dynamic_cast<Array&>(*m_value).value.size();
+		case Type::object:
+			return dynamic_cast<Object&>(*m_value).value.size();
+		default:
+			throw std::runtime_error("JSON parser: Expected an array or object");
+		}
+		
 	}
 
 	double Node::asDouble() const
 	{
+		if (type() != Type::number) {
+			throw std::runtime_error("JSON parser: Expected a number");
+		}
 		return dynamic_cast<Number&>(*m_value).value;
+	}
+
+	float Node::asFloat() const
+	{
+		return static_cast<float>(asDouble());
+	}
+
+	int Node::asInt() const
+	{
+		auto value = asDouble();
+		auto rounded = static_cast<int>(std::lround(value));
+		auto error = value - rounded;
+		if (error > 1e-6) {
+			throw std::runtime_error("JSON parser: Expected an integer value");
+		}
+		return rounded;
 	}
 
 	std::string const& Node::asString() const
 	{
+		if (type() != Type::string) {
+			throw std::runtime_error("JSON parser: Expected a string");
+		}
 		return dynamic_cast<String&>(*m_value).value;
 	}
 
 	bool Node::asBool() const
 	{
+		if (type() != Type::boolean) {
+			throw std::runtime_error("JSON parser: Expected a boolean");
+		}
 		return dynamic_cast<Bool&>(*m_value).value;
 	}
+
+	Node::operator bool() const
+	{
+		switch (type()) {
+		case Type::null:
+			return false;
+		case Type::boolean:
+			return asBool();
+		default:
+			return true;
+		}
+	}
+
+	Node::Node()
+		: m_value(new Null)
+	{}
 
 	Node::Node(std::shared_ptr<Value> value)
 		: m_value(value)

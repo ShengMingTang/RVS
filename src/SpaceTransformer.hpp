@@ -58,59 +58,35 @@ class SpaceTransformer
 public:
 	SpaceTransformer();
 	virtual ~SpaceTransformer();
+
+	Parameters const& getInputParameters() const;
+	Parameters const& getVirtualParameters() const;
 	cv::Vec3f get_translation() const;
 	cv::Matx33f get_rotation() const;
 
-	virtual void set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type) = 0;
-	virtual void set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type) = 0;
-	float get_sensor_size() const { return m_sensor_size; }
-	cv::Size get_size() const { return m_size; }
-protected:
-	float m_sensor_size;
-	cv::Size m_size;
-	Parameters m_input_parameters;
-	Parameters m_output_parameters;
+	virtual void set_targetPosition(Parameters const *params_virtual);
+	virtual void set_inputPosition(Parameters const *params_real);
+
+private:
+	Parameters const *m_input_parameters;
+	Parameters const *m_output_parameters;
 };
 
 class PUTransformer : public SpaceTransformer 
 {
 public:
-	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
-	{ return m_projector->project(world_pos, depth, wrapping_method); }
-	cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
-	{ return m_unprojector->unproject(image_pos, depth); }
+	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
+	cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const;
 
-	void set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type);
-	void set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type);
+	void set_targetPosition(Parameters const *params_virtual) override;
+	void set_inputPosition(Parameters const *params_real) override;
 
 private:
-	// Unprojector converts input view to world coordinates
 	std::unique_ptr<Unprojector> m_unprojector;
-
-	// Projector converts world to virtual view coordinates
 	std::unique_ptr<Projector> m_projector;
 };
 
 #include "Shader.hpp"
-class OpenGLTransformer : public SpaceTransformer
-{
-public:
-	OpenGLTransformer();
-
-	cv::Matx33f get_input_camera_matrix() const;
-	cv::Matx33f get_output_camera_matrix() const;
-	ProjectionType get_input_projection_type() const { return input_projection_type; }
-	ProjectionType get_output_projection_type() const { return output_projection_type; }
-	char const* get_shader_name() const { return shader_name; };
-
-	void set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type);
-	void set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type);
-	
-private:
-	ProjectionType input_projection_type;
-	ProjectionType output_projection_type;
-	char const* shader_name;
-
-};
+class OpenGLTransformer : public SpaceTransformer {};
 
 #endif

@@ -51,12 +51,10 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Parameters.hpp"
 
-#include <opencv2/core.hpp>
-
 /**\brief Wrapping method*/
 enum class WrappingMethod {
-    NONE = 0,
-    HORIZONTAL = 1
+    none = 0,
+    horizontal = 1
 };
 
 /**\brief Projector.
@@ -65,14 +63,6 @@ Unroject the pixels from euclidian coordinate system to image space and depth ma
 class Projector
 {
 public:
-	/**\brief Constructor*/
-    Projector();
-
-	/**\brief Constructor
-	@param size Size of the View 
-	*/
-    Projector(cv::Size);
-
 	/**\brief Destructor*/
 	virtual ~Projector();
 
@@ -83,17 +73,6 @@ public:
 	@return Result in image coordinates: u right, v down
 	 */
 	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const = 0;
-
-	/**@return Size of the virtual view in pixels*/
-	cv::Size get_size() const;
-
-	/**\brief Return the camera matrix
-	@return The camera matrix. If we don't have one, we return an eye matrix.
-	*/
-	virtual cv::Matx33f const& get_camera_matrix() const;
-
-private:
-	cv::Size m_size;
 };
 
 #endif

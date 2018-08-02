@@ -47,6 +47,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Parameters.hpp"
 #include "PoseTraces.hpp"
+#include "JsonParser.hpp"
 
 #include <string>
 #include <vector>
@@ -62,49 +63,29 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 Doesn't need to be the same as the input our output color space
 */
-enum ColorSpace {
-	COLORSPACE_YUV = 0,
-	COLORSPACE_RGB = 1
+enum class ColorSpace {
+	YUV = 0,
+	RGB = 1
 };
 /**\brief View synthesis method
 
 For now only the triangle method is available
 */
-enum ViewSynthesisMethod {
-	SYNTHESIS_TRIANGLE = 0
+enum class ViewSynthesisMethod {
+	triangles = 0
 };
 
 /**\brief Blending method
 
 \see BlendedView
 */
-enum BlendingMethod {
-	BLENDING_SIMPLE = 0,
-	BLENDING_MULTISPEC = 1
-};
-
-/**\brief Inpainting method*/
-enum InpaintingMethod {
-	INPAINTING_OFF = 0,
-	INPAINTING_LINES = 1
-};
-
-/**\brief Projection type
-
-\see Projector*/
-enum ProjectionType {
-    PROJECTION_PERSPECTIVE = 0,
-    PROJECTION_EQUIRECTANGULAR = 1
+enum class BlendingMethod {
+	simple = 0,
+	multispectral = 1
 };
 
 /**Precision*/
 extern float g_rescale;
-
-/**\brief RGB color for empty pixel (when no inpainting)*/
-const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
-
-/**\brief YUV color for empty pixel (when no inpainting)*/
-const cv::Vec3f empty_yuv_color(0.0f, 0.0f, 0.0f);
 
 /**Working color space (RGB or YUV). Independent of the input or output formats*/
 extern ColorSpace g_color_space;
@@ -114,30 +95,17 @@ extern ColorSpace g_color_space;
 */
 class Config {
 public:
-	/**
-	\brief Constructor
-	*/
-	Config() {};
+	/** Load configuration from file */
+	static Config loadFromFile(std::string const& filename);
 
-	/**
-	\brief Destructor
-	*/
-	~Config() {}
+	/** Version of the configuration file */
+	std::string version;
 
 	/** Input camera names to lookup in the config file */
 	std::vector<std::string> InputCameraNames;
 
-	/** Virtual camera names to lookup in the config file. "ALL" to synthesized all the views of the file */
+	/** Virtual camera names to lookup in the config file */
 	std::vector<std::string> VirtualCameraNames;
-
-	/** real camera's parameters read from file */
-	std::string camerasParameters_in;
-
-	/** virtual camera's parameters read from file */
-	std::string virtualCamerasParameters_in;
-
-	/** folder for output */
-	std::string folder_out;
 
 	/** input cameras parameters */
 	std::vector<Parameters> params_real;
@@ -148,22 +116,12 @@ public:
 	/** filenames of the input color images */
 	std::vector<std::string> texture_names;
 
-	/** filenames of the input D images */
+	/** filenames of the input depth images */
 	std::vector<std::string> depth_names;
 
-	/** file with the z far and z near values */
-	std::string zvalues;
-
-	/** znear of every input view in case of disparity map yuv file */
-	std::vector<float> znear;
-
-	/** zfar of every input view in case of disparity map yuv file */
-	std::vector<float> zfar;
-
-	/** 
+	/**
 	Name of the output files
-	
-	Set to "ALL" to synthesize all the views of the config file or the name of each output filename */
+	*/
 	std::vector<std::string> outfilenames;
 
 	/**
@@ -171,47 +129,25 @@ public:
 	*/
 	std::vector<std::string> outmaskedfilenames;
 
-
 	/**
 	Threshold for valid pixels
 	*/
 	float validity_threshold = 5000.f;
 
-	/** What is the extension of the files to use if not specified in configuration file */
-	std::string extension = "png";
 
-	/** The element bit depth of raw input and output texture streams */
-	int bit_depth_color = 8;
-
-	/** The element bit depth of raw input and output depth streams */
-	int bit_depth_depth = 16;
-
-	/** Size of input image*/
-	cv::Size size = cv::Size(1920, 1080);
-
-	/** Size of output image (multiply by g_rescale to get the working size)*/
-	cv::Size virtual_size = cv::Size(0, 0);
-
+	/**Method for view synthesis*/
+	ViewSynthesisMethod vs_method = ViewSynthesisMethod::triangles;
 	/** Blending method (see BlendedView) */
-	BlendingMethod blending_method = BLENDING_SIMPLE;
+	BlendingMethod blending_method = BlendingMethod::simple;
 
 	/** Low frequency blending factor in BlendedViewMultiSpec */
-	float blending_low_freq_factor = 1.0f;
+	float blending_low_freq_factor;
 
 	/** High frequency blending factor in BlendedViewMultiSpec */
-	float blending_high_freq_factor = 4.0f;
+	float blending_high_freq_factor;
 
 	/** Blending factor in BlendedViewSimple */
 	float blending_factor = 5.f;
-
-	/** Input projection type */
-    ProjectionType input_projection_type   = PROJECTION_PERSPECTIVE;
-
-	/** Output projection type */
-    ProjectionType virtual_projection_type = PROJECTION_PERSPECTIVE;
-
-	/**size of the cameras sensor, in the same unit as focal length*/
-	float sensor_size = 1920.0f;
 
 	/** First frame to process (zero-based) */
 	int start_frame = 0;
@@ -219,17 +155,36 @@ public:
 	/** Number of frames to process */
 	int number_of_frames = 1;
 
-    /** filename of the pose trace file*/
-    std::string name_pose_trace;
-
-	/** true if using pose trace*/
-    bool use_pose_trace;
-
-	/**Pose*/
+	/** The loaded pose trace */
     std::vector<pose_traces::Pose> pose_trace;
 
-	/**Method for view synthesis*/
-	ViewSynthesisMethod vs_method = SYNTHESIS_TRIANGLE;
+private:
+	Config() = default;
+
+	void loadInputCameraParametersFromFile(std::string const& filepath, json::Node overrides);
+	void loadVirtualCameraParametersFromFile(std::string const& filepath, json::Node overrides);
+	void loadPoseTraceFromFile(std::string const& filepath);
+
+	void setVersionFrom(json::Node root);
+	void setInputCameraNamesFrom(json::Node root);
+	void setVirtualCameraNamesFrom(json::Node root);
+	void setInputCameraParameters(json::Node root);
+	void setVirtualCameraParameters(json::Node root);
+	void setInputColorFilepathsFrom(json::Node root);
+	void setInputDepthFilepaths(json::Node root);
+	void setOutputFilepaths(json::Node root);
+	void setMaskedOutputFilepaths(json::Node root);
+	void setValidityThreshold(json::Node root);
+	void setSynthesisMethod(json::Node root);
+	void setBlendingMethod(json::Node root);
+	void setBlendingFactor(json::Node root);
+	void setBlendingLowFreqFactor(json::Node root);
+	void setBlendingHighFreqFactor(json::Node root);
+	void setStartFrame(json::Node root);
+	void setNumberOfFrames(json::Node root);
+	
+	static void setPrecision(json::Node root); 
+	static void setColorSpace(json::Node root);	
 };
 
 #endif

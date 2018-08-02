@@ -70,14 +70,10 @@ cv::Vec2f erp::calculate_spherical_coordinates( const cv::Vec3f& xyz_norm )
     return cv::Vec2f(phi, theta);
 }
 
-erp::Unprojector::Unprojector(Parameters const& parameters, const cv::Size& size)
-    : ::Unprojector(parameters)
+erp::Unprojector::Unprojector(Parameters const& parameters)
 {
-    create(size);
-}
+	auto size = parameters.getSize();
 
-void erp::Unprojector::create(cv::Size size)
-{
     if( m_verticesXYZNormalized.size() == size )
         return;
 
@@ -116,12 +112,7 @@ void erp::Unprojector::create(cv::Size size)
             m_verticesXYZNormalized(i, j) = erp::calculate_euclidian_coordinates( m_phiTheta(i,j) );
         }
     }
-
-
 }
-
-
-
 
 cv::Mat3f erp::Unprojector::unproject( cv::Mat1f radiusMap) const 
 {
@@ -143,23 +134,19 @@ cv::Mat3f erp::Unprojector::unproject( cv::Mat2f /*image_pos*/, cv::Mat1f radius
     return unproject(radiusMap);
 }
 
-
-
-erp::Projector::Projector(Parameters const&, cv::Size size)
-    : ::Projector(size)
-{
-}
+erp::Projector::Projector(Parameters const& parameters)
+	: m_parameters(parameters)
+{}
 
 
 cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, WrappingMethod& wrapping_method ) const
 {
 	auto input_size = vecticesXYZ.size();
-	auto output_width = get_size().width;
-	auto output_height = get_size().height;
+	auto output_size = m_parameters.getSize();
 
 	// Expand horizontally or vertically to 360deg x 180deg
-	auto full_width = std::max(output_width, 2 * output_height);
-	auto offset = (full_width - output_width) / 2;
+	auto full_width = std::max(output_size.width, 2 * output_size.height);
+	auto offset = (full_width - output_size.width) / 2;
 
 	cv::Mat2f imUV(input_size);
 	imRadius.create(input_size);
@@ -175,12 +162,12 @@ cv::Mat2f erp::Projector::project( cv::Mat3f vecticesXYZ, cv::Mat1f& imRadius, W
             cv::Vec2f phiTheta = erp::calculate_spherical_coordinates(xyzNorm);
 
             imUV(i,j)[0] = erp::calculate_horizontal_image_coordinate(phiTheta[0], full_width) - offset;
-            imUV(i,j)[1] = erp::calculate_vertical_image_coordinate(phiTheta[1], output_height);
+            imUV(i,j)[1] = erp::calculate_vertical_image_coordinate(phiTheta[1], output_size.height);
         }
 
-	wrapping_method = output_width == full_width
-		? WrappingMethod::HORIZONTAL
-		: WrappingMethod::NONE;
+	wrapping_method = output_size.width == full_width
+		? WrappingMethod::horizontal
+		: WrappingMethod::none;
 
     return imUV;
 }

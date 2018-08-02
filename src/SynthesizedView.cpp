@@ -112,7 +112,6 @@ void SynthesizedView::compute(View& input)
 		GLuint image_texture = cvMat2glTexture(input.get_color());
 
 		const float offset = 0.0; // Center of a pixel
-		const float sensor = ogl_transformer->get_sensor_size();
 		auto FBO = RFBO::getInstance();
 		auto & shaders = *(ShadersList::getInstance());
 
@@ -125,24 +124,14 @@ void SynthesizedView::compute(View& input)
 		translation= glm::vec3(t[0], t[1], t[2]);//OMAF
 		fromCV2GLM<3, 3>(cv::Mat(R), &Rt);//OMAF
 		
-
-		cv::Mat old_cam_mat = cv::Mat(ogl_transformer->get_input_camera_matrix());
-		cv::Mat new_cam_mat = cv::Mat(ogl_transformer->get_output_camera_matrix());
-		glm::vec2 f(old_cam_mat.at<float>(0, 0), old_cam_mat.at<float>(1, 1));
-		glm::vec2 p(old_cam_mat.at<float>(0, 2), h - old_cam_mat.at<float>(1, 2));
-		glm::vec2 n_f(new_cam_mat.at<float>(0, 0), new_cam_mat.at<float>(1, 1));
-		glm::vec2 n_p(new_cam_mat.at<float>(0, 2), h - new_cam_mat.at<float>(1, 2));
-
-
 		const VAO_VBO_EBO vve(input.get_depth(), input.get_depth().size());
 
-		GLuint program = shaders(ogl_transformer->get_shader_name()).program();
+		GLuint program = shaders("translate_rotate_ERP").program();
 		assert(program != 0);
 
 		glEnable(GL_DEPTH_TEST);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
-		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(program);
@@ -150,6 +139,7 @@ void SynthesizedView::compute(View& input)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, image_texture);
 		glUniform1i(glGetUniformLocation(program, "image_texture"), 0);
+		
 		// parameters
 
 		glUniformMatrix3fv(glGetUniformLocation(program, "R"), 1, GL_FALSE, glm::value_ptr(Rt));
@@ -160,17 +150,24 @@ void SynthesizedView::compute(View& input)
 		glUniform1f(glGetUniformLocation(program, "max_depth"), input.get_max_depth());
 		glUniform1f(glGetUniformLocation(program, "min_depth"), input.get_min_depth());
 
-		//only usefull for perpespective shader
-		glUniform2fv(glGetUniformLocation(program, "f"), 1, glm::value_ptr(f));
-		glUniform2fv(glGetUniformLocation(program, "n_f"), 1, glm::value_ptr(n_f));
-		glUniform2fv(glGetUniformLocation(program, "p"), 1, glm::value_ptr(p));
-		glUniform2fv(glGetUniformLocation(program, "n_p"), 1, glm::value_ptr(n_p));
-		glUniform1f(glGetUniformLocation(program, "sensor"), sensor);
+		auto input_projection_type = ogl_transformer->getInputParameters().getProjectionType();
+		auto output_projection_type = ogl_transformer->getVirtualParameters().getProjectionType();
+		glUniform1i(glGetUniformLocation(program, "erp_in"), static_cast<GLint>(input_projection_type));
+		glUniform1i(glGetUniformLocation(program, "erp_out"), static_cast<GLint>(output_projection_type));
 
+		if (input_projection_type == ProjectionType::perspective) {
+			auto f = ogl_transformer->getInputParameters().getFocal();
+			auto p = ogl_transformer->getInputParameters().getPrinciplePoint();
+			glUniform2fv(glGetUniformLocation(program, "f"), 1, f.val);
+			glUniform2fv(glGetUniformLocation(program, "p"), 1, p.val);
+		}
 
-		//only usefull for erp shader
-		glUniform1i(glGetUniformLocation(program, "erp_in"), ogl_transformer->get_input_projection_type());
-		glUniform1i(glGetUniformLocation(program, "erp_out"), ogl_transformer->get_output_projection_type());
+		if (output_projection_type == ProjectionType::perspective) {
+			auto n_f = ogl_transformer->getVirtualParameters().getFocal();
+			auto n_p = ogl_transformer->getVirtualParameters().getPrinciplePoint();
+			glUniform2fv(glGetUniformLocation(program, "n_f"), 1, n_f.val);
+			glUniform2fv(glGetUniformLocation(program, "n_p"), 1, n_p.val);
+		}
 
 		// end parameters
 
@@ -206,7 +203,7 @@ void SynthesizedView::compute(View& input)
 		auto virtual_uv = pu_transformer->project(virtual_xyz, /*out*/ virtual_depth, /*out*/ wrapping_method);
 
 		// Resize: rasterize with oversampling
-		auto virtual_size = pu_transformer->get_size();
+		auto virtual_size = pu_transformer->getVirtualParameters().getSize();
 		auto output_size = cv::Size(
 			int(0.5f + virtual_size.width * g_rescale),
 			int(0.5f + virtual_size.height * g_rescale));
@@ -243,7 +240,7 @@ void SynthetisedViewTriangle::transform(cv::Mat3f input_color, cv::Mat2f input_p
 	cv::Mat1f depth;
 	cv::Mat1f validity;
 
-    bool wrapHorizontal = wrapping_method == WrappingMethod::HORIZONTAL ? true : false; 
+    bool wrapHorizontal = wrapping_method == WrappingMethod::horizontal ? true : false; 
 
     auto color = transform_trianglesMethod(input_color, input_depth, input_positions, output_size, /*out*/ depth, /*out*/ validity, wrapHorizontal);
 	

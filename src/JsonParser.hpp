@@ -54,6 +54,7 @@ Bart Sonneveldt, bart.sonneveldt@philips.com
 namespace json
 {
 	struct Value;
+	struct Object;
 
 	class Node
 	{
@@ -68,21 +69,55 @@ namespace json
 			null
 		};
 
-		Node() = delete;
-
-		Type type() const;
+		/** Read JSON from an input stream */
 		static Node readFrom(std::istream&);
-		Node at(std::string key) const;
+
+		/* Specify overrides (for Object only) */
+		void setOverrides(Node overrides);
+
+		/** Query the value type of this node */
+		Type type() const;
+
+		/** Query an object parameter, Null if not found
+		
+		It is possible to specify overrides */
+		Node optional(std::string const& key) const;
+
+		/** Query an object parameter, throws "parameter KEY is required" unless found 
+		
+		It is possible to specify overrides */
+		Node require(std::string const& key) const;
+
+		/** Query an array by index */
 		Node at(std::size_t index) const;
+
+		/** Query the size of an array */
 		std::size_t size() const;
+
+		/** Query the value of a number */
 		double asDouble() const;
+
+		/** Query the value of a number */
+		float asFloat() const;
+
+		/** Query the value of a number and require it to be an integer */
+		int asInt() const;
+
+		/** Query the value of a string */
 		std::string const& asString() const;
+
+		/** Query the value of a boolean */
 		bool asBool() const;
 
+		/** Anything apart from false and null is true */
+		operator bool() const;
+
 	private:
+		Node();
 		Node(std::shared_ptr<Value>);
 
 		std::shared_ptr<Value> m_value;
+		std::shared_ptr<Object> m_overrides;
 	};	
 }
 

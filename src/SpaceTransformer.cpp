@@ -49,86 +49,89 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "PerspectiveProjector.hpp"
 #include "PerspectiveUnprojector.hpp"
 
+#include <cassert>
 
 SpaceTransformer::SpaceTransformer()
+	: m_input_parameters(nullptr)
+	, m_output_parameters(nullptr)
 {
 }
 
+SpaceTransformer::~SpaceTransformer() {}
 
-SpaceTransformer::~SpaceTransformer()
+Parameters const& SpaceTransformer::getInputParameters() const
 {
+	assert(m_input_parameters);
+	return *m_input_parameters;
 }
 
-OpenGLTransformer::OpenGLTransformer()
+Parameters const& SpaceTransformer::getVirtualParameters() const
 {
+	assert(m_output_parameters);
+	return *m_output_parameters;
 }
 
 cv::Vec3f SpaceTransformer::get_translation() const
 {
-	auto t_from = m_input_parameters.get_translation();
-	auto R_to = m_output_parameters.get_rotation();
-	auto t_to = m_output_parameters.get_translation();
+	auto t_from = getInputParameters().getPosition();
+	auto R_to = getVirtualParameters().getRotation();
+	auto t_to = getVirtualParameters().getPosition();
 	
-	auto t = -R_to.t()*(t_to - t_from);
-
-	return t;
+	return -R_to.t()*(t_to - t_from);
 }
 
 cv::Matx33f SpaceTransformer::get_rotation() const
 {
-	auto R_from = m_input_parameters.get_rotation();
-	auto R_to = m_output_parameters.get_rotation();
+	auto R_from = getInputParameters().getRotation();
+	auto R_to = getVirtualParameters().getRotation();
 
-	auto R = R_to.t()*R_from;
-
-	return R;
+	return R_to.t()*R_from;
+}
+void SpaceTransformer::set_inputPosition(Parameters const *parameters)
+{
+	m_input_parameters = parameters;
 }
 
-cv::Matx33f OpenGLTransformer::get_input_camera_matrix() const
+void SpaceTransformer::set_targetPosition(Parameters const *parameters)
 {
-	return m_input_parameters.get_camera_matrix();
+	m_output_parameters = parameters;
 }
 
-cv::Matx33f OpenGLTransformer::get_output_camera_matrix() const
+cv::Mat2f PUTransformer::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
 {
-	return m_output_parameters.get_camera_matrix();
+	return m_projector->project(world_pos, depth, wrapping_method);
+}
+cv::Mat3f PUTransformer::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+{
+	return m_unprojector->unproject(image_pos, depth);
 }
 
-void OpenGLTransformer::set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type)
+void PUTransformer::set_inputPosition(Parameters const *parameters)
 {
-	this->m_output_parameters = params_virtual;
-	this->m_size = virtual_size;
-	this->output_projection_type = virtual_projection_type;
-	this->shader_name = "translate_rotate_ERP";
-}
+	assert(parameters);
+	SpaceTransformer::set_inputPosition(parameters);
 
-void OpenGLTransformer::set_inputPosition(Parameters params_real, cv::Size /*input_size*/, ProjectionType input_projection_type_)
-{
-	this->m_input_parameters = params_real;
-	this->m_sensor_size = params_real.get_sensor();
-	this->input_projection_type = input_projection_type_;
-	if (input_projection_type_ != this->output_projection_type) {
-		this->shader_name = "translate_rotate_ERP";
+	switch (parameters->getProjectionType()) {
+	case ProjectionType::equirectangular:
+		m_unprojector = std::make_unique<erp::Unprojector>(*parameters);
+		break;
+	case ProjectionType::perspective:
+		m_unprojector = std::make_unique<PerspectiveUnprojector>(*parameters);
+		break;
 	}
 }
 
-void PUTransformer::set_targetPosition(Parameters params_virtual, cv::Size virtual_size, ProjectionType virtual_projection_type)
+void PUTransformer::set_targetPosition(Parameters const *parameters)
 {
-	if (virtual_projection_type == PROJECTION_PERSPECTIVE)
-		this->m_projector.reset(new PerspectiveProjector(params_virtual, virtual_size));
-	else if (virtual_projection_type == PROJECTION_EQUIRECTANGULAR)
-		this->m_projector.reset(new erp::Projector(params_virtual, virtual_size));
-	this->m_size = virtual_size;
-	this->m_output_parameters = params_virtual;
-}
+	assert(parameters);
+	SpaceTransformer::set_targetPosition(parameters);
 
-void PUTransformer::set_inputPosition(Parameters params_real, cv::Size input_size, ProjectionType input_projection_type)
-{
-	if (input_projection_type == PROJECTION_PERSPECTIVE)
-		this->m_unprojector.reset(new PerspectiveUnprojector(params_real));
-	else if (input_projection_type == PROJECTION_EQUIRECTANGULAR)
-		this->m_unprojector.reset(new erp::Unprojector(params_real, input_size));
-
-	this->m_input_parameters = params_real;
-	this->m_sensor_size = params_real.get_sensor();
+	switch (parameters->getProjectionType()) {
+	case ProjectionType::equirectangular:
+		m_projector = std::make_unique<erp::Projector>(*parameters);
+		break;
+	case ProjectionType::perspective:
+		m_projector = std::make_unique<PerspectiveProjector>(*parameters);
+		break;
+	}
 }
