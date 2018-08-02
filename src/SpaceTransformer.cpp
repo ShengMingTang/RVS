@@ -75,7 +75,7 @@ Parameters const& SpaceTransformer::getVirtualParameters() const
 cv::Vec3f SpaceTransformer::get_translation() const
 {
 	auto t_from = getInputParameters().getPosition();
-	auto R_to = getVirtualParameters().getRotation();
+	auto R_to = getVirtualParameters().getRotationMatrix();
 	auto t_to = getVirtualParameters().getPosition();
 	
 	return -R_to.t()*(t_to - t_from);
@@ -83,8 +83,8 @@ cv::Vec3f SpaceTransformer::get_translation() const
 
 cv::Matx33f SpaceTransformer::get_rotation() const
 {
-	auto R_from = getInputParameters().getRotation();
-	auto R_to = getVirtualParameters().getRotation();
+	auto R_from = getInputParameters().getRotationMatrix();
+	auto R_to = getVirtualParameters().getRotationMatrix();
 
 	return R_to.t()*R_from;
 }

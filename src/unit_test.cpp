@@ -222,41 +222,6 @@ FUNC(Test_PerspectiveProjector)
 	CHECK(depth_error < 1e-12);
 }
 
-
-
-FUNC( TestRotationMatrixToFromEulerAngles )
-{
-	using namespace pose_traces::detail;
-
-	const double eps = 1e-7;
-
-	int N = 16;
-
-	for( int i0 = 0; i0 <= N; ++i0 )                // closed interval
-		for( int i1 = 1; i1 <  N; ++i1 )            // open interval
-			for( int i2 = 0; i2 <= N; ++i2 )        // closed interval
-			{
-
-				float yaw   = float( i0 * CV_2PI / N - CV_PI  );
-				float pitch = float( i1 * CV_PI  / N - CV_PI/2);
-				float roll  = float( i2 * CV_2PI / N - CV_PI  );
-
-				auto eulerExpected  = cv::Vec3f(yaw, pitch, roll );
-				auto R              = EulerAnglesToRotationMatrix( eulerExpected );
-				auto eulerActual    = RotationMatrixToEulerAngles(R);
-
-				double err = cv::norm( testing::DistanceOnUnitCircle(eulerExpected, eulerActual) );
-				if( err > eps )
-				{
-					cout << i0 << " "<< i1 << " "<< i2 << " " << err << endl ;
-					CHECK(false);
-				}
-
-			}
-
-
-}
-
 FUNC(TestJsonParser)
 {
 	std::istringstream stream(R"(

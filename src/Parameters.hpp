@@ -72,11 +72,20 @@ public:
 	/** The projection type */
 	ProjectionType getProjectionType() const;
 
-	/** Extrinsic parameter of rotation as a matrix */
-	cv::Matx33f getRotation() const;
+	/** Extrinsic parameter of rotation (Euler angles, degrees) */
+	cv::Vec3f getRotation() const;
+
+	/** Set rotation (Euler angles, degrees) */
+	void setRotation(cv::Vec3f);
+
+	/** Get rotation as a matrix */
+	cv::Matx33f getRotationMatrix() const;
 
 	/** Extrinsic parameter of translation */
 	cv::Vec3f getPosition() const;
+
+	/** Set a new translation */
+	void setPosition(cv::Vec3f);
 
 	/** Depth range
 
@@ -122,11 +131,6 @@ public:
 	/** Intrinsic parameters as a matrix */
 	cv::Matx33f getCameraMatrix() const;
 
-	/** Adapt camera pose from a pose trace
-	
-	This requires the initial rotation to be zero */
-	void adaptPose(cv::Vec3f relativePosition, cv::Matx33f rotation);
-
 private:
 	Parameters();
 
@@ -145,7 +149,7 @@ private:
 
 	ProjectionType m_projectionType;
 	cv::Vec3f m_position;
-	cv::Matx33f m_rotation;
+	cv::Vec3f m_rotation;
 	cv::Vec2f m_depthRange;
 	cv::Size m_resolution;
 	int m_bitDepthColor;

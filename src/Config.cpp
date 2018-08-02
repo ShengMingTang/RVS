@@ -134,12 +134,10 @@ void Config::loadVirtualCameraParametersFromFile(std::string const& filepath, js
 void Config::loadPoseTraceFromFile(std::string const& filepath)
 {
 	if (!filepath.empty()) {
-		pose_trace = pose_traces::ReadPoseTrace(filepath);
-
+		pose_trace = PoseTrace::loadFromFile(filepath);
 		if (static_cast<unsigned>(start_frame + number_of_frames) > pose_trace.size()) {
 			throw std::runtime_error("Error: Number of frames to process is larger then number of entries in pose trace file");
 		}
-
 		std::cout << std::endl << "Using pose trace with " << pose_trace.size() << " entries" << std::endl;
 	}
 }

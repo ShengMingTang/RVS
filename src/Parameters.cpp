@@ -51,10 +51,39 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <iostream>
 #include <stdexcept>
 
-void Parameters::adaptPose(cv::Vec3f relativePosition, cv::Matx33f rotation)
+namespace
 {
-	m_position += relativePosition;
-	m_rotation = rotation;
+	cv::Matx33f rotationMatrixFromRotationAroundX(float rx)
+	{
+		return cv::Matx33f(
+			     1.f,     0.f,      0.f,
+			     0.f, cos(rx), -sin(rx),
+			     0.f, sin(rx),  cos(rx));
+	}
+
+	cv::Matx33f rotationMatrixFromRotationAroundY(float ry)
+	{
+		return cv::Matx33f(
+			 cos(ry),     0.f,  sin(ry),
+			     0.f,     1.f,      0.f,
+			-sin(ry),     0.f,  cos(ry));
+	}
+
+	cv::Matx33f rotationMatrixFromRotationAroundZ(float rz)
+	{
+		return cv::Matx33f(
+			cos(rz), -sin(rz),      0.f,
+			sin(rz),  cos(rz),      0.f,
+			    0.f,      0.f,      1.f);
+	}
+
+	cv::Matx33f EulerAnglesToRotationMatrix(cv::Vec3f rotation)
+	{
+		return
+			rotationMatrixFromRotationAroundZ(rotation[2]) *
+			rotationMatrixFromRotationAroundY(rotation[1]) *
+			rotationMatrixFromRotationAroundX(rotation[0]);
+	}
 }
 
 Parameters::Parameters() {}
@@ -84,14 +113,29 @@ ProjectionType Parameters::getProjectionType() const
 	return m_projectionType;
 }
 
-cv::Matx33f Parameters::getRotation() const
+cv::Vec3f Parameters::getRotation() const
 {
 	return m_rotation;
+}
+
+void Parameters::setRotation(cv::Vec3f rotation)
+{
+	m_rotation = rotation;
+}
+
+cv::Matx33f Parameters::getRotationMatrix() const
+{
+	auto const radperdeg = 0.01745329252f;
+	return EulerAnglesToRotationMatrix(radperdeg * m_rotation);
 }
 
 cv::Vec3f Parameters::getPosition() const
 {
 	return m_position;
+}
+
+void Parameters::setPosition(cv::Vec3f)
+{
 }
 
 cv::Vec2f Parameters::getDepthRange() const
@@ -213,8 +257,7 @@ void Parameters::setPositionFrom(json::Node root)
 
 void Parameters::setRotationFrom(json::Node root)
 {
-	auto rotation = asFloatVec<3>(root.require("Rotation"));
-	m_rotation = pose_traces::detail::EulerAnglesToRotationMatrix(rotation);
+	m_rotation = asFloatVec<3>(root.require("Rotation"));
 }
 
 void Parameters::setDepthRangeFrom(json::Node root)

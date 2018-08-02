@@ -94,7 +94,8 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 	auto params_virtual = m_config.params_virtual[virtualView];
 	if (!m_config.pose_trace.empty()) {
 		auto pose = m_config.pose_trace[inputFrame];
-		params_virtual.adaptPose(pose.translation, pose.rotation);
+		params_virtual.setPosition(params_virtual.getPosition() + pose.position);
+		params_virtual.setRotation(pose.rotation);
 	}
 
 	// Initialize OpenGL frame buffer objects

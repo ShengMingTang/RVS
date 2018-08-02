@@ -159,7 +159,7 @@ public:
 	int number_of_frames = 1;
 
 	/** The loaded pose trace */
-    std::vector<pose_traces::Pose> pose_trace;
+    PoseTrace pose_trace;
 
 private:
 	Config() = default;
