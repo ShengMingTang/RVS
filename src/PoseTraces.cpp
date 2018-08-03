@@ -51,8 +51,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 PoseTrace PoseTrace::loadFrom(std::istream & stream)
 {
-	stream.exceptions(std::ios::failbit | std::ios::badbit);
-
 	std::string line;
 	std::getline(stream, line);
 
@@ -63,22 +61,29 @@ PoseTrace PoseTrace::loadFrom(std::istream & stream)
 
 	PoseTrace trace;
 	std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+	std::regex re_empty("\\s*");
+	bool trailing_empty_lines = false;
 
 	while (std::getline(stream, line)) {
 		std::smatch match;
-		if (!std::regex_match(line, match, re_row)) {
+		if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
+			trace.push_back({
+				cv::Vec3f(
+					std::stof(match[1].str()),
+					std::stof(match[2].str()),
+					std::stof(match[3].str())),
+				cv::Vec3f(
+					std::stof(match[4].str()),
+					std::stof(match[5].str()),
+					std::stof(match[6].str()))
+			});
+		}
+		else if (std::regex_match(line, re_empty)) {
+			trailing_empty_lines = true;
+		}
+		else {
 			throw std::runtime_error("Format error in a pose trace row");
 		}
-		trace.push_back({
-			cv::Vec3f(
-				std::stof(match[1].str()),
-				std::stof(match[2].str()),
-				std::stof(match[3].str())),
-			cv::Vec3f(
-				std::stof(match[4].str()),
-				std::stof(match[5].str()),
-				std::stof(match[6].str())) 
-		});
 	}
 
 	return trace;

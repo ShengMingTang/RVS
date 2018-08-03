@@ -61,106 +61,126 @@ using namespace std;
 
 namespace testing
 {
-    // for testing if two angles are the same. resolves modulo 2pi
-    double DistanceOnUnitCircle( float a, float b)
-    {
-        return cv::norm( cv::Vec2f( std::sin(a), std::cos(a) ) - cv::Vec2f(std::sin(b), std::cos(b) ) );
-    }
+	namespace erp
+	{
+		Parameters generateParameters()
+		{
+			std::istringstream text(R"({
+				"Name": "v0",
+				"Projection": "Equirectangular",
+				"Position": [0, 0, 0],
+				"Rotation": [0, 0, 0],
+				"Depthmap": 1,
+				"Background": 0,
+				"Depth_range": [0, 1],
+				"Resolution": [5, 5],
+				"BitDepthColor": 13,
+				"BitDepthDepth": 15,
+				"ColorSpace": "YUV420",
+				"DepthColorSpace": "YUV420",
+				"Hor_range": [-180, 180],
+				"Ver_range": [-90, 90]
+		})");
 
-    cv::Vec3d DistanceOnUnitCircle( cv::Vec3f a, cv::Vec3f b)
-    {
-        return cv::Vec3d(
-            DistanceOnUnitCircle(a[0], b[0] ),
-            DistanceOnUnitCircle(a[1], b[1] ),
-            DistanceOnUnitCircle(a[2], b[2] ) );
+			// Construct unprojector
+			auto root = json::Node::readFrom(text);
+			return Parameters::readFrom(root);
+		}
 
-    }
+		cv::Mat2f generateReferenceImagePos()
+		{
+			auto referenceImagePos = cv::Mat2f(5, 5);
+			for (int j = 0; j != 5; ++j) {
+				referenceImagePos(0, j) = cv::Vec2f(j + 0.5f, 0.001f);
+				referenceImagePos(1, j) = cv::Vec2f(j + 0.5f, 1.500f);
+				referenceImagePos(2, j) = cv::Vec2f(j + 0.5f, 2.500f);
+				referenceImagePos(3, j) = cv::Vec2f(j + 0.5f, 3.500f);
+				referenceImagePos(4, j) = cv::Vec2f(j + 0.5f, 4.999f);
+			}
+			return referenceImagePos;
+		}
 
+		cv::Mat1f generateReferenceDepth()
+		{
+			cv::Mat1f referenceDepth = cv::Mat1f::ones(5, 5);
+			referenceDepth(2, 2) = 2.f;
+			return referenceDepth;
+		}
 
+		cv::Mat3f generateReferenceWorldPos(cv::Mat2f imagePos, cv::Mat1f depth)
+		{
+			auto referenceWorldPos = cv::Mat3f(5, 5);
+			for (int i = 0; i != 5; ++i) {
+				for (int j = 0; j != 5; ++j) {
+					auto phi = CV_PI - CV_2PI * (imagePos(i, j)[0] / 5.);
+					auto theta = CV_PI / 2 - CV_PI * (imagePos(i, j)[1] / 5.);
+					referenceWorldPos(i, j)[0] = static_cast<float>(depth(i, j) * std::cos(theta) * std::cos(phi));
+					referenceWorldPos(i, j)[1] = static_cast<float>(depth(i, j) * std::cos(theta) * std::sin(phi));
+					referenceWorldPos(i, j)[2] = static_cast<float>(depth(i, j) * std::sin(theta));
+				}
+			}
+			return referenceWorldPos;
+		}
+	}
 } // namespace
 
-FUNC(TestERP_BackProject)
+FUNC(Test_EquirectangularUnprojector_generateImagePos)
 {
-    const double eps = 1e-7;
+	// Construct unprojector
+	auto parameters = testing::erp::generateParameters();
+	EquirectangularUnprojector unprojector(parameters);
 
-	std::istringstream text(R"({
-			"Name": "v0",
-			"Projection": "Equirectangular",
-			"Position": [0, 0, 0],
-			"Rotation": [0, 0, 0],
-			"Depthmap": 1,
-			"Background": 0,
-			"Depth_range": [0, 1],
-			"Resolution": [30, 30],
-			"BitDepthColor": 13,
-			"BitDepthDepth": 15,
-			"ColorSpace": "YUV420",
-			"DepthColorSpace": "YUV420",
-			"Hor_range": [-180, 180],
-			"Ver_range": [-90, 90]
-	})");
+	// Generate image positions
+	auto actualImagePos = unprojector.generateImagePos();
 
-	auto root = json::Node::readFrom(text);
-	auto parameters = Parameters::readFrom(root);
-
-    EquirectangularUnprojector unprojector(parameters);
-    
-	auto imagePos = unprojector.generateImagePos();
-    cv::Mat1f radiusMap = cv::Mat1f::ones(parameters.getSize());
-
-    auto vertices = unprojector.unproject(imagePos, radiusMap);
-
-    const double radiusExpected = 1.0;
-
-	for (auto v : vertices) {
-		CHECK(std::abs(radiusExpected - cv::norm(v)) < eps);
-	}
+	// Check image positions against reference
+	auto referenceImagePos = testing::erp::generateReferenceImagePos();
+	auto generatedImagePosError = cv::norm(referenceImagePos, actualImagePos, cv::NORM_INF);
+	CHECK(generatedImagePosError < 1e-6f);
 }
 
-FUNC(TestERP_Project)
+FUNC(Test_EquirectangularUnprojector_unproject)
 {
-    double eps = 1e-7;
-    g_rescale = 1.f;
+	// Construct unprojector
+	auto parameters = testing::erp::generateParameters();
+	EquirectangularUnprojector unprojector(parameters);
 
-	std::istringstream text(R"({
-			"Name": "v0",
-			"Projection": "Equirectangular",
-			"Position": [0, 0, 0],
-			"Rotation": [0, 0, 0],
-			"Depthmap": 1,
-			"Background": 0,
-			"Depth_range": [0, 1],
-			"Resolution": [5, 5],
-			"BitDepthColor": 13,
-			"BitDepthDepth": 15,
-			"ColorSpace": "YUV420",
-			"DepthColorSpace": "YUV420",
-			"Hor_range": [-180, 180],
-			"Ver_range": [-90, 90]
-	})");
+	// Unproject to world coordinates
+	auto imagePos = testing::erp::generateReferenceImagePos();
+	auto depth = testing::erp::generateReferenceDepth();
+	auto actualWorldPos = unprojector.unproject(imagePos, depth);
 
-	auto root = json::Node::readFrom(text);
-	auto parameters = Parameters::readFrom(root);
+	// Check world positions against reference
+	auto referenceWorldPos = testing::erp::generateReferenceWorldPos(imagePos, depth);
+	auto actualWorldPosError = cv::norm(referenceWorldPos, actualWorldPos, cv::NORM_INF);
+	auto delta = cv::Mat3f(actualWorldPos - referenceWorldPos);
+	CHECK(actualWorldPosError < 1e-6f);
+}
 
-    EquirectangularUnprojector unprojector(parameters);
-	auto imagePos = unprojector.generateImagePos();
-    cv::Mat1f imRadius = cv::Mat1f::ones(parameters.getSize());
-    auto imXYZ = unprojector.unproject(imagePos, imRadius);
-
-    float radiusExpected = 2.f;    
-    cv::Mat3f imXYZnew = imXYZ * radiusExpected;
-
+FUNC(Test_EquirectangularProjector_project)
+{
+	// Construct projector
+	auto parameters = testing::erp::generateParameters();
 	EquirectangularProjector projector(parameters);
-    cv::Mat1f imRadiusActual;
-	WrappingMethod wrapping_method;
-    cv::Mat2f imUV = projector.project( imXYZnew, imRadiusActual, wrapping_method);
-	CHECK(wrapping_method == WrappingMethod::horizontal);
 
+	// Project to image coordinates
+	auto referenceImagePos = testing::erp::generateReferenceImagePos();
+	auto referenceDepth = testing::erp::generateReferenceDepth();
+	auto worldPos = testing::erp::generateReferenceWorldPos(referenceImagePos, referenceDepth);
+	cv::Mat1f actualDepth;
+	WrappingMethod actualWrappingMethod = WrappingMethod::none;
+	auto actualImagePos = projector.project(worldPos, actualDepth, actualWrappingMethod);
 
-    eps *= parameters.getSize().area();
-    double errorRadius = cv::sum( cv::abs( imRadiusActual  - radiusExpected ) ).val[0];
-    
-    CHECK(errorRadius < eps);
+	// Check image positions against reference
+	auto referenceImagePosError = cv::norm(referenceImagePos, actualImagePos, cv::NORM_INF);
+	CHECK(referenceImagePosError < 1e-4f);
+
+	// Check depth map against reference
+	auto referenceDepthError = cv::norm(referenceDepth, actualDepth, cv::NORM_INF);
+	CHECK(referenceDepthError < 1e-6f);
+	
+	// Check wrapping
+	CHECK(actualWrappingMethod == WrappingMethod::horizontal);
 }
 
 FUNC(Test_PerspectiveProjector)
@@ -254,4 +274,24 @@ FUNC(TestJsonParser)
 	EQUAL(cam0.optional("Name").asString(), "v0");
 	EQUAL(cam0.optional("Background").asDouble(), 0.0);
 	auto cam1 = cameras.at(1);
+}
+
+FUNC(TestLoadPoseTrace)
+{
+	std::istringstream stream(R"(X,Y,Z,Yaw,Pitch,Roll
+0, 0, 0, 7.744e-06, 1.10991e-05, 2.98821e-06
+-0.000289001, -4.49e-05, -2.50004e-05, -1337, 0.0172351, 0.00275806
+-0.00062, -8.20999e-05, 1.0, 13.1, 42, 0.00589616
+-0.047839, 0.0798379, -0.030835, -68.9187, -3.20608, 16.5
+
+)");
+
+	auto poseTrace = PoseTrace::loadFrom(stream);
+	EQUAL(poseTrace.size(), 4);
+	EQUAL(poseTrace[0].position[0], 0.f);
+	CHECK((poseTrace[1].position[1] + 4.49e-05) < 1e-12);
+	EQUAL(poseTrace[2].position[2], 1.f);
+	EQUAL(poseTrace[1].rotation[0], -1337.f);
+	EQUAL(poseTrace[2].rotation[1], 42.f);
+	EQUAL(poseTrace[3].rotation[2], 16.5f);
 }

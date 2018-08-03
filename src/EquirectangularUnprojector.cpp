@@ -56,8 +56,8 @@ cv::Mat3f EquirectangularUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f d
 	auto ver_range = getParameters().getVerRange();
 
 	auto const radperdeg = 0.01745329252f;
-	auto phi0 = hor_range[1];
-	auto theta0 = ver_range[1];
+	auto phi0 = radperdeg * hor_range[1];
+	auto theta0 = radperdeg * ver_range[1];
 	auto dphi_du = -radperdeg * (hor_range[1] - hor_range[0]) / size.width;
 	auto dtheta_dv = -radperdeg * (ver_range[1] - ver_range[0]) / size.height;
 
