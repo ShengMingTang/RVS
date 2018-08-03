@@ -48,6 +48,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "yaffut.hpp"
 
 #include "PerspectiveProjector.hpp"
+#include "PerspectiveUnprojector.hpp"
 #include "EquirectangularProjector.hpp"
 #include "EquirectangularUnprojector.hpp"
 #include "PoseTraces.hpp"
@@ -122,7 +123,7 @@ namespace testing
 			return referenceWorldPos;
 		}
 	}
-} // namespace
+}
 
 FUNC(Test_EquirectangularUnprojector_generateImagePos)
 {
@@ -153,7 +154,6 @@ FUNC(Test_EquirectangularUnprojector_unproject)
 	// Check world positions against reference
 	auto referenceWorldPos = testing::erp::generateReferenceWorldPos(imagePos, depth);
 	auto actualWorldPosError = cv::norm(referenceWorldPos, actualWorldPos, cv::NORM_INF);
-	auto delta = cv::Mat3f(actualWorldPos - referenceWorldPos);
 	CHECK(actualWorldPosError < 1e-6f);
 }
 
@@ -183,9 +183,13 @@ FUNC(Test_EquirectangularProjector_project)
 	CHECK(actualWrappingMethod == WrappingMethod::horizontal);
 }
 
-FUNC(Test_PerspectiveProjector)
+namespace testing
 {
-	std::istringstream text(R"({
+	namespace persp
+	{
+		Parameters generateParameters()
+		{
+			std::istringstream text(R"({
 			"Name"				: "v0",
 			"Projection"		: "Perspective",
 			"Position"			: [5, 3, 9],
@@ -193,53 +197,111 @@ FUNC(Test_PerspectiveProjector)
 			"Depthmap"			: 1,
 			"Background"		: 0,
 			"Depth_range"		: [0, 1],
-			"Resolution"		: [4, 2],
-			"Focal"				: [6, 6],
-			"Principle_point"	: [1, 1],
+			"Resolution"		: [4, 3],
+			"Focal"				: [3, 3],
+			"Principle_point"	: [2, 1],
 			"BitDepthColor"		: 10,
 			"BitDepthDepth"		: 10,
 			"ColorSpace"		: "YUV420",
 			"DepthColorSpace"	: "YUV420"
-	})");
+		})");
 
-	auto root = json::Node::readFrom(text);
-	auto parameters = Parameters::readFrom(root);
+			auto root = json::Node::readFrom(text);
+			return Parameters::readFrom(root);
+		}
 
+		cv::Mat2f generateReferenceImagePos()
+		{
+			auto referenceImagePos = cv::Mat2f(3, 4);
+			for (int i = 0; i != 3; ++i) {
+				for (int j = 0; j != 4; ++j) {
+					referenceImagePos(i, j) = cv::Vec2f(j + 0.5f, i + 0.5f);
+				}
+			}
+			return referenceImagePos;
+		}
+
+		cv::Mat1f generateReferenceDepth()
+		{
+			cv::Mat1f referenceDepth = cv::Mat1f::ones(3, 4);
+			referenceDepth(2, 2) = 2.f;
+			return referenceDepth;
+		}
+
+		cv::Mat3f generateReferenceWorldPos(cv::Mat2f imagePos, cv::Mat1f depth)
+		{
+			auto referenceWorldPos = cv::Mat3f(3, 4);
+			for (int i = 0; i != 3; ++i) {
+				for (int j = 0; j != 4; ++j) {
+					auto uv = imagePos(i, j);
+					auto sensorPos = cv::Vec3d(
+						3.,
+						2. - imagePos(i, j)[0],
+						1. - imagePos(i, j)[1]);
+					referenceWorldPos(i, j) = cv::Vec3f(sensorPos * (depth(i, j) / 3.));
+				}
+			}
+			return referenceWorldPos;
+		}
+	}
+}
+
+FUNC(Test_PerspectiveUnprojector_generateImagePos)
+{
+	// Construct unprojector
+	auto parameters = testing::persp::generateParameters();
+	PerspectiveUnprojector unprojector(parameters);
+
+	// Generate image positions
+	auto actualImagePos = unprojector.generateImagePos();
+
+	// Check image positions against reference
+	auto referenceImagePos = testing::persp::generateReferenceImagePos();
+	auto generatedImagePosError = cv::norm(referenceImagePos, actualImagePos, cv::NORM_INF);
+	CHECK(generatedImagePosError < 1e-6f);
+}
+
+FUNC(Test_PerspectiveUnprojector_unproject)
+{
+	// Construct unprojector
+	auto parameters = testing::persp::generateParameters();
+	PerspectiveUnprojector unprojector(parameters);
+
+	// Unproject to world coordinates
+	auto imagePos = testing::persp::generateReferenceImagePos();
+	auto depth = testing::persp::generateReferenceDepth();
+	auto actualWorldPos = unprojector.unproject(imagePos, depth);
+
+	// Check world positions against reference
+	auto referenceWorldPos = testing::persp::generateReferenceWorldPos(imagePos, depth);
+	auto actualWorldPosError = cv::norm(referenceWorldPos, actualWorldPos, cv::NORM_INF);
+	CHECK(actualWorldPosError < 1e-6f);
+}
+
+FUNC(Test_PerspectiveProjector_project)
+{
 	// Construct projector
+	auto parameters = testing::persp::generateParameters();
 	PerspectiveProjector projector(parameters);
-	
-	// Example world positions
-	// OMAF Referential: x forward, y left, z up
-	cv::Mat3f world_pos(1, 4);
-	world_pos(0, 0) = cv::Vec3f(42.f, 0.f, 0.f); // straight ahead, far away
-	world_pos(0, 1) = cv::Vec3f(6.f, 0.f, 0.f); // principle point on sensor
-	world_pos(0, 2) = cv::Vec3f(6.f, 1.f, 1.f); // top-left corner of sensor
-	world_pos(0, 3) = cv::Vec3f(6.f, -3.f, -1.f); // botom-right corner of sensor
 
-	// Reference image positions and depth values
-	cv::Mat2f reference_image_pos(1, 4);
-	reference_image_pos(0, 0) = cv::Vec2f(1.f, 1.f); // p
-	reference_image_pos(0, 1) = cv::Vec2f(1.f, 1.f); // p
-	reference_image_pos(0, 2) = cv::Vec2f(0.f, 0.f);
-	reference_image_pos(0, 3) = cv::Vec2f(4.f, 2.f); // (w, h)
-	cv::Mat1f reference_depth(1, 4);
-	reference_depth(0, 0) = 42.f;
-	reference_depth(0, 1) = 6.f;
-	reference_depth(0, 2) = 6.f;
-	reference_depth(0, 3) = 6.f;
+	// Project to image coordinates
+	auto referenceImagePos = testing::persp::generateReferenceImagePos();
+	auto referenceDepth = testing::persp::generateReferenceDepth();
+	auto worldPos = testing::persp::generateReferenceWorldPos(referenceImagePos, referenceDepth);
+	cv::Mat1f actualDepth;
+	WrappingMethod actualWrappingMethod = WrappingMethod::horizontal;
+	auto actualImagePos = projector.project(worldPos, actualDepth, actualWrappingMethod);
 
-	// Project
-	cv::Mat1f actual_depth;
-	WrappingMethod wrapping_method;
-	auto actual_image_pos = projector.project(world_pos, actual_depth, wrapping_method);
-	CHECK(wrapping_method == WrappingMethod::none);
+	// Check image positions against reference
+	auto referenceImagePosError = cv::norm(referenceImagePos, actualImagePos, cv::NORM_INF);
+	CHECK(referenceImagePosError < 1e-6f);
 
-	// Check projections results against reference
-	auto image_pos_error = norm(reference_image_pos, actual_image_pos);
-	auto depth_error = norm(reference_depth, actual_depth);
+	// Check depth map against reference
+	auto referenceDepthError = cv::norm(referenceDepth, actualDepth, cv::NORM_INF);
+	CHECK(referenceDepthError < 1e-6f);
 
-	CHECK(image_pos_error < 1e-12);
-	CHECK(depth_error < 1e-12);
+	// Check wrapping
+	CHECK(actualWrappingMethod == WrappingMethod::none);
 }
 
 FUNC(TestJsonParser)
