@@ -304,7 +304,7 @@ FUNC(Test_PerspectiveProjector_project)
 	CHECK(actualWrappingMethod == WrappingMethod::none);
 }
 
-FUNC(TestJsonParser)
+FUNC(Test_JsonParser_readFrom)
 {
 	std::istringstream stream(R"(
 {
@@ -338,7 +338,30 @@ FUNC(TestJsonParser)
 	auto cam1 = cameras.at(1);
 }
 
-FUNC(TestLoadPoseTrace)
+FUNC(Test_JsonParser_overrides)
+{
+	std::istringstream stream1(R"(
+{
+	"Alpha": "RVS",
+	"Beta" : [1.0, 2.0, 3.0],
+	"Gamma" : 30
+})");
+
+	std::istringstream stream2(R"(
+{
+	"Gamma" : 40
+})");
+
+	auto root1 = json::Node::readFrom(stream1);
+	auto root2 = json::Node::readFrom(stream2);
+
+	root1.setOverrides(root2);
+
+	CHECK(root1.require("Alpha").asString() == "RVS");
+	EQUAL(root1.require("Gamma").asInt(), 40);
+}
+
+FUNC(Test_PoseTrace_loadFrom)
 {
 	std::istringstream stream(R"(X,Y,Z,Yaw,Pitch,Roll
 0, 0, 0, 7.744e-06, 1.10991e-05, 2.98821e-06
