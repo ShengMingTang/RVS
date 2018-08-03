@@ -122,24 +122,24 @@ public:
 	/** filenames of the input depth images */
 	std::vector<std::string> depth_names;
 
-	/**
-	Name of the output files
-	*/
+	/** Name of the output files */
 	std::vector<std::string> outfilenames;
 
-	/**
-	Name of the output masked files
-	*/
+	/** Name of the output masked files */
 	std::vector<std::string> outmaskedfilenames;
 
-	/**
-	Threshold for valid pixels
-	*/
+	/** Name of the output masks */
+	std::vector<std::string> outmaskfilenames;
+
+	/**	Name of the output masked files	*/
+	std::vector<std::string> outdepthfilenames;
+
+	/** Threshold for valid pixels */
 	float validity_threshold = 5000.f;
-
-
+	
 	/**Method for view synthesis*/
 	ViewSynthesisMethod vs_method = ViewSynthesisMethod::triangles;
+	
 	/** Blending method (see BlendedView) */
 	BlendingMethod blending_method = BlendingMethod::simple;
 
@@ -173,10 +173,8 @@ private:
 	void setVirtualCameraNamesFrom(json::Node root);
 	void setInputCameraParameters(json::Node root);
 	void setVirtualCameraParameters(json::Node root);
-	void setInputColorFilepathsFrom(json::Node root);
-	void setInputDepthFilepaths(json::Node root);
-	void setOutputFilepaths(json::Node root);
-	void setMaskedOutputFilepaths(json::Node root);
+	void setInputFilepaths(json::Node root, char const *name, std::vector<std::string>&);
+	void setOutputFilepaths(json::Node root, char const *name, std::vector<std::string>&);
 	void setValidityThreshold(json::Node root);
 	void setSynthesisMethod(json::Node root);
 	void setBlendingMethod(json::Node root);

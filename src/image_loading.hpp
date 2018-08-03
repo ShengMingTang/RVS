@@ -45,8 +45,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #ifndef _IMAGE_LOADING_HPP_
 #define _IMAGE_LOADING_HPP_
 
-#include <string>
-#include <opencv2/core.hpp>
+#include "Parameters.hpp"
 
 /**
 @file image_loading.hpp
@@ -74,28 +73,24 @@ unsigned max_level(int bit_depth);
 \brief Read a color image (RGB or YUV). 
 
 Use openCV cv::imread() function to read non .YUV images.
-@param filename Name of the image file
-@param size Size of the loaded file
-@param bit_depth Bit depth of raw stream
+@param filepath Name of the image file (YUV, PNG, etc.)
 @param frame Number of the frame to read
-@return CV_8UC3 image
+@param parameters Camera and video parameters
+@return CV_32FC3 image
 */
-cv::Mat3f read_color(std::string filename, cv::Size size, int bit_depth, int frame);
+cv::Mat1f read_color(std::string filepath, int frame, Parameters const& parameters);
 
 /**
 \brief Read a depth image: a exr depth file or a YUV disparity file. 
 
 Use openCV cv::imread() function to read non .YUV images.
-@param filename Name of the image file
-@param size Size of the loaded file (for YUV)
-@param bit_depth Bit depth of raw stream
-@param z_near Maximum depth value (used to convert YUV disparity to depth)
-@param z_far Minimum depth value (used to convert YUV disparity to depth )
+@param filepath Name of the image file (YUV, PNG, etc.)
 @param frame Number of the frame to read
+@param parameters Camera and video parameters
 @return CV_32F image
 
 Result may have NaN values to indicate missing depth values
 */
-cv::Mat1f read_depth(std::string filename, cv::Size size, int bit_depth, float z_near, float z_far, int frame);
+cv::Mat1f read_depth(std::string filepath, int frame, Parameters const& parameters);
 
 #endif

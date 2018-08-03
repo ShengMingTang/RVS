@@ -69,10 +69,12 @@ Config Config::loadFromFile(std::string const& filename)
 	config.setInputCameraParameters(root);
 	config.setVirtualCameraNamesFrom(root);
 	config.setVirtualCameraParameters(root);
-	config.setInputColorFilepathsFrom(root);
-	config.setInputDepthFilepaths(root);
-	config.setOutputFilepaths(root);
-	config.setMaskedOutputFilepaths(root);
+	config.setInputFilepaths(root, "ViewImageNames", config.InputCameraNames);
+	config.setInputFilepaths(root, "DepthMapsNames", config.depth_names);
+	config.setOutputFilepaths(root, "OutputFiles", config.outfilenames);
+	config.setOutputFilepaths(root, "MaskedOutputFiles ", config.outmaskedfilenames);
+	config.setOutputFilepaths(root, "OutputMasks", config.outmaskfilenames);
+	config.setOutputFilepaths(root, "DepthOutputFiles", config.outdepthfilenames);
 	config.setValidityThreshold(root);
 	config.setSynthesisMethod(root);
 	config.setBlendingMethod(root);
@@ -199,68 +201,38 @@ void Config::setVirtualCameraParameters(json::Node root)
 	loadVirtualCameraParametersFromFile(filepath, overrides);
 }
 
-void Config::setInputColorFilepathsFrom(json::Node root)
+void Config::setInputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
 {
-	auto node = root.require("ViewImageNames");
+	auto node = root.require(name);
 	if (node.size() != InputCameraNames.size()) {
-		throw std::runtime_error("Length of ViewImageNames should match with InputCameraNames");
+		std::ostringstream what;
+		what << "Length of " << name << " should match with InputCameraNames";
+		throw std::runtime_error(what.str());
 	}
 	for (auto i = 0u; i != node.size(); ++i) {
-		texture_names.push_back(node.at(i).asString());
+		filepaths.push_back(node.at(i).asString());
 	}
-	std::cout << "ViewImageNames:";
-	for (auto x : texture_names) {
+	std::cout << name << ':';
+	for (auto x : filepaths) {
 		std::cout << "\n\t" << x;
 	}
 	std::cout << '\n';
 }
 
-void Config::setInputDepthFilepaths(json::Node root)
+void Config::setOutputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
 {
-	auto node = root.require("DepthMapNames");
-	if (node.size() != InputCameraNames.size()) {
-		throw std::runtime_error("Length of DepthMapNames should match with InputCameraNames");
-	}
-	for (auto i = 0u; i != node.size(); ++i) {
-		depth_names.push_back(node.at(i).asString());
-	}
-	std::cout << "DepthMapNames:";
-	for (auto x : depth_names) {
-		std::cout << "\n\t" << x;
-	}
-	std::cout << '\n';
-}
-
-void Config::setOutputFilepaths(json::Node root)
-{
-	auto node = root.optional("OutputFiles:");
+	auto node = root.optional(name);
 	if (node) {
 		if (node.size() != VirtualCameraNames.size()) {
-			throw std::runtime_error("Length of OutputFiles should match with VirtualCameraNames");
+			std::ostringstream what;
+			what << "Length of " << name << " should match with VirtualCameraNames";
+			throw std::runtime_error(what.str());
 		}
 		for (auto i = 0u; i != node.size(); ++i) {
-			outfilenames.push_back(node.at(i).asString());
+			filepaths.push_back(node.at(i).asString());
 		}
-		std::cout << "OutputFiles:";
-		for (auto x : outfilenames) {
-			std::cout << "\n\t" << x;
-		}
-		std::cout << '\n';
-	}
-}
-
-void Config::setMaskedOutputFilepaths(json::Node root)
-{
-	auto node = root.optional("MaskedOutputFiles");
-	if (node) {
-		if (node.size() != VirtualCameraNames.size()) {
-			throw std::runtime_error("Length of MaskedOutputFiles should match with VirtualCameraNames");
-		}
-		for (auto i = 0u; i != node.size(); ++i) {
-			outmaskedfilenames.push_back(node.at(i).asString());
-		}
-		std::cout << "MaskedOutputFiles:";
-		for (auto x : outmaskedfilenames) {
+		std::cout << name << ':';
+		for (auto x : filepaths) {
 			std::cout << "\n\t" << x;
 		}
 		std::cout << '\n';

@@ -81,7 +81,7 @@ void BlendedViewMultiSpec::blend(View const& view)
 	m_high_freq.blend(high_view);
 
 	// Combine result
-	assign(m_low_freq.get_color() + m_high_freq.get_color(), cv::Mat1f(), m_low_freq.get_quality(), m_low_freq.get_validity());
+	assign(m_low_freq.get_color() + m_high_freq.get_color(), m_low_freq.get_depth(), m_low_freq.get_quality(), m_low_freq.get_validity());
 }
 
 BlendedViewSimple::BlendedViewSimple(float blending_exp)
@@ -172,7 +172,7 @@ void BlendedViewSimple::blend(View const& view)
 	if (!g_with_opengl) {
 		if (m_is_empty) {
 			m_is_empty = false;
-			assign(view.get_color(), cv::Mat1b(), view.get_quality(), view.get_validity());
+			assign(view.get_color(), view.get_depth(), view.get_quality(), view.get_validity());
 			m_depth_mask = view.get_depth_mask();
 		}
 		else {
@@ -192,7 +192,10 @@ void BlendedViewSimple::blend(View const& view)
 				/*out*/ inpaint_mask,
 				m_blending_exp);
 
-			assign(color, cv::Mat1f(), quality, max(get_validity(), view.get_validity()));
+			auto depth = get_depth().clone();
+			view.get_depth().copyTo(depth, view.get_quality() > get_quality());
+
+			assign(color, depth, quality, max(get_validity(), view.get_validity()));
 			m_depth_mask = depth_prolongation_mask;
 		}
 	}

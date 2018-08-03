@@ -190,15 +190,9 @@ void View::validate() const
 // Load a color image and depth map
 InputView::InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters)
 {
-	// Load images
-	auto color = read_color(filepath_color, parameters.getPaddedSize(), parameters.getColorBitDepth(), frame);
-	auto depth = read_depth(filepath_depth, parameters.getPaddedSize(), parameters.getDepthBitDepth(), parameters.getDepthRange()[0], parameters.getDepthRange()[1], frame);
-
-	// Crop padded images
-	if (parameters.getSize() != parameters.getPaddedSize()) {
-		color = color(parameters.getCropRegion()).clone();
-		depth = depth(parameters.getCropRegion()).clone();
-	}
-
-	assign(color, depth, cv::Mat1f(), cv::Mat1f());
+	assign(
+		read_color(filepath_color, frame, parameters), 
+		read_depth(filepath_depth, frame, parameters), 
+		cv::Mat1f(), 
+		cv::Mat1f());
 }

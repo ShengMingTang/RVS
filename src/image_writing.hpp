@@ -53,15 +53,33 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 /**
-\brief Write a color image in RGB or YUV fileformat.
-
-Use opencv cv::imwrite() function to load non .YUV images.
+\brief Write a color image in RGB or YUV 4:2:0 fileformat.
 
 @param filepath Name of the image file to write
-@param image Image to write
+@param color Image to write
 @param frame Frame number (for YUV)
 @param parameters Camera and video parameters
 */
-void write_color(std::string filepath, cv::Mat3f image, int frame, Parameters const& parameters);
+void write_color(std::string filepath, cv::Mat3f color, int frame, Parameters const& parameters);
+
+/**
+\brief Write a depth map in RGB or YUV 4:2:0 fileformat.
+
+@param filepath Name of the image file to write
+@param depth Image to write
+@param frame Frame number (for YUV)
+@param parameters Camera and video parameters
+*/
+void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters const& parameters);
+
+/**
+\brief Write a mask in RGB or YUV 4:2:0 fileformat.
+
+@param filepath Name of the image file to write
+@param depth Image to write
+@param frame Frame number (for YUV)
+@param parameters Camera and video parameters
+*/
+void write_mask(std::string filepath, cv::Mat1b mask, int frame, Parameters const& parameters);
 
 #endif

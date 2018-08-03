@@ -197,17 +197,6 @@ cv::Vec2f Parameters::getPrinciplePoint() const
 	return m_principlePoint - cv::Vec2f(cv::Point2f(m_cropRegion.tl()));
 }
 
-cv::Matx33f Parameters::getCameraMatrix() const
-{
-	auto f = getFocal();
-	auto p = getPrinciplePoint();
-
-	return cv::Matx33f(
-		f[0],  0.f, p[0],
-		 0.f, f[1], p[1],
-		 0.f,  0.f,  1.f);
-}
-
 void Parameters::setProjectionFrom(json::Node root)
 {
 	auto projection = root.require("Projection");

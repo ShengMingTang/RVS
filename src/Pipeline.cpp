@@ -189,15 +189,25 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 
 	// Compute mask (activated by OutputMasks or MaskedOutputFiles)
 	cv::Mat1b mask;
-	if (!m_config.outmaskedfilenames.empty()) {
+	if (!m_config.outmaskfilenames.empty() || !m_config.outmaskedfilenames.empty()) {
 		mask = blender->get_validity_mask(m_config.validity_threshold);
 		resize(mask, mask, params_virtual.getSize(), cv::INTER_NEAREST);
 	}
 
-	// Write masked output (MaskedOutputFiles)
+	// Write mask (activated by OutputMasks)
+	if (!m_config.outmaskfilenames.empty()) {
+		write_mask(m_config.outmaskfilenames[virtualView], mask, virtualFrame, params_virtual);
+	}
+
+	// Write masked output (activated by MaskedOutputFiles)
 	if (!m_config.outmaskedfilenames.empty()) {
 		color.setTo(cv::Vec3f::all(0.5f), mask);
 		write_color(m_config.outmaskedfilenames[virtualView], color, virtualFrame, params_virtual);
+	}
+
+	// Write depth maps (activated by DepthOutputFiles)
+	if (!m_config.outdepthfilenames.empty()) {
+		write_depth(m_config.outdepthfilenames[virtualView], blender->get_depth(), virtualFrame, params_virtual);
 	}
 
 #if WITH_OPENGL

@@ -128,9 +128,6 @@ public:
 	The value returned is already adjusted to refer to the cropped region. */
 	cv::Vec2f getPrinciplePoint() const;
 
-	/** Intrinsic parameters as a matrix */
-	cv::Matx33f getCameraMatrix() const;
-
 private:
 	Parameters();
 
