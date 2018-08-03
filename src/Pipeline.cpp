@@ -118,7 +118,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 
 	// For each input view
 	for (auto inputView = 0; inputView != m_config.InputCameraNames.size(); ++inputView) {
-		std::cout << inputFrame << '.' << inputView << " => " << virtualFrame << '.' << virtualView << std::endl;
+		std::cout << m_config.InputCameraNames[inputView] << " => " << m_config.VirtualCameraNames[virtualView] << std::endl;
 		auto const& params_real = m_config.params_real[inputView];
 
 		// Complete setup of space transformer
@@ -207,7 +207,9 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 
 	// Write depth maps (activated by DepthOutputFiles)
 	if (!m_config.outdepthfilenames.empty()) {
-		write_depth(m_config.outdepthfilenames[virtualView], blender->get_depth(), virtualFrame, params_virtual);
+		auto depth = blender->get_depth();
+		resize(depth, depth, params_virtual.getSize());
+		write_depth(m_config.outdepthfilenames[virtualView], depth, virtualFrame, params_virtual);
 	}
 
 #if WITH_OPENGL
@@ -284,9 +286,12 @@ void Pipeline::dumpMaps(View const& input_image, std::size_t input_idx, std::siz
 	cv::cvtColor(blender.get_color(), rgb, cv::COLOR_YCrCb2BGR);
 	rgb.convertTo(color, CV_8U, 255.);
 	blender.get_quality().convertTo(quality, CV_16U, 4.);
+	blender.get_depth().convertTo(depth, CV_16U, 2000.);
 	blender.get_validity().convertTo(validity, CV_16U, 6.);
 
 	filepath.str(""); filepath << "dump-blended-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
 	filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
 	filepath.str(""); filepath << "dump-blended-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity);
+	filepath.str(""); filepath << "dump-blended-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
+	filepath.str(""); filepath << "dump-blended-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), blender.get_depth_mask());
 }

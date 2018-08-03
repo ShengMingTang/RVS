@@ -62,9 +62,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #endif
-#define ONLY_OPENGL (WITH_OPENGL && true)
-
-#define PSNR_ONLY_Y false
 
 namespace testing
 {
@@ -113,11 +110,7 @@ namespace testing
 		for (int i_region = 0; i_region != 2; ++i_region) {
 			auto sum_sq_error = 0.;
 			std::size_t num_values = 0;
-#if PSNR_ONLY_Y
-			auto num_planes = 1;
-#else
 			auto num_planes = 3;
-#endif
 
 			for (int i_plane = 0; i_plane != num_planes; ++i_plane) {
 				auto plane_size = i_plane ? size / 2 : size;
@@ -152,8 +145,8 @@ namespace testing
 		YAFFUT_CHECK(psnr[0] > threshold0);
 		YAFFUT_CHECK(psnr[1] > threshold1);
 
-		if (psnr[0] > threshold0 + 0.1 ||
-			psnr[1] > threshold1 + 0.1) {
+		if (psnr[0] > threshold0 + 0.1 && threshold0 < 100. ||
+			psnr[1] > threshold1 + 0.1 && threshold1 < 100.) {
 			std::clog << "WARNING: thresholds can be increased\n";
 		}
 	}
@@ -176,8 +169,6 @@ namespace testing
 	}
 
 }
-
-#if !ONLY_OPENGL
 
 FUNC(ULB_Unicorn_Example)
 {
@@ -223,12 +214,17 @@ FUNC(ULB_Unicorn_Same_View)
 FUNC(ClassroomVideo_v0_to_v0)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.cfg");
+	std::cout << '\n';
+	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.json");
 	p.execute();
-	testing::compareWithReferenceView<std::uint16_t>(
+	testing::compareWithReferenceView<std::uint16_t>( // texture
 		"v0vs_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 70.00, 78.52); // VC14 + OpenCV 3.1.0: 70.0586, 78.572 (with new full depth maps)
+		cv::Size(4096, 2048), 10, 70.00, 78.52); // VC14 + OpenCV 3.1.0: 70.0586, 78.572
+	testing::compareWithReferenceView<std::uint16_t>( // depth
+		"v0vs_4096_2048_0_8_1000_0_420_10b.yuv",
+		"ClassroomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv",
+		cv::Size(4096, 2048), 10, 100, 100.); // VC14 + OpenCV 3.1.0: 45.2363, inf
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0)
@@ -326,7 +322,6 @@ FUNC(TechnicolorMuseum_v5_to_v6)
 		"TechnicolorMuseum/v6_2048_2048_420_10b.yuv",
 		cv::Size(2048, 2048), 10, 22.37, 26.54); // VC14 + OpenCV 3.1.0: 22.4218, 26.5975
 }
-#endif
 
 #if WITH_OPENGL
 FUNC(ULB_Unicorn_Triangles_Simple_OpenGL)

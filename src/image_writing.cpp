@@ -149,10 +149,10 @@ void write_color(std::string filepath, cv::Mat3f color, int frame, Parameters co
 
 	// Write the image
 	if (color_space == ColorSpace::YUV) {
-		write_color_YUV(filepath, color, frame);
+		write_color_YUV(filepath, image, frame);
 	}
 	else if (frame == 0) {
-		cv::imwrite(filepath, color);
+		cv::imwrite(filepath, image);
 	}
 	else {
 		throw std::runtime_error("Writing multiple frames not (yet) supported for image files");
@@ -174,11 +174,12 @@ void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters co
 
 		// 1000 is for 'infinitly far'
 		if (far >= 1000.f) {
-			image = max_level(bit_depth) * near / depth;
+			depth = near / depth;
 		}
 		else {
-			image = max_level(bit_depth) * (far * near / depth - near) / (far - near);
+			depth = (far * near / depth - near) / (far - near);
 		}
+		depth.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
 	}
 
 	// Pad image

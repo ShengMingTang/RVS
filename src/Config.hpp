@@ -164,8 +164,7 @@ public:
 private:
 	Config() = default;
 
-	void loadInputCameraParametersFromFile(std::string const& filepath, json::Node overrides);
-	void loadVirtualCameraParametersFromFile(std::string const& filepath, json::Node overrides);
+	std::vector<Parameters> loadCamerasParametersFromFile(std::string const& filepath, std::vector<std::string> names, json::Node overrides);
 	void loadPoseTraceFromFile(std::string const& filepath);
 
 	void setVersionFrom(json::Node root);

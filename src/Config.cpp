@@ -49,6 +49,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <fstream>
 #include <iostream>
+#include <map>
 
 float const defaultPrecision = 1.f;
 ColorSpace const defaultColorSpace = ColorSpace::YUV;
@@ -66,11 +67,11 @@ Config Config::loadFromFile(std::string const& filename)
 
 	config.setVersionFrom(root);
 	config.setInputCameraNamesFrom(root);
-	config.setInputCameraParameters(root);
 	config.setVirtualCameraNamesFrom(root);
+	config.setInputCameraParameters(root);
 	config.setVirtualCameraParameters(root);
-	config.setInputFilepaths(root, "ViewImageNames", config.InputCameraNames);
-	config.setInputFilepaths(root, "DepthMapsNames", config.depth_names);
+	config.setInputFilepaths(root, "ViewImageNames", config.texture_names);
+	config.setInputFilepaths(root, "DepthMapNames", config.depth_names);
 	config.setOutputFilepaths(root, "OutputFiles", config.outfilenames);
 	config.setOutputFilepaths(root, "MaskedOutputFiles ", config.outmaskedfilenames);
 	config.setOutputFilepaths(root, "OutputMasks", config.outmaskfilenames);
@@ -97,40 +98,46 @@ Config Config::loadFromFile(std::string const& filename)
 	return config;
 }
 
-namespace
+std::vector<Parameters> Config::loadCamerasParametersFromFile(std::string const& filepath, std::vector<std::string> names, json::Node overrides)
 {
-	json::Node loadCamerasParametersFromFile(std::string const& filepath)
-	{
-		std::ifstream stream(filepath);
-		auto root = json::Node::readFrom(stream);
-		auto version = root.require("Version").asString();
-		if (version.substr(0, 2) != "2.") {
-			throw std::runtime_error("Version of the camera parameters file is not compatible with this version of RVS");
+	// Load the camera parameters
+	std::ifstream stream(filepath);
+	auto root = json::Node::readFrom(stream);
+	auto version_ = root.require("Version").asString();
+	if (version_.substr(0, 2) != "2.") {
+		throw std::runtime_error("Version of the camera parameters file is not compatible with this version of RVS");
+	}
+
+	// Load parameters (with overrides) and index by camera name
+	std::map<std::string, Parameters> index;
+	auto cameras = root.require("cameras");
+	for (int i = 0; i != cameras.size(); ++i) {
+		auto node = cameras.at(i);
+		auto name = node.require("Name").asString();
+		if (index.count(name)) {
+			std::ostringstream what;
+			what << "Camera parameters file has duplicate camera '" << name << "'";
+			throw std::runtime_error(what.str());
 		}
-		return root.require("cameras");
+		if (overrides) {
+			node.setOverrides(overrides);
+		}
+		index.emplace(name, Parameters::readFrom(node));
 	}
-}
 
-void Config::loadInputCameraParametersFromFile(std::string const& filepath, json::Node overrides)
-{
-	auto cameras = loadCamerasParametersFromFile(filepath);
-	cameras.setOverrides(overrides);
-
-	for (auto cam : InputCameraNames) {
-		params_real.push_back(
-			Parameters::readFrom(cameras.require(cam)));
+	// Assign in the requested order
+	std::vector<Parameters> parameters;
+	for (auto name : names) {
+		try {
+			parameters.push_back(index.at(name));
+		}
+		catch (std::out_of_range&) {
+			std::ostringstream what;
+			what << "Camera parameters file does not have camera '" << name << "'";
+			throw std::runtime_error(what.str());
+		}
 	}
-}
-
-void Config::loadVirtualCameraParametersFromFile(std::string const& filepath, json::Node overrides)
-{
-	auto cameras = loadCamerasParametersFromFile(filepath);
-	cameras.setOverrides(overrides);
-
-	for (auto cam : VirtualCameraNames) {
-		params_virtual.push_back(
-			Parameters::readFrom(cameras.require(cam)));
-	}
+	return parameters;
 }
 
 void Config::loadPoseTraceFromFile(std::string const& filepath)
@@ -187,7 +194,7 @@ void Config::setInputCameraParameters(json::Node root)
 	if (overrides) {
 		std::cout << "InputOverrides: " << overrides.size() << " keys\n";
 	}
-	loadInputCameraParametersFromFile(filepath, overrides);
+	params_real = loadCamerasParametersFromFile(filepath, InputCameraNames, overrides);
 }
 
 void Config::setVirtualCameraParameters(json::Node root)
@@ -198,7 +205,7 @@ void Config::setVirtualCameraParameters(json::Node root)
 	if (overrides) {
 		std::cout << "VirtualOverrides: " << overrides.size() << " keys\n";
 	}
-	loadVirtualCameraParametersFromFile(filepath, overrides);
+	params_virtual = loadCamerasParametersFromFile(filepath, VirtualCameraNames, overrides);
 }
 
 void Config::setInputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
@@ -214,7 +221,7 @@ void Config::setInputFilepaths(json::Node root, char const *name, std::vector<st
 	}
 	std::cout << name << ':';
 	for (auto x : filepaths) {
-		std::cout << "\n\t" << x;
+		std::cout << "\n  * " << x;
 	}
 	std::cout << '\n';
 }
@@ -233,7 +240,7 @@ void Config::setOutputFilepaths(json::Node root, char const *name, std::vector<s
 		}
 		std::cout << name << ':';
 		for (auto x : filepaths) {
-			std::cout << "\n\t" << x;
+			std::cout << "\n  * " << x;
 		}
 		std::cout << '\n';
 	}

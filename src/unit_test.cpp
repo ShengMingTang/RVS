@@ -355,6 +355,9 @@ FUNC(Test_JsonParser_overrides)
 	auto root1 = json::Node::readFrom(stream1);
 	auto root2 = json::Node::readFrom(stream2);
 
+	CHECK(root1.require("Alpha").asString() == "RVS");
+	EQUAL(root1.require("Gamma").asInt(), 30);
+
 	root1.setOverrides(root2);
 
 	CHECK(root1.require("Alpha").asString() == "RVS");

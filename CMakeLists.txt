@@ -206,11 +206,14 @@ endif()
 
 set(CONFIGURATION_FILES
 	config_files/example_config_file.cfg
+	config_files/ClassroomVideo.json
+	config_files/TechnicolorMuseum.json
+	config_files/TechnicolorHijack.json
 	config_files/_integration_tests/Unicorn_Same_View.cfg
 	config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.cfg
 	config_files/_integration_tests/Unicorn_Triangles_Simple.cfg
 	config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.cfg
-	config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.cfg
+	config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.json
 	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.cfg
 	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.cfg
 	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.cfg

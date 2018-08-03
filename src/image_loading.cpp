@@ -63,10 +63,7 @@ namespace
 		stream.read(reinterpret_cast<char*>(image.data), image.size().area() * image.elemSize());
 	}
 
-	/**
-	 * Reads a raw color image as-is
-	 */
-	cv::Mat3f read_color_YUV(std::string filepath, int frame, Parameters const& parameters) {
+	cv::Mat read_color_YUV(std::string filepath, int frame, Parameters const& parameters) {
 		auto size = parameters.getPaddedSize();
 		auto bit_depth = parameters.getColorBitDepth();
 		auto type = CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1);
@@ -91,7 +88,7 @@ namespace
 		return image;
 	}
 
-	cv::Mat1f read_depth_YUV(std::string filepath, int frame, Parameters const& parameters) {
+	cv::Mat read_depth_YUV(std::string filepath, int frame, Parameters const& parameters) {
 		auto size = parameters.getPaddedSize();
 		auto bit_depth = parameters.getDepthBitDepth();
 		cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1));
@@ -103,7 +100,7 @@ namespace
 		return image;
 	}
 
-	cv::Mat3f read_color_RGB(std::string filepath, Parameters const& parameters) {
+	cv::Mat read_color_RGB(std::string filepath, Parameters const& parameters) {
 		cv::Mat image = cv::imread(filepath, cv::IMREAD_UNCHANGED);
 
 		if (image.empty())
@@ -174,7 +171,7 @@ cv::Mat1f read_color(std::string filepath, int frame, Parameters const& paramete
 	}
 
 	// Normalize to [0, 1]
-	cv::Mat1f color;
+	cv::Mat3f color;
 	if (image.depth() == CV_32F) {
 		color = image;
 	}
@@ -184,13 +181,13 @@ cv::Mat1f read_color(std::string filepath, int frame, Parameters const& paramete
 
 	// Color space conversion
 	if (color_space == ColorSpace::YUV && g_color_space == ColorSpace::RGB) {
-		cv::cvtColor(image, image, CV_YCrCb2BGR);
+		cv::cvtColor(color, color, CV_YCrCb2BGR);
 	}
 	else if (color_space == ColorSpace::RGB && g_color_space == ColorSpace::YUV) {
-		cv::cvtColor(image, image, CV_BGR2YCrCb);
+		cv::cvtColor(color, color, CV_BGR2YCrCb);
 	}
 
-	return image;
+	return color;
 }
 
 cv::Mat1f read_depth(std::string filepath, int frame, Parameters const& parameters)
