@@ -1,0 +1,22 @@
+{
+	"Version": "2.0",
+	"InputCameraParameterFile": "config_files/ULB_Unicorn.json",
+	"VirtualCameraParameterFile": "config_files/ULB_Unicorn.json",
+	"InputCameraNames": ["cam_030003070370", "cam_030003430506"],
+	"VirtualCameraNames": ["cam_030003250438"],
+	"ViewImageNames": [
+		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0307x0370.yuv",
+		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0343x0506.yuv"],
+	"DepthMapNames": [
+		"Plane_B'/Plane_B'_Depth/Kinect_z0300y0307x0370.yuv",
+		"Plane_B'/Plane_B'_Depth/Kinect_z0300y0343x0506.yuv"],
+	"OutputFiles": ["030003250438_from_030003070370_030003430506_Triangles_Multispectral.yuv"],
+	"StartFrame": 0,
+	"NumberOfFrames": 1,
+	"Precision": 2.0,
+	"ColorSpace": "YUV",
+	"ViewSynthesisMethod": "Triangles",
+	"BlendingMethod": "Multispectral",
+	"BlendingLowFreqFactor": 1.0,
+	"BlendingHighFreqFactor": 4.0
+}

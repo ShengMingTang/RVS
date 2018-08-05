@@ -75,7 +75,7 @@ class Pipeline
 public:
 	/**
 	\brief Constructor
-	@param filepath Config file (in VSRS config file format or SVS config fileformat)
+	@param filepath Configuration file (JSON format)
 	*/
 	Pipeline(std::string const& filepath);
 

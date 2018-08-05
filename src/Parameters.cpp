@@ -80,9 +80,9 @@ namespace
 	cv::Matx33f EulerAnglesToRotationMatrix(cv::Vec3f rotation)
 	{
 		return
-			rotationMatrixFromRotationAroundZ(rotation[2]) *
+			rotationMatrixFromRotationAroundZ(rotation[0]) *
 			rotationMatrixFromRotationAroundY(rotation[1]) *
-			rotationMatrixFromRotationAroundX(rotation[0]);
+			rotationMatrixFromRotationAroundX(rotation[2]);
 	}
 }
 
@@ -104,6 +104,7 @@ Parameters Parameters::readFrom(json::Node root)
 	parameters.setCropRegionFrom(root);
 	parameters.setFocalFrom(root);
 	parameters.setPrinciplePointFrom(root);	
+	Parameters::validateUnused(root);
 
 	return parameters;
 }
@@ -197,6 +198,25 @@ cv::Vec2f Parameters::getPrinciplePoint() const
 	return m_principlePoint - cv::Vec2f(cv::Point2f(m_cropRegion.tl()));
 }
 
+void Parameters::printTo(std::ostream& stream) const
+{
+	stream << m_resolution << ' ' << m_bitDepthColor << "b " << m_bitDepthDepth << "b " << m_depthRange;
+	if (m_cropRegion != cv::Rect(cv::Point(), m_resolution)) {
+		stream << m_cropRegion;
+	}
+	switch (m_projectionType) {
+	case ProjectionType::equirectangular:
+		stream << " equirectangular " << m_horRange << ' ' << m_verRange;
+		break;
+	case ProjectionType::perspective:
+		stream << " perspective " << m_focal << ' ' << m_principlePoint;
+		break;
+	default:
+		throw std::logic_error("Unknown projection type");
+	}
+	stream << ' ' << m_position << ' ' << m_rotation;
+}
+
 void Parameters::setProjectionFrom(json::Node root)
 {
 	auto projection = root.require("Projection");
@@ -210,6 +230,21 @@ void Parameters::setProjectionFrom(json::Node root)
 	else {
 		throw std::runtime_error("Unknown projection type");
 	}
+}
+
+void Parameters::validateUnused(json::Node root)
+{
+	if (root.require("ColorSpace").asString() != "YUV420" || root.require("DepthColorSpace").asString() != "YUV420") {
+		throw std::runtime_error("This version of RVS only supports YUV420 color space for depth and texture");
+	}
+
+	if (root.require("Depthmap").asInt() != 1) {
+		throw std::runtime_error("This version of RVS only supports Depthmap 1");
+	}
+
+	// NOTE: This field is not used consistently by the 3DoF+ test material.
+	//       For RVS instead use the order of the camera names to determine the blending order.
+	root.require("Background").asInt();
 }
 
 namespace
@@ -252,6 +287,12 @@ void Parameters::setRotationFrom(json::Node root)
 void Parameters::setDepthRangeFrom(json::Node root)
 {
 	m_depthRange = asFloatVec<2>(root.require("Depth_range"));
+	if (!(m_depthRange[0] < m_depthRange[1])) {
+		throw std::runtime_error("Inverted depth range: [near, far] with near > far is not allowed");
+	}
+	if (m_depthRange[1] > 1000.f) {
+		throw std::runtime_error("Invalid depth range: [near, far] with far > 1000 is not allowed because 1000 stands for infinity. Please restrict depth range or change world units.");
+	}
 }
 
 void Parameters::setResolutionFrom(json::Node root)

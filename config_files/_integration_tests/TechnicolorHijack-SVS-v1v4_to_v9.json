@@ -1,0 +1,22 @@
+{
+	"Version": "2.0",
+	"InputCameraParameterFile": "config_files/TechnicolorHijack.json",
+	"VirtualCameraParameterFile": "config_files/TechnicolorHijack.json",
+	"InputCameraNames": ["v1", "v4"],
+	"VirtualCameraNames": ["v9"],
+	"ViewImageNames": [
+		"TechnicolorHijack/v1_4096_4096_420_10b.yuv",
+		"TechnicolorHijack/v4_4096_4096_420_10b.yuv"],
+	"DepthMapNames": [
+		"TechnicolorHijack/v1_4096_4096_0_5_25_0_420_10b.yuv",
+		"TechnicolorHijack/v4_4096_4096_0_5_25_0_420_10b.yuv"],
+	"OutputFiles": ["TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv"],
+	"DepthOutputFiles": ["TechnicolorHijack_v9vs_from_v1v4_4096_4096_0_5_25_0_420_10b.yuv"],
+	"StartFrame": 0,
+	"NumberOfFrames": 1,
+	"Precision": 2.0,
+	"ColorSpace": "YUV",
+	"ViewSynthesisMethod": "Triangles",
+	"BlendingMethod": "Simple",
+	"BlendingFactor": 5.0
+}

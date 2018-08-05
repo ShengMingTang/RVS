@@ -60,6 +60,7 @@ bool g_with_opengl = true;
 
 Config Config::loadFromFile(std::string const& filename)
 {
+	std::cout << '\n';
 	std::ifstream stream(filename);
 	auto root = json::Node::readFrom(stream);
 
@@ -129,6 +130,9 @@ std::vector<Parameters> Config::loadCamerasParametersFromFile(std::string const&
 	std::vector<Parameters> parameters;
 	for (auto name : names) {
 		try {
+			std::cout << "  * " << name << ": ";
+			index.at(name).printTo(std::cout);
+			std::cout << '\n';
 			parameters.push_back(index.at(name));
 		}
 		catch (std::out_of_range&) {

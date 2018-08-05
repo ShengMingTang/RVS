@@ -1,0 +1,23 @@
+{
+	"Version": "2.0",
+	"InputCameraParameterFile": "config_files/ClassroomVideo.json",
+	"VirtualCameraParameterFile": "config_files/ClassroomVideo.json",
+	"InputCameraNames": ["v7", "v8"],
+	"VirtualCameraNames": ["v0"],
+	"ViewImageNames": [
+		"ClassroomVideo/v7_4096_2048_420_10b.yuv",
+		"ClassroomVideo/v8_4096_2048_420_10b.yuv"],
+	"DepthMapNames": [
+		"ClassroomVideo/v7_4096_2048_0_8_1000_0_420_10b.yuv",
+		"ClassroomVideo/v8_4096_2048_0_8_1000_0_420_10b.yuv"],
+	"OutputFiles": ["v0vs_from_v7v8_4096_2048_420_10b.yuv"],
+	"OutputMasks": ["v0vs_from_v7v8_4096_2048_420_mask.yuv"],
+	"DepthOutputFiles": ["v0vs_from_v7v8_4096_2048_0_8_1000_0_420_10b.yuv"],
+	"StartFrame": 0,
+	"NumberOfFrames": 1,
+	"Precision": 2.0,
+	"ColorSpace": "YUV",
+	"ViewSynthesisMethod": "Triangles",
+	"BlendingMethod": "Simple",
+	"BlendingFactor": 1.0
+}

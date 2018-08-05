@@ -205,26 +205,26 @@ set(PROJECT_HEADERS ${PROJECT_HEADERS} ${OPENGL_HEADERS})
 endif()
 
 set(CONFIGURATION_FILES
-	config_files/example_config_file.cfg
+	config_files/example_config_file.json
 	config_files/ClassroomVideo.json
 	config_files/TechnicolorMuseum.json
 	config_files/TechnicolorHijack.json
-	config_files/_integration_tests/Unicorn_Same_View.cfg
-	config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.cfg
-	config_files/_integration_tests/Unicorn_Triangles_Simple.cfg
-	config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.cfg
+	config_files/_integration_tests/Unicorn_Same_View.json
+	config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json
+	config_files/_integration_tests/Unicorn_Triangles_Simple.json
+	config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.json
 	config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.cfg
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.cfg
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.cfg
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0_to_v0.cfg
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.cfg
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1_OpenGL.cfg
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v5.cfg
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v6.cfg
-	config_files/_integration_tests/TechnicolorHijack-BlendByMax.cfg
-	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.cfg
-	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9_OpenGL.cfg)
+	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.json
+	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.json
+	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.json
+	config_files/_integration_tests/TechnicolorMuseum-SVS-v0_to_v0.json
+	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.json
+	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1_OpenGL.json
+	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v5.json
+	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v6.json
+	config_files/_integration_tests/TechnicolorHijack-BlendByMax.json
+	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.json
+	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9_OpenGL.json)
 				 						 	 
 source_group("Source" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
 source_group("Headers" FILES ${PROJECT_HEADERS})

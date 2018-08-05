@@ -128,6 +128,9 @@ public:
 	The value returned is already adjusted to refer to the cropped region. */
 	cv::Vec2f getPrinciplePoint() const;
 
+	/** Print a description */
+	void printTo(std::ostream& stream) const;
+
 private:
 	Parameters();
 
@@ -143,6 +146,9 @@ private:
 	void setCropRegionFrom(json::Node root);
 	void setFocalFrom(json::Node root);
 	void setPrinciplePointFrom(json::Node root);
+
+	/** Validate some fields of the JSON format that RVS is not effectively using */
+	static void validateUnused(json::Node root);
 
 	ProjectionType m_projectionType;
 	cv::Vec3f m_position;

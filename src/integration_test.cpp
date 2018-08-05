@@ -173,7 +173,7 @@ namespace testing
 FUNC(ULB_Unicorn_Example)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/example_config_file.cfg");
+	Pipeline p("./config_files/example_config_file.json");
 	p.execute();
 	// No reference
 }
@@ -181,21 +181,21 @@ FUNC(ULB_Unicorn_Example)
 FUNC(ULB_Unicorn_Triangles_Simple)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/Unicorn_Triangles_Simple.cfg");
+	Pipeline p("./config_files/_integration_tests/Unicorn_Triangles_Simple.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint8_t>(
 		"030003250438_from_030003070370_030003430506_Triangles_Simple.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
-		cv::Size(1920, 1080), 8, 20.32, 24.54); // VC14 + OpenCV 3.1.0: 20.377, 24.5955
+		cv::Size(1920, 1080), 8, 21.08, 26.12); // VC14 + OpenCV 3.1.0: 21.1318, 26.1742
 }
 
 FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.cfg");
+	Pipeline p("./config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint8_t>(
-		"030003250438_from_030003070370_030003430506_Triangles_MultiSpectral.yuv",
+		"030003250438_from_030003070370_030003430506_Triangles_Multispectral.yuv",
 		"Plane_B'/Plane_B'_Texture/Kinect_z0300y0325x0438.yuv",
 		cv::Size(1920, 1080), 8, 20.30, 24.35); // VC14 + OpenCV 3.1.0: 20.3568, 24.4012
 }
@@ -203,7 +203,7 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 FUNC(ULB_Unicorn_Same_View)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/Unicorn_Same_View.cfg");
+	Pipeline p("./config_files/_integration_tests/Unicorn_Same_View.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint8_t>(
 		"030003250506_from_030003250506_Same_View.yuv",
@@ -214,7 +214,6 @@ FUNC(ULB_Unicorn_Same_View)
 FUNC(ClassroomVideo_v0_to_v0)
 {
 	g_with_opengl = false;
-	std::cout << '\n';
 	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>( // texture
@@ -224,13 +223,13 @@ FUNC(ClassroomVideo_v0_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>( // depth
 		"v0vs_4096_2048_0_8_1000_0_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 100, 100.); // VC14 + OpenCV 3.1.0: 45.2363, inf
+		cv::Size(4096, 2048), 10, 45.17, 100.); // VC14 + OpenCV 3.1.0: 45.2363, inf
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.cfg");
+	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_from_v7v8_4096_2048_420_10b.yuv",
@@ -241,7 +240,7 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.cfg");
+	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.json");
 	p.execute();
 
 	auto actual = testing::readYUV420<std::uint16_t>("v0_270deg_from_v7v8_2304_1536_420_10b.yuv", cv::Size(2304, 1536));
@@ -260,7 +259,7 @@ FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 FUNC(TechnicolorHijack_v1v4_to_v9)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.cfg");
+	Pipeline p("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 	"TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv",
@@ -271,7 +270,7 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 FUNC(TechnicolorHijack_BlendByMax)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorHijack-BlendByMax.cfg");
+	Pipeline p("./config_files/_integration_tests/TechnicolorHijack-BlendByMax.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorHijack_BlendByMax.yuv",
@@ -282,7 +281,7 @@ FUNC(TechnicolorHijack_BlendByMax)
 FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.cfg");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v1vs_from_v0v2v13v17v19_2048_2048_420_10b.yuv",
@@ -293,7 +292,7 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 FUNC(TechnicolorMuseum_v0_to_v0)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0_to_v0.cfg");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0_to_v0.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v0vs_from_v0_2048_2048_420_10b.yuv",
@@ -304,18 +303,18 @@ FUNC(TechnicolorMuseum_v0_to_v0)
 FUNC(TechnicolorMuseum_v5_to_v5)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v5.cfg");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v5.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v5vs_from_v5_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v5_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 56.74, 73.73); // VC14 + OpenCV 3.1.0: 56.7996, 73.7879
+		cv::Size(2048, 2048), 10, 58.44, 73.73); // VC14 + OpenCV 3.1.0: 58.4967, 73.7879
 }
 
 FUNC(TechnicolorMuseum_v5_to_v6)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v6.cfg");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v6.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v6vs_from_v5_2048_2048_420_10b.yuv",
@@ -329,13 +328,13 @@ FUNC(ULB_Unicorn_Triangles_Simple_OpenGL)
 
 	if (!testing::file_exists("030003250438_from_030003070370_030003430506_Triangles_Simple.yuv")) {
 		g_with_opengl = false;
-		Pipeline p("./config_files/_integration_tests/Unicorn_Triangles_Simple.cfg");
+		Pipeline p("./config_files/_integration_tests/Unicorn_Triangles_Simple.json");
 		p.execute();
 	}
 
 	g_with_opengl = true;
 	context_init();
-	Pipeline pgl("./config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.cfg");
+	Pipeline pgl("./config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.json");
 	pgl.execute();
 
 	//No opengl vs ref
@@ -360,13 +359,13 @@ FUNC(ClassroomVideo_v7v8_to_v0_OpenGL)
 {
 	if (!testing::file_exists("v0vs_from_v7v8_4096_2048_420_10b.yuv")) {
 		g_with_opengl = false;
-		Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.cfg");
+		Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.json");
 		p.execute();
 	}
 
 	g_with_opengl = true;
 	context_init();
-	Pipeline pGL("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.cfg");
+	Pipeline pGL("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.json");
 	pGL.execute();
 
 	//opengl vs ref
@@ -390,13 +389,13 @@ FUNC(TechnicolorHijack_v1v4_to_v9_OpenGL)
 {
 	if (!testing::file_exists("TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv")) {
 		g_with_opengl = false;
-		Pipeline p("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.cfg");
+		Pipeline p("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.json");
 		p.execute();
 	}
 
 	g_with_opengl = true;
 	context_init();
-	Pipeline pGL("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9_OpenGL.cfg");
+	Pipeline pGL("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9_OpenGL.json");
 	pGL.execute();
 
 	//no opengl vs ref
@@ -420,13 +419,13 @@ FUNC(TechnicoloMuseum_SVS_v0v2v13v17v19_to_v1_OpenGL)
 {
 	if (!testing::file_exists("TechnicolorMuseum_v1vs_from_v0v2v13v17v19_2048_2048_420_10b.yuv")) {
 		g_with_opengl = false;
-		Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.cfg");
+		Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.json");
 		p.execute();
 	}
 	
 	g_with_opengl = true;
 	context_init();
-	Pipeline pGL("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1_OpenGL.cfg");
+	Pipeline pGL("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1_OpenGL.json");
 	pGL.execute();
 
 	//no opengl vs ref

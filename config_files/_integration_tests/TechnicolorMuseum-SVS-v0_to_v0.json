@@ -1,0 +1,17 @@
+{
+	"Version": "2.0",
+	"InputCameraParameterFile": "config_files/TechnicolorMuseum.json",
+	"VirtualCameraParameterFile": "config_files/TechnicolorMuseum.json",
+	"InputCameraNames": ["v0"],
+	"VirtualCameraNames": ["v0"],
+	"ViewImageNames": ["TechnicolorMuseum/v0_2048_2048_420_10b.yuv"],
+	"DepthMapNames": ["TechnicolorMuseum/v0_2048_2048_0_5_25_0_420_10b.yuv"],
+	"OutputFiles": ["TechnicolorMuseum_v0vs_from_v0_2048_2048_420_10b.yuv"],
+	"StartFrame": 0,
+	"NumberOfFrames": 1,
+	"Precision": 2.0,
+	"ColorSpace": "YUV",
+	"ViewSynthesisMethod": "Triangles",
+	"BlendingMethod": "Simple",
+	"BlendingFactor": 5.0
+}
