@@ -233,7 +233,7 @@ FUNC(ULB_Unicorn_Same_View)
 FUNC(ClassroomVideo_v0_to_v0)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.json");
+	Pipeline p("./config_files/_integration_tests/ClassroomVideo-v0_to_v0.json");
 	p.execute();
 
 	// No OpenGL vs reference: texture
@@ -252,7 +252,7 @@ FUNC(ClassroomVideo_v0_to_v0)
 FUNC(ClassroomVideo_v7v8_to_v0)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.json");
+	Pipeline p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -264,7 +264,7 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 #if WITH_OPENGL
 	g_with_opengl = true;
 	context_init();
-	Pipeline pGL("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.json");
+	Pipeline pGL("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_OpenGL.json");
 	pGL.execute();
 
 	// OpenGL vs reference
@@ -284,7 +284,7 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.json");
+	Pipeline p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_270deg.json");
 	p.execute();
 
 	auto actual = testing::readYUV420<std::uint16_t>("v0_270deg_from_v7v8_2304_1536_420_10b.yuv", cv::Size(2304, 1536));
@@ -304,7 +304,7 @@ FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 FUNC(TechnicolorHijack_v1v4_to_v9)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.json");
+	Pipeline p("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9.json");
 	p.execute();
 
 	// No OpenGL vs reference: texture
@@ -322,7 +322,7 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 #if WITH_OPENGL
 	g_with_opengl = true;
 	context_init();
-	Pipeline pGL("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9_OpenGL.json");
+	Pipeline pGL("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9_OpenGL.json");
 	pGL.execute();
 
 	// OpenGL vs. reference
@@ -355,7 +355,7 @@ FUNC(TechnicolorHijack_BlendByMax)
 FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.json");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -367,7 +367,7 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 #if WITH_OPENGL
 	g_with_opengl = true;
 	context_init();
-	Pipeline pGL("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1_OpenGL.json");
+	Pipeline pGL("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1_OpenGL.json");
 	pGL.execute();
 
 	// OpenGL vs reference
@@ -387,7 +387,7 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 FUNC(TechnicolorMuseum_v0_to_v0)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v0_to_v0.json");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-v0_to_v0.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -400,7 +400,7 @@ FUNC(TechnicolorMuseum_v0_to_v0)
 FUNC(TechnicolorMuseum_v5_to_v5)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v5.json");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v5.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -413,7 +413,7 @@ FUNC(TechnicolorMuseum_v5_to_v5)
 FUNC(TechnicolorMuseum_v5_to_v6)
 {
 	g_with_opengl = false;
-	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v6.json");
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v6.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -421,6 +421,19 @@ FUNC(TechnicolorMuseum_v5_to_v6)
 		"TechnicolorMuseum_v6vs_from_v5_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v6_2048_2048_420_10b.yuv",
 		cv::Size(2048, 2048), 10, 22.37, 26.54); // VC14 + OpenCV 3.1.0: 22.4218, 26.5975
+}
+
+FUNC(TechnicolorMuseum_PoseTrace)
+{
+	g_with_opengl = false;
+	Pipeline p("./config_files/_integration_tests/TechnicolorMuseum-PoseTrace.json");
+	p.execute();
+
+	// No OpenGL vs reference
+	testing::compareWithReferenceView<std::uint16_t>(
+		"TechnicolorMuseum_PoseTrace.yuv",
+		"TechnicolorMuseum/v6_2048_2048_420_10b.yuv",
+		cv::Size(2048, 2048), 10, 22.37, 26.54); // VC14 + OpenCV 3.1.0: ?, ?
 }
 
 int main(int argc, const char* argv[])

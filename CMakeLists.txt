@@ -208,18 +208,19 @@ set(CONFIGURATION_FILES
 	config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json
 	config_files/_integration_tests/Unicorn_Triangles_Simple.json
 	config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0_to_v0.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1_OpenGL.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v5.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v6.json
+	config_files/_integration_tests/ClassroomVideo-v0_to_v0.json
+	config_files/_integration_tests/ClassroomVideo-v7v8_to_v0.json
+	config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_270deg.json
+	config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_OpenGL.json
+	config_files/_integration_tests/TechnicolorMuseum-v0_to_v0.json
+	config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1.json
+	config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1_OpenGL.json
+	config_files/_integration_tests/TechnicolorMuseum-v5_to_v5.json
+	config_files/_integration_tests/TechnicolorMuseum-v5_to_v6.json
+	config_files/_integration_tests/TechnicolorMuseum-PoseTrace.json
 	config_files/_integration_tests/TechnicolorHijack-BlendByMax.json
-	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.json
-	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9_OpenGL.json)
+	config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9.json
+	config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9_OpenGL.json)
 				 						 	 
 source_group("Source Files" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
 source_group("Header Files" FILES ${PROJECT_HEADERS})
