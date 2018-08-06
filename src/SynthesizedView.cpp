@@ -99,7 +99,7 @@ void SynthesizedView::compute(View& input)
 
 		const float offset = 0.0; // Center of a pixel
 		auto FBO = RFBO::getInstance();
-		auto & shaders = *(ShadersList::getInstance());
+		auto& shaders = ShadersList::getInstance();
 
 		float w = float(input.get_depth().cols);
 		float h = float(input.get_depth().rows);
@@ -112,7 +112,7 @@ void SynthesizedView::compute(View& input)
 		
 		const VAO_VBO_EBO vve(input.get_depth(), input.get_depth().size());
 
-		GLuint program = shaders("synthesis").program();
+		GLuint program = shaders("synthesis").getProgramID();
 		assert(program != 0);
 
 		glEnable(GL_DEPTH_TEST);

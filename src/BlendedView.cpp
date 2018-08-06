@@ -102,7 +102,7 @@ void BlendedViewSimple::blend(View const& view)
 		PROF_START("BLENDING_OPENGL");
 
 		auto FBO = RFBO::getInstance();
-		auto & shaders = *(ShadersList::getInstance());
+		auto & shaders = ShadersList::getInstance();
 		// QUAD VAO
 		GLfloat quadVertices[] = {
 			-1.0f, 1.0f, 0.0f, 1.0f,
@@ -126,8 +126,8 @@ void BlendedViewSimple::blend(View const& view)
 		glBindVertexArray(0);
 		// END QUAD VAO
 
-		GLuint program = shaders("blending2").program();
-		if (FBO->value) program = shaders("blending1").program();
+		GLuint program = shaders("blending2").getProgramID();
+		if (FBO->value) program = shaders("blending1").getProgramID();
 
 		assert(program != 0);
 

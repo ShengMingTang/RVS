@@ -57,74 +57,36 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 class Shader
 {
 public:
-	std::string vertex_source;
-	std::string fragment_source;
-	std::string geometry_source;
-	std::string tessC_source;
-	std::string tessE_source;
+	Shader(std::string vertexSource, std::string fragmentSource, std::string geometrySource = std::string());
+
+	GLuint getProgramID() const;
 
 private:
-	GLuint vertexShader = 0;
-	GLuint fragmentShader = 0;
-	GLuint geometryShader = 0;
-	GLuint tessCShader = 0;
-	GLuint tessEShader = 0;
+	static void shader_compile_errors(const GLuint &object, const char * type);
+	static const char * shader_type2string(GLenum shaderType);
+	static GLuint compile_shader(const std::string shader, GLenum shaderType);
 
-	GLuint ID = 0;
-
-
-private:
-	void shader_compile_errors(const GLuint &object, const char * type);
-
-	const char * shader_type2string(GLenum shaderType);
-	GLuint compile_shader(const std::string shader, GLenum shaderType);
-
-public:
-	void compile();
-
-	GLuint program();
-
+	GLuint m_ID = 0;
 };
 
 class ShadersList
 {
-private:
-	ShadersList() { init_shaders(); }
-	~ShadersList()
-	{
-		// TODO delete OpenGL Buffers	
-	}
-
 public:
-	static ShadersList * getInstance()
-	{
-		if (_singleton == nullptr)
-			_singleton = new ShadersList();
-		return _singleton;
-	}
+	static ShadersList const& getInstance();
 
-public:
-	void init_shaders();
-
-
-	Shader & operator() (const char * shader_name) {
-		return shaders[shader_name];
-	}
+	Shader const& operator () (const char* name) const;
 
 private:
+	ShadersList();
 
-public:
+	std::string getSynthesisVertexShaderSource();
+	std::string getSynthesisFragmentShaderSource();
+	std::string getSynthesisGeometryShaderSource();
+	std::string getBlendingVertexShaderSource();
+	std::string getBlendingFragmentShaderSource(int step);
 
-private:
-	std::map<std::string, Shader> shaders;
-
-
-private:
-	static ShadersList * _singleton;
+	std::map<std::string, Shader> m_shaders;
 };
-
-
-
 
 #endif
 #endif
