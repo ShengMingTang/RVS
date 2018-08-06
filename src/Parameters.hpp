@@ -57,8 +57,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 \see Projector*/
 enum class ProjectionType {
-	perspective = 0,
-	equirectangular = 1
+	perspective,
+	equirectangular
 };
 
 /** Camera and video parameters */

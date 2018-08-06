@@ -97,18 +97,15 @@ void SynthesizedView::compute(View& input)
 		auto ogl_transformer = static_cast<const OpenGLTransformer*>(m_space_transformer);
 		GLuint image_texture = cvMat2glTexture(input.get_color());
 
-		const float offset = 0.0; // Center of a pixel
 		auto FBO = RFBO::getInstance();
 		auto& shaders = ShadersList::getInstance();
 
 		float w = float(input.get_depth().cols);
 		float h = float(input.get_depth().rows);
 
-		//rotation and translation
-		glm::mat3x3 Rt(0);
-		glm::vec3 translation;		
-		translation= glm::vec3(t[0], t[1], t[2]);//OMAF
-		fromCV2GLM<3, 3>(cv::Mat(R), &Rt);//OMAF
+		glm::vec3 translation = glm::vec3(t[0], t[1], t[2]);
+		glm::mat3x3 rotation(0);
+		fromCV2GLM<3, 3>(cv::Mat(R), &rotation);
 		
 		const VAO_VBO_EBO vve(input.get_depth(), input.get_depth().size());
 
@@ -128,11 +125,10 @@ void SynthesizedView::compute(View& input)
 		
 		// parameters
 
-		glUniformMatrix3fv(glGetUniformLocation(program, "R"), 1, GL_FALSE, glm::value_ptr(Rt));
-		glUniform3fv(glGetUniformLocation(program, "translation"), 1, glm::value_ptr(translation));
+		glUniformMatrix3fv(glGetUniformLocation(program, "R"), 1, GL_FALSE, glm::value_ptr(rotation));
+		glUniform3fv(glGetUniformLocation(program, "t"), 1, glm::value_ptr(translation));
 		glUniform1f(glGetUniformLocation(program, "w"), w);
 		glUniform1f(glGetUniformLocation(program, "h"), h);
-		glUniform1f(glGetUniformLocation(program, "offset"), offset);
 		glUniform1f(glGetUniformLocation(program, "max_depth"), input.get_max_depth());
 		glUniform1f(glGetUniformLocation(program, "min_depth"), input.get_min_depth());
 
@@ -141,18 +137,48 @@ void SynthesizedView::compute(View& input)
 		glUniform1i(glGetUniformLocation(program, "erp_in"), static_cast<GLint>(input_projection_type));
 		glUniform1i(glGetUniformLocation(program, "erp_out"), static_cast<GLint>(output_projection_type));
 
-		if (input_projection_type == ProjectionType::perspective) {
+		switch (input_projection_type) {
+		case ProjectionType::perspective: {
 			auto f = ogl_transformer->getInputParameters().getFocal();
 			auto p = ogl_transformer->getInputParameters().getPrinciplePoint();
 			glUniform2fv(glGetUniformLocation(program, "f"), 1, f.val);
 			glUniform2fv(glGetUniformLocation(program, "p"), 1, p.val);
+			break;
+		}
+		case ProjectionType::equirectangular: {
+			auto hor_range = ogl_transformer->getInputParameters().getHorRange();
+			auto ver_range = ogl_transformer->getInputParameters().getVerRange();
+			auto constexpr radperdeg = 0.01745329252f;
+			glUniform1f(glGetUniformLocation(program, "phi0"), radperdeg * hor_range[1]);
+			glUniform1f(glGetUniformLocation(program, "theta0"), radperdeg * ver_range[1]);
+			glUniform1f(glGetUniformLocation(program, "dphi_du"), -radperdeg * (hor_range[1] - hor_range[0]) / w);
+			glUniform1f(glGetUniformLocation(program, "dtheta_dv"), -radperdeg * (ver_range[1] - ver_range[0]) / h);
+			break;
+		}
+		default:
+			throw std::logic_error("Unknown projection type");
 		}
 
-		if (output_projection_type == ProjectionType::perspective) {
+		switch (output_projection_type) {
+		case ProjectionType::perspective: {
 			auto n_f = ogl_transformer->getVirtualParameters().getFocal();
 			auto n_p = ogl_transformer->getVirtualParameters().getPrinciplePoint();
 			glUniform2fv(glGetUniformLocation(program, "n_f"), 1, n_f.val);
 			glUniform2fv(glGetUniformLocation(program, "n_p"), 1, n_p.val);
+			break;
+		}
+		case ProjectionType::equirectangular: {
+			auto hor_range = ogl_transformer->getVirtualParameters().getHorRange();
+			auto ver_range = ogl_transformer->getVirtualParameters().getVerRange();
+			auto constexpr degperrad = 57.295779513f;
+			glUniform1f(glGetUniformLocation(program, "u0"), (hor_range[0] + hor_range[1]) / (hor_range[1] - hor_range[0]));
+			glUniform1f(glGetUniformLocation(program, "v0"), -(ver_range[0] + ver_range[1]) / (ver_range[1] - ver_range[0]));
+			glUniform1f(glGetUniformLocation(program, "du_dphi"), -2.f * degperrad / (hor_range[1] - hor_range[0]));
+			glUniform1f(glGetUniformLocation(program, "dv_dtheta"), +2.f * degperrad / (ver_range[1] - ver_range[0]));
+			break;
+		}
+		default:
+			throw std::logic_error("Unknown projection type");
 		}
 
 		// end parameters

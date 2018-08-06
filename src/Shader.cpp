@@ -196,49 +196,36 @@ std::string ShadersList::getSynthesisVertexShaderSource()
 			float depth;
 		} vs_out;
 
-		uniform vec3 translation;
-
 		uniform float w;
 		uniform float h;
-		uniform float offset;
 
+		// Rotation and translation
+		uniform mat3 R;
+		uniform vec3 t;
+
+		// Input/output projection types
 		uniform int erp_in;
 		uniform int erp_out;
 
+		// Perspective unprojection
 		uniform vec2 f;
-		uniform vec2 n_f;
 		uniform vec2 p;
+
+		// Perspective projection
+		uniform vec2 n_f;
 		uniform vec2 n_p;
 
-		uniform mat3 R;
+		// Equirectangular unprojection
+		uniform float phi0;
+		uniform float theta0;
+		uniform float dphi_du;
+		uniform float dtheta_dv;
 
-		uniform float max_depth;
-
-		vec3 calculate_euclidian_coordinates( vec2 phiTheta )
-		{
-			float phi   = phiTheta.x;
-			float theta = phiTheta.y;
-			vec2 sc_phi = vec2(sin(phi),cos(phi));
-			vec2 sc_theta = vec2(sin(theta),cos(theta));
-
-			return vec3(  sc_phi.y * sc_theta.y,
-							   sc_phi.x*sc_theta.y,
-							   sc_theta.x );
-		}
-
-		vec2 calculate_spherical_coordinates( vec3 xyz_norm )
-		{
-			float x = xyz_norm.x;
-			float y = xyz_norm.y;
-			float z = xyz_norm.z;
-
-			float phi   = atan(y,x);
-			float theta = asin( z );
-
-			return vec2(phi, theta);
-		}
-
-		#define M_PI 3.1415926535897932384626433832795f
+		// Equirectangular projection
+		uniform float u0;
+		uniform float v0;
+		uniform float du_dphi;
+		uniform float dv_dtheta;
 
 		vec2 get_position_from_Vertex_ID(int id, float width) {
 			int y = id / int(width);
@@ -246,90 +233,79 @@ std::string ShadersList::getSynthesisVertexShaderSource()
 			return vec2(float(x), float(y));
 		}
 
-		vec3 unproject_erp(){
-			//image coordinates
+		vec3 unproject_equirectangular() {
+			// Image coordinates
 			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-			float x = xy.x;
-			float y = xy.y;
-			float full_width = max(w, 2.0f * h);
-			float offset_w = (full_width - w) / 2.0f;
 
-			//spherical coordinates
-			vec2 phiTheta=vec2(2.0f*M_PI * ( 0.5f - (offset_w+offset+x) / full_width ),  M_PI * ( 0.5f - y / h ));
+			// Spherical coordinates
+			float phi = phi0 + xy.x * dphi_du;
+			float theta = theta0 + xy.y * dtheta_dv;
 
-			//normalized euclidian coordinates
-			vec3 eucl=calculate_euclidian_coordinates( phiTheta );
-
-			//euclidian coordinates
-			eucl = eucl*d;
-
-			return eucl;
+			// World coordinates
+			return d * vec3(cos(theta) * cos(phi),
+							cos(theta) * sin(phi),
+							sin(theta));
 		}
 
-		vec3 unproject_perspective(){
-			//image coordinates
+		vec3 unproject_perspective() {
+			// Image coordinates
 			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-			float x = xy.x;
-			float y = xy.y;
 
-			// OMAF Referential: x forward, y left, z up
-			// Image plane: x right, y down
-			//if (d > 0.f) {
-				return vec3(d, -(d / f.x) * (x - p.x), -(d / f.y) * (y - p.y));
-			//}
+			// World coordinates
+			return vec3(
+				d,
+				-(d / f.x) * (xy.x - p.x),
+				-(d / f.y) * (xy.y - p.y));
 		}
 
-		void project_erp(vec3 eucl){
-			//image coordinates
+		void project_equirectangular(vec3 r) {
+			// Image coordinates
 			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-			float x = xy.x;
-			float y = xy.y;
-			float full_width = max(w, 2.0f * h);
-			float offset_w = (full_width - w) / 2.0f;
 
-			//normalize
-			float n = length(eucl);
-			eucl /= n;
+			// Spherical coordinates
+			float n = length(r);
+			float phi = atan(r.y, r.x);
+			float theta = asin(r.z / n);
 
-			//spherical coordinates
-			vec2 phiTheta2 = calculate_spherical_coordinates( eucl );
+			// Image coordinates in [-1, 1]
+			float hic = u0 + du_dphi * phi;
+			float vic = v0 + dv_dtheta * theta;
 
-			//image coordinates (in [-1,1])
-			float hic = 2.0f * full_width/w * ( 0.5f - phiTheta2.x / M_PI / 2.0f) - 1.0f - 4.0f*offset_w/full_width;
-			float vic = 2.0f * phiTheta2.y / M_PI ;
-			vec4 position = vec4(hic,vic,0.0f,1.0f);
-
-			vs_out.uv = vec2(x/w, y/h);
-			gl_Position = position;
-
+			vs_out.uv = vec2(xy.x / w, xy.y / h);
+			gl_Position = vec4(hic, vic, 0., 1.);
 			vs_out.depth = n;
 		}
 
-		void project_perspective(vec3 eucl){
-			//image coordinates
+		void project_perspective(vec3 r) {
+			// Image coordinates
 			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-			float x = xy.x;
-			float y = xy.y;
 
-			//image coordinates (in [-1,1])
-			vec2 uv = vec2 (-n_f.x * eucl.y / eucl.x + n_p.x, -n_f.y * eucl.z / eucl.x + n_p.y);
+			vec2 uv = vec2(
+				-n_f.x * r.y / r.x + n_p.x,
+				-n_f.y * r.z / r.x + n_p.y);
 
-			gl_Position = vec4(2.0*uv.x/w-1.0, -2.0*uv.y/h+1.0, 0.f, 1.f);
-			vs_out.uv = vec2(x/w, y/h);
-			vs_out.depth = 1.0;
+			// Image coordinates (in [-1, 1])
+			gl_Position = vec4(
+				 2. * uv.x / w - 1.,
+				-2. * uv.y / h + 1., 0., 1.);
+
+			vs_out.uv = vec2(xy.x / w, xy.y / h);
+			vs_out.depth = 1.;
 		}
 
 		void main(void)
 		{
 			vec3 eucl;
+
 			if (erp_in == 1)
-				eucl = unproject_erp();
+				eucl = unproject_equirectangular();
 			else
 				eucl = unproject_perspective();
-			//transform
-			eucl = R*eucl+translation;
+			
+			eucl = R * eucl + t;
+
 			if (erp_out == 1)
-				project_erp(eucl);
+				project_equirectangular(eucl);
 			else
 				project_perspective(eucl);
 		}
