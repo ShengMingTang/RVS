@@ -48,10 +48,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <cassert>
 
-#if WITH_OPENGL
-
 ShadersList * ShadersList::_singleton = nullptr;
-
 
 void Shader::shader_compile_errors(const GLuint &object, const char * type) {
 	std::string type_(type);
@@ -166,94 +163,7 @@ GLuint Shader::program()
 
 void ShadersList::init_shaders()
 {
-
-	shaders["translate_rotate_Perspective"].vertex_source = R"(
-#version 420 core
-
-layout(location = 0) in float d;
-
-out VS_OUT {
-	vec2 uv;
-	float depth;
-} vs_out;
-
-uniform vec3 translation;
-
-uniform vec2 f;
-uniform vec2 n_f;
-uniform vec2 p;
-uniform vec2 n_p;
-
-
-uniform float sensor;
-uniform float w;
-uniform float h;
-uniform float offset;
-
-uniform mat3 R;
-
-vec2 get_position_from_Vertex_ID(int id, float width) {
-	int y = id / int(width);
-	int x = id - y * int(width);
-	return vec2(float(x), float(y));
-}
-
-void main(void)
-{
-	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-	float x = xy.x;
-	float y = xy.y;
-	float w_sensor = w/sensor;
-
-	vec4 position;
-
-	if (d + translation.x <= 0.0f || d == 0.0) {
-		position = vec4(-1.0f, -1.0f, 0, 1.0f);
-		gl_Position = position;
-		vs_out.uv = position.xy;
-		return;
-	}
-	//coordinates of the translated image in plane (x,y)
-	float dispX = f.x / d * w_sensor;
-	float dispY = f.y / d * w_sensor;
-	float dx = dispX*translation.y;
-	float dy = dispY*translation.z;
-	float x2 = (x + offset) - dx;
-	float y2 = (y + offset) - dy;
-	//coordinate after z translation
-	vec2 v = vec2((x2) / w_sensor - p.x, (y2) / w_sensor - p.y);
-	float beta = (-translation.x*v.x) / (f.x + f.x*translation.x / d);
-	float gamma = (-translation.x*v.y) / (f.x + f.x*translation.x / d);
-	//new image with old focal length (optical center at (0,0))
-	vec2 v2 = vec2(x2 + beta*dispX - p.x, y2 + gamma*dispY - p.y);
-	//new image with new focal length (optical center at (0,0))
-	v2 *= n_f.x / f.x;
-	//coordinate in the new image
-	float X = (v2.x + n_p.x*w_sensor);
-	float Y = (v2.y + n_p.y*w_sensor);
-	position = vec4(X, Y, 0.0f, 0.0f);
-
-	//coordinate of the translated image 
-	vec3 vt = vec3(-n_f.x / sensor, (position.x - n_p.x) / w, (position.y - n_p.y) / w);
-
-	//coordinates of the rotated image		
-	vec3 Vr = R*vt;
-	Vr /= Vr[0];
-	Vr*= -n_f.x/sensor;
-	float xi = Vr[1] * w + n_p.x;
-	float yi = Vr[2] * w + n_p.y;
-	//position = vec4(xi, yi, 0.0f, 0.0f);
-
-	position = vec4((xi)*2.0f/w-1.0f, -(yi)*2.0f/h +1.0f, 0.0f, 1.0f);
-	gl_Position = position;
-
-	vs_out.uv = vec2(xy.x/w, (xy.y)/h);
-
-	vs_out.depth = d;
-}
-)";
-
-	shaders["translate_rotate_ERP"].vertex_source = R"(
+	shaders["synthesis"].vertex_source = R"(
 #version 420 core
 
 layout(location = 0) in float d;
@@ -394,108 +304,110 @@ void main(void)
 	else
 		project_perspective(eucl);
 }
+
 )";
 
-	shaders["translate_rotate_Perspective"].geometry_source = R"(
-	#version 420 core
+	shaders["synthesis"].geometry_source = R"(
+#version 420 core
 
-	layout(triangles) in;
-	layout(triangle_strip, max_vertices = 3) out;
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
 
-	in VS_OUT {
-		vec2 uv;
-		float depth;
-	} gs_in[];
+in VS_OUT {
+	vec2 uv;
+	float depth;
+} gs_in[];
 
-	out vec2 gs_uv;
-	out float gs_quality;
-	out float gs_depth;
+out vec2 gs_uv;
+out float gs_quality;
+out float gs_depth;
 
-	uniform float w;
-	uniform float max_depth;
-	uniform float min_depth;
+uniform float w;
+uniform float max_depth;
+uniform float min_depth;
 
-	//TODO Philips+ULB find the best quality possible (a combinaison of this 3 functions get_quality())
+//TODO Philips+ULB find the best quality possible (a combinaison of this 3 functions get_quality())
 
-	float get_quality_old() {//quality based on area/longuest side
-		vec2 A = (gl_in[0].gl_Position).xy;
-		vec2 B = (gl_in[1].gl_Position).xy;
-		vec2 C = (gl_in[2].gl_Position).xy;
+float get_quality_old() {//quality based on area/longuest side
+	vec2 A = (gl_in[0].gl_Position).xy;
+	vec2 B = (gl_in[1].gl_Position).xy;
+	vec2 C = (gl_in[2].gl_Position).xy;
 
-		float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
+	float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
 
-		if (area < 0) { return 0.0f; };
+	if (area < 0) { return 0.0f; };
 
-		float dBA= dot((A-B), (A-B));
-		float dBC= dot((C-B), (C-B));
-		float dAC= dot((C-A), (C-A));
+	float dBA= dot((A-B), (A-B));
+	float dBC= dot((C-B), (C-B));
+	float dAC= dot((C-A), (C-A));
 
-		float maximum = max(max(dBA, dBC), dAC);
-		return max(20000.f * area / maximum, 1.0f);
-	}
-	float get_quality_test() {//based of the depth difference in the triangle
-		vec2 A = (gl_in[0].gl_Position).xy;
-		vec2 B = (gl_in[1].gl_Position).xy;
-		vec2 C = (gl_in[2].gl_Position).xy;
+	float maximum = max(max(dBA, dBC), dAC);
+	return max(20000.f * area / maximum, 1.0f);
+}
+float get_quality_test() {//based of the depth difference in the triangle
+	vec2 A = (gl_in[0].gl_Position).xy;
+	vec2 B = (gl_in[1].gl_Position).xy;
+	vec2 C = (gl_in[2].gl_Position).xy;
 
-		float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
+	float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
 
-		if (area < 0) { return 0.0f; };
+	if (area < 0) { return 0.0f; };
 
-		float dBA= dot((A-B), (A-B));
-		float dBC= dot((C-B), (C-B));
-		float dAC= dot((C-A), (C-A));
+	float dBA= dot((A-B), (A-B));
+	float dBC= dot((C-B), (C-B));
+	float dAC= dot((C-A), (C-A));
 
-		float maximum = max(max(dBA, dBC), dAC);
-		// This quality works better with the Unicorn Dataset
-		//TODO remove this comment
-		float max_d = max(max(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
-		float min_d = min(min(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
+	float maximum = max(max(dBA, dBC), dAC);
+	// This quality works better with the Unicorn Dataset
+	//TODO remove this comment
+	float max_d = max(max(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
+	float min_d = min(min(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
 
-		return min(max(10000.0f-50000.0f*(max_d-min_d)/(min_depth),1.0f),10000.f);
+	return min(max(10000.0f-50000.0f*(max_d-min_d)/(min_depth),1.0f),10000.f);
 
-	}
-	float get_quality() { //quality based only on the longest side of the triangle
-		vec2 A = (gl_in[0].gl_Position).xy;
-		vec2 B = (gl_in[1].gl_Position).xy;
-		vec2 C = (gl_in[2].gl_Position).xy;
+}
+float get_quality() { //quality based only on the longest side of the triangle
+	vec2 A = (gl_in[0].gl_Position).xy;
+	vec2 B = (gl_in[1].gl_Position).xy;
+	vec2 C = (gl_in[2].gl_Position).xy;
 
-		float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
-		if (area < 0) { return 1.0f; };
+	float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
+	if (area < 0) { return 1.0f; };
 
-		float dBA= dot((A-B), (A-B));
-		float dBC= dot((C-B), (C-B));
-		float dAC= dot((C-A), (C-A)); 
+	float dBA= dot((A-B), (A-B));
+	float dBC= dot((C-B), (C-B));
+	float dAC= dot((C-A), (C-A)); 
 
-		float maximum = max(max(dBA, dBC), dAC);
+	float maximum = max(max(dBA, dBC), dAC);
 
-		float quality = 10000.f / maximum / maximum;
-		quality = max(1.f, quality); // always > 0
-		quality = min(10000.f, quality);
+	float quality = 10000.f / maximum / maximum;
+	quality = max(1.f, quality); // always > 0
+	quality = min(10000.f, quality);
 
-		return quality;
-	}
+	return quality;
+}
 
-	void gen_vertex(int index, float quality) {
-		gs_quality = quality;
-		gs_uv = gs_in[index].uv;
-		gs_depth = gs_in[index].depth;
-		gl_Position = gl_in[index].gl_Position;
-		EmitVertex();
-	}
+void gen_vertex(int index, float quality) {
+	gs_quality = quality;
+	gs_uv = gs_in[index].uv;
+	gs_depth = gs_in[index].depth;
+	gl_Position = gl_in[index].gl_Position;
+	EmitVertex();
+}
 
-	void main() {
-		// TODO change to the right quality function when the issue is closed
-		float quality = sqrt(get_quality_test()*get_quality());
-		gen_vertex(0, quality);
-		gen_vertex(1, quality);
-		gen_vertex(2, quality);
-		EndPrimitive();
-	}
+void main() {
+	// TODO change to the right quality function when the issue is closed
+	float quality = sqrt(get_quality_test()*get_quality());
+	gen_vertex(0, quality);
+	gen_vertex(1, quality);
+	gen_vertex(2, quality);
+	EndPrimitive();
+}
 
-	)";
-	shaders["translate_rotate_ERP"].geometry_source = shaders["translate_rotate_Perspective"].geometry_source;
-	shaders["translate_rotate_Perspective"].fragment_source = R"(
+
+)";
+
+	shaders["synthesis"].fragment_source = R"(
 #version 420 core
 
 uniform sampler2D image_texture;
@@ -522,11 +434,8 @@ void main(void)
 	//work with 360
 	//gl_FragDepth = ((gs_depth/max_depth)*(gs_depth/max_depth)*(gs_depth/max_depth))/gs_quality;
 }
-)";
 
-	shaders["translate_rotate_ERP"].fragment_source = shaders["translate_rotate_Perspective"].fragment_source;
-	shaders["translate_rotate_Perspective"].compile();
-	shaders["translate_rotate_ERP"].compile();
+)";
 
 	shaders["blending1"].vertex_source = R"(
 #version 420 core
@@ -541,9 +450,13 @@ void main(void)
 	vs_position = (1.0f+position.xy)/2.0f;
 	gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
 }
+
 )";
 
-	const auto blending_fragment_shader = R"(
+	shaders["blending1"].fragment_source = R"(
+#version 420 core
+layout(location=3) out vec4 color;
+layout(location=4) out float quality;
 uniform sampler2D accumulator_image;
 uniform sampler2D new_image;
 
@@ -602,29 +515,75 @@ void main(void)
 	else 
 		quality = 0.0f;
 }
+)";
+	
+	shaders["blending2"].vertex_source = shaders["blending1"].fragment_source;
 
-	)";
-
-	shaders["blending1"].fragment_source = std::string(R"(
-#version 420 core
-layout(location=3) out vec4 color;
-layout(location=4) out float quality;
-)") + std::string(blending_fragment_shader);
-
-	shaders["blending1"].compile();
-
-
-	shaders["blending2"].vertex_source = shaders["blending1"].vertex_source;
-
-	shaders["blending2"].fragment_source = std::string(R"(
+	shaders["blending2"].fragment_source = R"(
 #version 420 core
 layout(location=5) out vec4 color;
 layout(location=6) out float quality;
-)") + std::string(blending_fragment_shader);
+uniform sampler2D accumulator_image;
+uniform sampler2D new_image;
 
+uniform sampler2D accumulator_quality;
+
+uniform sampler2D new_triangle_quality;
+
+uniform sampler2D new_depth;
+
+uniform float blending_factor;
+
+in vec2 vs_position;
+
+void main(void)
+{
+	float accu_quality = texture(accumulator_quality, vs_position).x;
+
+	float n_triangle_quality = texture(new_triangle_quality, vs_position).x;
+	float n_depth = texture(new_depth, vs_position).x;
+
+	vec4 accu_color = texture(accumulator_image, vs_position);
+	vec4 n_color = texture(new_image, vs_position);
+
+	float accu_w;
+	float new_w;
+	if(blending_factor > 0.5f)
+	{
+		accu_w = pow(accu_quality, blending_factor);
+		new_w = pow(n_triangle_quality/n_depth, blending_factor);
+	}
+	else{
+		accu_w = 1.0;
+		new_w = 1.0;
+	}
+	if (n_depth == 0.0f || n_triangle_quality == 0.0f)
+		new_w=0.0f;
+	if (accu_quality == 0.0f)
+		accu_w=0.0f;
+
+	vec4 tmp_color = accu_w*accu_color + new_w*n_color;
+	if (accu_w + new_w >0.0f)
+		tmp_color /= (accu_w + new_w);
+	color = tmp_color;
+
+	float tmp_quality = accu_w + new_w;
+	if (tmp_quality > 0.0f)
+	{
+		if(blending_factor > 0.5f)
+			{
+				quality = pow(tmp_quality, 1.0f/blending_factor);
+			}
+			else{
+				quality = tmp_quality;
+			}
+	}
+	else 
+		quality = 0.0f;
+}
+)";
+
+	shaders["synthesis"].compile();
+	shaders["blending1"].compile();
 	shaders["blending2"].compile();
 }
-
-
-
-#endif

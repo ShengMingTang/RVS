@@ -112,7 +112,7 @@ void SynthesizedView::compute(View& input)
 		
 		const VAO_VBO_EBO vve(input.get_depth(), input.get_depth().size());
 
-		GLuint program = shaders("translate_rotate_ERP").program();
+		GLuint program = shaders("synthesis").program();
 		assert(program != 0);
 
 		glEnable(GL_DEPTH_TEST);

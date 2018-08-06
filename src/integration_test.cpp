@@ -262,9 +262,13 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 	Pipeline p("./config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.json");
 	p.execute();
 	testing::compareWithReferenceView<std::uint16_t>(
-	"TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv",
-	"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
-	cv::Size(4096, 4096), 10, 43.71, 35.88); // VC14 + OpenCV 3.1.0: 43.7695, 35.9381
+		"TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv",
+		"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
+		cv::Size(4096, 4096), 10, 43.71, 35.88); // VC14 + OpenCV 3.1.0: 43.7695, 35.9381
+	testing::compareWithReferenceView<std::uint16_t>(
+		"TechnicolorHijack_v9vs_from_v1v4_4096_4096_0_5_25_0_420_10b.yuv",
+		"TechnicolorHijack/v9_4096_4096_0_5_25_0_420_10b.yuv",
+		cv::Size(4096, 4096), 10, 23.12, 39.03); // VC14 + OpenCV 3.1.0: 23.1774, 39.0874
 }
 
 FUNC(TechnicolorHijack_BlendByMax)
@@ -415,7 +419,7 @@ FUNC(TechnicolorHijack_v1v4_to_v9_OpenGL)
 		cv::Size(4096, 4096), 10, 43.71, 35.88); // VC14 + OpenCV 3.1.0: 43.7695, 35.9381
 }
 
-FUNC(TechnicoloMuseum_SVS_v0v2v13v17v19_to_v1_OpenGL)
+FUNC(TechnicolorMuseum_SVS_v0v2v13v17v19_to_v1_OpenGL)
 {
 	if (!testing::file_exists("TechnicolorMuseum_v1vs_from_v0v2v13v17v19_2048_2048_420_10b.yuv")) {
 		g_with_opengl = false;
