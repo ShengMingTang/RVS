@@ -327,18 +327,12 @@ std::string ShadersList::getSynthesisFragmentShaderSource()
 		layout(location=1) out float depth;
 		layout(location=2) out float quality;
 
-		uniform float max_depth;
-
 		void main(void)
 		{
 			color = texture(image_texture, gs_uv).rgb;
 			depth = gs_depth;
 			quality = gs_quality;
-			// TODO: Check with quality
-			//works ? with unicorn
-			gl_FragDepth = ((gs_depth/max_depth)/*(gs_depth/max_depth)*(gs_depth/max_depth)*/)/gs_quality;
-			//work with 360
-			//gl_FragDepth = ((gs_depth/max_depth)*(gs_depth/max_depth)*(gs_depth/max_depth))/gs_quality;
+			gl_FragDepth = gs_depth / gs_quality;
 		}
 	)";
 }
@@ -361,67 +355,22 @@ std::string ShadersList::getSynthesisGeometryShaderSource()
 		out float gs_depth;
 
 		uniform float w;
-		uniform float max_depth;
-		uniform float min_depth;
+		uniform float h;
 
-		//TODO Philips+ULB find the best quality possible (a combinaison of this 3 functions get_quality())
+		float valid_tri() {
+			vec2 A = (gl_in[0].gl_Position).xy * vec2(w, h);
+			vec2 B = (gl_in[1].gl_Position).xy * vec2(w, h);
+			vec2 C = (gl_in[2].gl_Position).xy * vec2(w, h);
 
-		float get_quality_old() {//quality based on area/longuest side
-			vec2 A = (gl_in[0].gl_Position).xy;
-			vec2 B = (gl_in[1].gl_Position).xy;
-			vec2 C = (gl_in[2].gl_Position).xy;
+			float dab = length(A - B);
+			float dac = length(A - C);
+			float dbc = length(B - C);
 
-			float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
+			float stretch = max(dbc, max(dab, dac));
 
-			if (area < 0) { return 0.0f; };
-
-			float dBA= dot((A-B), (A-B));
-			float dBC= dot((C-B), (C-B));
-			float dAC= dot((C-A), (C-A));
-
-			float maximum = max(max(dBA, dBC), dAC);
-			return max(20000.f * area / maximum, 1.0f);
-		}
-
-		float get_quality_test() {//based of the depth difference in the triangle
-			vec2 A = (gl_in[0].gl_Position).xy;
-			vec2 B = (gl_in[1].gl_Position).xy;
-			vec2 C = (gl_in[2].gl_Position).xy;
-
-			float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
-
-			if (area < 0) { return 0.0f; };
-
-			float dBA= dot((A-B), (A-B));
-			float dBC= dot((C-B), (C-B));
-			float dAC= dot((C-A), (C-A));
-
-			float maximum = max(max(dBA, dBC), dAC);
-			// This quality works better with the Unicorn Dataset
-			//TODO remove this comment
-			float max_d = max(max(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
-			float min_d = min(min(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
-
-			return min(max(10000.0f-50000.0f*(max_d-min_d)/(min_depth),1.0f),10000.f);
-		}
-
-		float get_quality() { //quality based only on the longest side of the triangle
-			vec2 A = (gl_in[0].gl_Position).xy;
-			vec2 B = (gl_in[1].gl_Position).xy;
-			vec2 C = (gl_in[2].gl_Position).xy;
-
-			float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
-			if (area < 0) { return 1.0f; };
-
-			float dBA= dot((A-B), (A-B));
-			float dBC= dot((C-B), (C-B));
-			float dAC= dot((C-A), (C-A)); 
-
-			float maximum = max(max(dBA, dBC), dAC);
-
-			float quality = 10000.f / maximum / maximum;
-			quality = max(1.f, quality); // always > 0
-			quality = min(10000.f, quality);
+			float quality = 10000. - 1000. * stretch;
+			quality = max(1., quality); // always > 0
+			quality = min(10000., quality);
 
 			return quality;
 		}
@@ -435,8 +384,7 @@ std::string ShadersList::getSynthesisGeometryShaderSource()
 		}
 
 		void main() {
-			// TODO change to the right quality function when the issue is closed
-			float quality = sqrt(get_quality_test()*get_quality());
+			float quality = valid_tri();
 			gen_vertex(0, quality);
 			gen_vertex(1, quality);
 			gen_vertex(2, quality);

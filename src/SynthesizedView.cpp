@@ -129,8 +129,6 @@ void SynthesizedView::compute(View& input)
 		glUniform3fv(glGetUniformLocation(program, "t"), 1, glm::value_ptr(translation));
 		glUniform1f(glGetUniformLocation(program, "w"), w);
 		glUniform1f(glGetUniformLocation(program, "h"), h);
-		glUniform1f(glGetUniformLocation(program, "max_depth"), input.get_max_depth());
-		glUniform1f(glGetUniformLocation(program, "min_depth"), input.get_min_depth());
 
 		auto input_projection_type = ogl_transformer->getInputParameters().getProjectionType();
 		auto output_projection_type = ogl_transformer->getVirtualParameters().getProjectionType();
