@@ -114,10 +114,10 @@ void PUTransformer::set_inputPosition(Parameters const *parameters)
 
 	switch (parameters->getProjectionType()) {
 	case ProjectionType::equirectangular:
-		m_unprojector = std::make_unique<EquirectangularUnprojector>(*parameters);
+		m_unprojector.reset(new EquirectangularUnprojector(*parameters));
 		break;
 	case ProjectionType::perspective:
-		m_unprojector = std::make_unique<PerspectiveUnprojector>(*parameters);
+		m_unprojector.reset(new PerspectiveUnprojector(*parameters));
 		break;
 	}
 }
@@ -129,10 +129,10 @@ void PUTransformer::set_targetPosition(Parameters const *parameters)
 
 	switch (parameters->getProjectionType()) {
 	case ProjectionType::equirectangular:
-		m_projector = std::make_unique<EquirectangularProjector>(*parameters);
+		m_projector.reset(new EquirectangularProjector(*parameters));
 		break;
 	case ProjectionType::perspective:
-		m_projector = std::make_unique<PerspectiveProjector>(*parameters);
+		m_projector.reset(new PerspectiveProjector(*parameters));
 		break;
 	}
 }

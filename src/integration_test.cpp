@@ -145,8 +145,8 @@ namespace testing
 		YAFFUT_CHECK(psnr[0] > threshold0);
 		YAFFUT_CHECK(psnr[1] > threshold1);
 
-		if (psnr[0] > threshold0 + 0.1 && threshold0 < 100. ||
-			psnr[1] > threshold1 + 0.1 && threshold1 < 100.) {
+		if ((psnr[0] > threshold0 + 0.1 && threshold0 < 100.) ||
+			(psnr[1] > threshold1 + 0.1 && threshold1 < 100.)) {
 			std::clog << "WARNING: thresholds can be increased\n";
 		}
 	}
