@@ -1,0 +1,24 @@
+{
+	"_NOTE": "This test case reconstructs v6 using a pose trace and a modified center view",
+	"Version": "2.0",
+	"InputCameraParameterFile": "config_files/TechnicolorMuseum.json",
+	"VirtualCameraParameterFile": "config_files/TechnicolorMuseum.json",
+	"InputCameraNames": ["v5"],
+	"VirtualCameraNames": ["center", "viewport"],
+	"VirtualOverrides": {
+		"Resolution": [2048, 2048],
+		"Hor_range": [-90, 90]},
+	"VirtualPoseTraceName": "config_files/_integration_tests/TechnicolorMuseum-PoseTrace.csv",
+	"ViewImageNames": ["TechnicolorMuseum/v5_2048_2048_420_10b.yuv"],
+	"DepthMapNames": ["TechnicolorMuseum/v5_2048_2048_0_5_25_0_420_10b.yuv"],
+	"OutputFiles": [
+		"TechnicolorMuseum_PoseTrace.yuv",
+		"TechnicolorMuseum_PoseTrace_Viewport.yuv"],
+	"StartFrame": 0,
+	"NumberOfFrames": 1,
+	"Precision": 2.0,
+	"ColorSpace": "YUV",
+	"ViewSynthesisMethod": "Triangles",
+	"BlendingMethod": "Simple",
+	"BlendingFactor": 5.0
+}

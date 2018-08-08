@@ -233,7 +233,6 @@ namespace testing
 			auto referenceWorldPos = cv::Mat3f(3, 4);
 			for (int i = 0; i != 3; ++i) {
 				for (int j = 0; j != 4; ++j) {
-					auto uv = imagePos(i, j);
 					auto sensorPos = cv::Vec3d(
 						3.,
 						2. - imagePos(i, j)[0],
@@ -325,13 +324,13 @@ FUNC(Test_JsonParser_readFrom)
 	auto root = json::Node::readFrom(stream);
 	EQUAL(root.optional("Content_name").asString(), "ClassroomVideo");	
 	auto center = root.optional("BoundingBox_center");
-	EQUAL(center.size(), 3);
+	EQUAL(center.size(), 3u);
 	EQUAL(center.at(0).asDouble(), 0.0);
 	EQUAL(center.at(1).asDouble(), 42.0);
 	EQUAL(center.at(2).asDouble(), -1e3);
 	EQUAL(root.optional("Fps").asDouble(), 30.0);
 	auto cameras = root.optional("cameras");
-	EQUAL(cameras.size(), 2);
+	EQUAL(cameras.size(), 2u);
 	auto cam0 = cameras.at(0);
 	EQUAL(cam0.optional("Name").asString(), "v0");
 	EQUAL(cam0.optional("Background").asDouble(), 0.0);
@@ -375,7 +374,7 @@ FUNC(Test_PoseTrace_loadFrom)
 )");
 
 	auto poseTrace = PoseTrace::loadFrom(stream);
-	EQUAL(poseTrace.size(), 4);
+	EQUAL(poseTrace.size(), 4u);
 	EQUAL(poseTrace[0].position[0], 0.f);
 	CHECK((poseTrace[1].position[1] + 4.49e-05) < 1e-12);
 	EQUAL(poseTrace[2].position[2], 1.f);

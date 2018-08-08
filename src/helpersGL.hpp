@@ -47,16 +47,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #if WITH_OPENGL
 
-#define SVS_DEBUG true
-// TODO change with DUMP ?
-// The advantage of keeping this is that we
-// can run the OpenGL Debugging Software
-// In Release With Debug Info to have the speed
-// and be able to debug the software at the same time
-// When DUMP_VALUES works in Debug mode only and slow down
-// everything
-// Proposal: #define SVS_DEBUG WITH_RENDERDOC && !NDEBUG
-
 #include "gl_core_4.5.hpp"
 #include "Config.hpp"
 #include <opencv2/core/mat.hpp>
@@ -209,7 +199,7 @@ struct context_NO_WRITE_H
 
 extern context_NO_WRITE_H context_NO_WRITE;
 
-#if SVS_DEBUG && WITH_RENDERDOC
+#if !defined NDEBUG && WITH_RENDERDOC
 #include <renderdoc_app.h>
 extern RENDERDOC_API_1_1_2 *rdoc_api;
 #endif

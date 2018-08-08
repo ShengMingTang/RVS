@@ -117,7 +117,7 @@ if(WITH_OPENGL)
 		include_directories(SYSTEM ${OPENGL_INCLUDE_DIR})
 		include_directories(SYSTEM ${GLM_INCLUDE_DIRS})
 		set(OPENGL_LIB ${OPENGL_LIBRARY})
-		
+
 		set(OPENGL_SOURCES
 			src/gl_core_4.5.cpp
 			src/helpersGL.cpp
@@ -199,11 +199,6 @@ set(PROJECT_HEADERS
 	src/PoseTraces.hpp
 	src/SpaceTransformer.hpp)
 
-if (WITH_OPENGL)
-set(PROJECT_SOURCES ${PROJECT_SOURCES} ${OPENGL_SOURCES})
-set(PROJECT_HEADERS ${PROJECT_HEADERS} ${OPENGL_HEADERS})
-endif()
-
 set(CONFIGURATION_FILES
 	config_files/example_config_file.json
 	config_files/ClassroomVideo.json
@@ -213,24 +208,29 @@ set(CONFIGURATION_FILES
 	config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json
 	config_files/_integration_tests/Unicorn_Triangles_Simple.json
 	config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v0_to_v0.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_270deg.json
-	config_files/_integration_tests/ClassroomVideo-SVS-v7v8_to_v0_OpenGL.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0_to_v0.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v0v2v13v17v19_to_v1_OpenGL.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v5.json
-	config_files/_integration_tests/TechnicolorMuseum-SVS-v5_to_v6.json
+	config_files/_integration_tests/ClassroomVideo-v0_to_v0.json
+	config_files/_integration_tests/ClassroomVideo-v7v8_to_v0.json
+	config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_270deg.json
+	config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_OpenGL.json
+	config_files/_integration_tests/TechnicolorMuseum-v0_to_v0.json
+	config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1.json
+	config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1_OpenGL.json
+	config_files/_integration_tests/TechnicolorMuseum-v5_to_v5.json
+	config_files/_integration_tests/TechnicolorMuseum-v5_to_v6.json
+	config_files/_integration_tests/TechnicolorMuseum-PoseTrace.json
 	config_files/_integration_tests/TechnicolorHijack-BlendByMax.json
-	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9.json
-	config_files/_integration_tests/TechnicolorHijack-SVS-v1v4_to_v9_OpenGL.json)
+	config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9.json
+	config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9_OpenGL.json)
 				 						 	 
-source_group("Source" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
-source_group("Headers" FILES ${PROJECT_HEADERS})
+source_group("Source Files" FILES ${PROJECT_SOURCES} src/view_synthesis.cpp src/test.cpp)
+source_group("Header Files" FILES ${PROJECT_HEADERS})
 source_group("Configurations" FILES ${CONFIGURATION_FILES})
+if (WITH_OPENGL)
+	source_group("OpenGL Sources" FILES ${OPENGL_SOURCES})
+	source_group("OpenGL Headers" FILES ${OPENGL_HEADERS})
+endif()
 
-add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${OPENGL_SOURCES} ${OPENGL_HEADERS})
 add_executable(${PROJECT_NAME} src/view_synthesis.cpp)
 add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
 add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp ${CONFIGURATION_FILES})

@@ -135,8 +135,9 @@ cv::Vec3f Parameters::getPosition() const
 	return m_position;
 }
 
-void Parameters::setPosition(cv::Vec3f)
+void Parameters::setPosition(cv::Vec3f position)
 {
+	m_position = position;
 }
 
 cv::Vec2f Parameters::getDepthRange() const

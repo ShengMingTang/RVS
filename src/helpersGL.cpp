@@ -130,7 +130,7 @@ GLuint cvMat2glTexture(const cv::Mat& mat)
 // We need to declare this global variable to make it available everywhere
 context_NO_WRITE_H context_NO_WRITE;
 
-#if SVS_DEBUG && WITH_RENDERDOC
+#if !defined NDEBUG && WITH_RENDERDOC
 RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 #endif
 
@@ -467,7 +467,7 @@ void context_init() {
 	if (context_NO_WRITE.initialized)
 		return;
 
-#if SVS_DEBUG && WITH_RENDERDOC
+#if !defined NDEBUG && WITH_RENDERDOC
 	// At init, on windows
 #if _WIN32
 	HMODULE mod = GetModuleHandleA("renderdoc.dll");
@@ -524,19 +524,16 @@ void setGLContext()
 
 
 void rd_start_capture_frame() {
-#ifdef WITH_OPENGL
-	#if SVS_DEBUG && WITH_RENDERDOC
+#if !defined NDEBUG && WITH_RENDERDOC
 	if (rdoc_api && rdoc_api->IsTargetControlConnected()) {
 		//rdoc_api->TriggerCapture();
 		rdoc_api->StartFrameCapture(NULL, NULL);
 	}
-	#endif
 #endif
 }
 
 void rd_end_capture_frame() {
-#ifdef WITH_OPENGL
-	#if SVS_DEBUG && WITH_RENDERDOC
+#if !defined NDEBUG && WITH_RENDERDOC
 	static int frame_number = 0;
 	if (rdoc_api && rdoc_api->IsTargetControlConnected()) {
 		//rdoc_api->TriggerCapture();
@@ -544,6 +541,5 @@ void rd_end_capture_frame() {
 		printf("RENDERDOC - Frame %i Captured.\n", frame_number);
 		frame_number++;
 	}
-	#endif
 #endif
 }

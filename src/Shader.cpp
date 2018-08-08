@@ -46,12 +46,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Shader.hpp"
 
-#include <cassert>
-
 #if WITH_OPENGL
 
-ShadersList * ShadersList::_singleton = nullptr;
-
+#include <cassert>
 
 void Shader::shader_compile_errors(const GLuint &object, const char * type) {
 	std::string type_(type);
@@ -124,507 +121,368 @@ GLuint Shader::compile_shader(const std::string shader, GLenum shaderType)
 	return id;
 }
 
-void Shader::compile()
+Shader::Shader(std::string vertexSource, std::string fragmentSource, std::string geometrySource)
+	: m_ID(0)
 {
-	assert(!vertex_source.empty() && !fragment_source.empty());
+	// Compile shaders
+	assert(!vertexSource.empty() && !fragmentSource.empty());
+	auto vertexShader = compile_shader(vertexSource, GL_VERTEX_SHADER);
+	auto fragmentShader = compile_shader(fragmentSource, GL_FRAGMENT_SHADER);
+	auto geometryShader = geometrySource.empty() ? GLuint(0) : compile_shader(geometrySource, GL_GEOMETRY_SHADER);
 
-	vertexShader = compile_shader(vertex_source, GL_VERTEX_SHADER);
-	fragmentShader = compile_shader(fragment_source, GL_FRAGMENT_SHADER);
-	geometryShader = (!geometry_source.empty()) ? compile_shader(geometry_source, GL_GEOMETRY_SHADER) : 0;
-	tessCShader = (!tessC_source.empty()) ? compile_shader(tessC_source, GL_TESS_CONTROL_SHADER) : 0;
-	tessEShader = (!tessE_source.empty()) ? compile_shader(tessE_source, GL_TESS_EVALUATION_SHADER) : 0;
-
-	GLuint local_ID = glCreateProgram();
-
-	// Attach the shaders to the local_ID
-	glAttachShader(local_ID, vertexShader);
-	glAttachShader(local_ID, fragmentShader);
-	if (!geometry_source.empty()) glAttachShader(local_ID, geometryShader);
-	if (!tessC_source.empty()) glAttachShader(local_ID, tessCShader);
-	if (!tessE_source.empty()) glAttachShader(local_ID, tessEShader);
-
-	glLinkProgram(local_ID);
-	shader_compile_errors(local_ID, "Program");
-
-	ID = local_ID;
-	printf("NEW PROGRAM WITH ID: %i\n", ID);
+	// Attach shaders to a new program
+	auto ID = glCreateProgram();
+	glAttachShader(ID, vertexShader);
+	glAttachShader(ID, fragmentShader);
+	if (geometryShader) {
+		glAttachShader(ID, geometryShader);
+	}
+	glLinkProgram(ID);
+	shader_compile_errors(ID, "Program");
+	m_ID = ID;
+	printf("NEW PROGRAM WITH ID: %i\n", m_ID);
 
 	// Delete the shaders as they're linked into our ID now and no longer necessery
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	if (!geometry_source.empty()) glDeleteShader(geometryShader);
-	if (!tessC_source.empty()) glDeleteShader(tessCShader);
-	if (!tessE_source.empty()) glDeleteShader(tessEShader);
-}
-
-GLuint Shader::program()
-{
-	if (ID > 0)
-		return ID;
-	return 0;
-}
-
-void ShadersList::init_shaders()
-{
-
-	shaders["translate_rotate_Perspective"].vertex_source = R"(
-#version 420 core
-
-layout(location = 0) in float d;
-
-out VS_OUT {
-	vec2 uv;
-	float depth;
-} vs_out;
-
-uniform vec3 translation;
-
-uniform vec2 f;
-uniform vec2 n_f;
-uniform vec2 p;
-uniform vec2 n_p;
-
-
-uniform float sensor;
-uniform float w;
-uniform float h;
-uniform float offset;
-
-uniform mat3 R;
-
-vec2 get_position_from_Vertex_ID(int id, float width) {
-	int y = id / int(width);
-	int x = id - y * int(width);
-	return vec2(float(x), float(y));
-}
-
-void main(void)
-{
-	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-	float x = xy.x;
-	float y = xy.y;
-	float w_sensor = w/sensor;
-
-	vec4 position;
-
-	if (d + translation.x <= 0.0f || d == 0.0) {
-		position = vec4(-1.0f, -1.0f, 0, 1.0f);
-		gl_Position = position;
-		vs_out.uv = position.xy;
-		return;
+	if (geometryShader) {
+		glDeleteShader(geometryShader);
 	}
-	//coordinates of the translated image in plane (x,y)
-	float dispX = f.x / d * w_sensor;
-	float dispY = f.y / d * w_sensor;
-	float dx = dispX*translation.y;
-	float dy = dispY*translation.z;
-	float x2 = (x + offset) - dx;
-	float y2 = (y + offset) - dy;
-	//coordinate after z translation
-	vec2 v = vec2((x2) / w_sensor - p.x, (y2) / w_sensor - p.y);
-	float beta = (-translation.x*v.x) / (f.x + f.x*translation.x / d);
-	float gamma = (-translation.x*v.y) / (f.x + f.x*translation.x / d);
-	//new image with old focal length (optical center at (0,0))
-	vec2 v2 = vec2(x2 + beta*dispX - p.x, y2 + gamma*dispY - p.y);
-	//new image with new focal length (optical center at (0,0))
-	v2 *= n_f.x / f.x;
-	//coordinate in the new image
-	float X = (v2.x + n_p.x*w_sensor);
-	float Y = (v2.y + n_p.y*w_sensor);
-	position = vec4(X, Y, 0.0f, 0.0f);
-
-	//coordinate of the translated image 
-	vec3 vt = vec3(-n_f.x / sensor, (position.x - n_p.x) / w, (position.y - n_p.y) / w);
-
-	//coordinates of the rotated image		
-	vec3 Vr = R*vt;
-	Vr /= Vr[0];
-	Vr*= -n_f.x/sensor;
-	float xi = Vr[1] * w + n_p.x;
-	float yi = Vr[2] * w + n_p.y;
-	//position = vec4(xi, yi, 0.0f, 0.0f);
-
-	position = vec4((xi)*2.0f/w-1.0f, -(yi)*2.0f/h +1.0f, 0.0f, 1.0f);
-	gl_Position = position;
-
-	vs_out.uv = vec2(xy.x/w, (xy.y)/h);
-
-	vs_out.depth = d;
 }
-)";
 
-	shaders["translate_rotate_ERP"].vertex_source = R"(
-#version 420 core
-
-layout(location = 0) in float d;
-
-out VS_OUT {
-	vec2 uv;
-	float depth;
-} vs_out;
-
-uniform vec3 translation;
-
-uniform float w;
-uniform float h;
-uniform float offset;
-
-uniform int erp_in;
-uniform int erp_out;
-
-uniform vec2 f;
-uniform vec2 n_f;
-uniform vec2 p;
-uniform vec2 n_p;
-
-uniform mat3 R;
-
-uniform float max_depth;
-vec3 calculate_euclidian_coordinates( vec2 phiTheta )
+GLuint Shader::getProgramID() const
 {
-    float phi   = phiTheta.x;
-    float theta = phiTheta.y;
-	vec2 sc_phi = vec2(sin(phi),cos(phi));
-	vec2 sc_theta = vec2(sin(theta),cos(theta));
-
-    return vec3(  sc_phi.y * sc_theta.y,
-                       sc_phi.x*sc_theta.y,
-                       sc_theta.x );
+	return m_ID;
 }
-vec2 calculate_spherical_coordinates( vec3 xyz_norm )
+
+ShadersList::ShadersList()
+	: m_shaders({
+		{ "synthesis", Shader(
+			getSynthesisVertexShaderSource(),
+			getSynthesisFragmentShaderSource(),
+			getSynthesisGeometryShaderSource())
+		},
+		{ "blending1", Shader(
+			getBlendingVertexShaderSource(),
+			getBlendingFragmentShaderSource(1))
+		},
+		{ "blending2", Shader(
+			getBlendingVertexShaderSource(),
+			getBlendingFragmentShaderSource(2))
+		}
+	})
+{}
+
+ShadersList const& ShadersList::getInstance()
 {
-    float x = xyz_norm.x;
-    float y = xyz_norm.y;
-    float z = xyz_norm.z;
-
-    float phi   = atan(y,x);
-    float theta = asin( z );
-
-    return vec2(phi, theta);
-}
-#define M_PI 3.1415926535897932384626433832795f
-
-vec2 get_position_from_Vertex_ID(int id, float width) {
-	int y = id / int(width);
-	int x = id - y * int(width);
-	return vec2(float(x), float(y));
+	static ShadersList singleton;
+	return singleton;
 }
 
-vec3 unproject_erp(){
-	//image coordinates
-	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-	float x = xy.x;
-	float y = xy.y;
-	float full_width = max(w, 2.0f * h);
-	float offset_w = (full_width - w) / 2.0f;
-
-	//spherical coordinates
-	vec2 phiTheta=vec2(2.0f*M_PI * ( 0.5f - (offset_w+offset+x) / full_width ),  M_PI * ( 0.5f - y / h ));
-
-	//normalized euclidian coordinates
-	vec3 eucl=calculate_euclidian_coordinates( phiTheta );
-
-	//euclidian coordinates
-	eucl = eucl*d;
-
-	return eucl;
-}
-vec3 unproject_perspective(){
-	//image coordinates
-	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-	float x = xy.x;
-	float y = xy.y;
-
-	// OMAF Referential: x forward, y left, z up
-	// Image plane: x right, y down
-	//if (d > 0.f) {
-		return vec3(d, -(d / f.x) * (x - p.x), -(d / f.y) * (y - p.y));
-	//}
-}
-void project_erp(vec3 eucl){
-	//image coordinates
-	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-	float x = xy.x;
-	float y = xy.y;
-	float full_width = max(w, 2.0f * h);
-	float offset_w = (full_width - w) / 2.0f;
-
-	//normalize
-	float n = length(eucl);
-	eucl /= n;
-
-	//spherical coordinates
-	vec2 phiTheta2 = calculate_spherical_coordinates( eucl );
-
-	//image coordinates (in [-1,1])
-	float hic = 2.0f * full_width/w * ( 0.5f - phiTheta2.x / M_PI / 2.0f) - 1.0f - 4.0f*offset_w/full_width;
-	float vic = 2.0f * phiTheta2.y / M_PI ;
-	vec4 position = vec4(hic,vic,0.0f,1.0f);
-
-	vs_out.uv = vec2(x/w, y/h);
-	gl_Position = position;
-
-	vs_out.depth = n;
-}
-void project_perspective(vec3 eucl){
-	//image coordinates
-	vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
-	float x = xy.x;
-	float y = xy.y;
-
-	//image coordinates (in [-1,1])
-	vec2 uv = vec2 (-n_f.x * eucl.y / eucl.x + n_p.x, -n_f.y * eucl.z / eucl.x + n_p.y);
-
-	gl_Position = vec4(2.0*uv.x/w-1.0, -2.0*uv.y/h+1.0, 0.f, 1.f);
-	vs_out.uv = vec2(x/w, y/h);
-	vs_out.depth = 1.0;
-}
-
-void main(void)
+Shader const& ShadersList::operator () (const char* name) const
 {
-	vec3 eucl;
-	if (erp_in == 1)
-		eucl = unproject_erp();
-	else
-		eucl = unproject_perspective();
-	//transform
-	eucl = R*eucl+translation;
-	if (erp_out == 1)
-		project_erp(eucl);
-	else
-		project_perspective(eucl);
+	return m_shaders.at(name);
 }
-)";
 
-	shaders["translate_rotate_Perspective"].geometry_source = R"(
-	#version 420 core
+std::string ShadersList::getSynthesisVertexShaderSource()
+{
+	return R"(
+		#version 420 core
 
-	layout(triangles) in;
-	layout(triangle_strip, max_vertices = 3) out;
+		layout(location = 0) in float d;
 
-	in VS_OUT {
-		vec2 uv;
-		float depth;
-	} gs_in[];
+		out VS_OUT {
+			vec2 uv;
+			float depth;
+		} vs_out;
 
-	out vec2 gs_uv;
-	out float gs_quality;
-	out float gs_depth;
+		uniform float w;
+		uniform float h;
 
-	uniform float w;
-	uniform float max_depth;
-	uniform float min_depth;
+		// Rotation and translation
+		uniform mat3 R;
+		uniform vec3 t;
 
-	//TODO Philips+ULB find the best quality possible (a combinaison of this 3 functions get_quality())
+		// Input/output projection types
+		uniform int erp_in;
+		uniform int erp_out;
 
-	float get_quality_old() {//quality based on area/longuest side
-		vec2 A = (gl_in[0].gl_Position).xy;
-		vec2 B = (gl_in[1].gl_Position).xy;
-		vec2 C = (gl_in[2].gl_Position).xy;
+		// Perspective unprojection
+		uniform vec2 f;
+		uniform vec2 p;
 
-		float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
+		// Perspective projection
+		uniform vec2 n_f;
+		uniform vec2 n_p;
 
-		if (area < 0) { return 0.0f; };
+		// Equirectangular unprojection
+		uniform float phi0;
+		uniform float theta0;
+		uniform float dphi_du;
+		uniform float dtheta_dv;
 
-		float dBA= dot((A-B), (A-B));
-		float dBC= dot((C-B), (C-B));
-		float dAC= dot((C-A), (C-A));
+		// Equirectangular projection
+		uniform float u0;
+		uniform float v0;
+		uniform float du_dphi;
+		uniform float dv_dtheta;
 
-		float maximum = max(max(dBA, dBC), dAC);
-		return max(20000.f * area / maximum, 1.0f);
-	}
-	float get_quality_test() {//based of the depth difference in the triangle
-		vec2 A = (gl_in[0].gl_Position).xy;
-		vec2 B = (gl_in[1].gl_Position).xy;
-		vec2 C = (gl_in[2].gl_Position).xy;
+		vec2 get_position_from_Vertex_ID(int id, float width) {
+			int y = id / int(width);
+			int x = id - y * int(width);
+			return vec2(float(x), float(y));
+		}
 
-		float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
+		vec3 unproject_equirectangular() {
+			// Image coordinates
+			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
 
-		if (area < 0) { return 0.0f; };
+			// Spherical coordinates
+			float phi = phi0 + xy.x * dphi_du;
+			float theta = theta0 + xy.y * dtheta_dv;
 
-		float dBA= dot((A-B), (A-B));
-		float dBC= dot((C-B), (C-B));
-		float dAC= dot((C-A), (C-A));
+			// World coordinates
+			return d * vec3(cos(theta) * cos(phi),
+							cos(theta) * sin(phi),
+							sin(theta));
+		}
 
-		float maximum = max(max(dBA, dBC), dAC);
-		// This quality works better with the Unicorn Dataset
-		//TODO remove this comment
-		float max_d = max(max(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
-		float min_d = min(min(gs_in[0].depth,gs_in[1].depth),gs_in[2].depth);
+		vec3 unproject_perspective() {
+			// Image coordinates
+			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
 
-		return min(max(10000.0f-50000.0f*(max_d-min_d)/(min_depth),1.0f),10000.f);
+			// World coordinates
+			return vec3(
+				d,
+				-(d / f.x) * (xy.x - p.x),
+				-(d / f.y) * (xy.y - p.y));
+		}
 
-	}
-	float get_quality() { //quality based only on the longest side of the triangle
-		vec2 A = (gl_in[0].gl_Position).xy;
-		vec2 B = (gl_in[1].gl_Position).xy;
-		vec2 C = (gl_in[2].gl_Position).xy;
+		void project_equirectangular(vec3 r) {
+			// Image coordinates
+			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
 
-		float area = -((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
-		if (area < 0) { return 1.0f; };
+			// Spherical coordinates
+			float n = length(r);
+			float phi = atan(r.y, r.x);
+			float theta = asin(r.z / n);
 
-		float dBA= dot((A-B), (A-B));
-		float dBC= dot((C-B), (C-B));
-		float dAC= dot((C-A), (C-A)); 
+			// Image coordinates in [-1, 1]
+			float hic = u0 + du_dphi * phi;
+			float vic = v0 + dv_dtheta * theta;
 
-		float maximum = max(max(dBA, dBC), dAC);
+			vs_out.uv = vec2(xy.x / w, xy.y / h);
+			gl_Position = vec4(hic, vic, 0., 1.);
+			vs_out.depth = n;
+		}
 
-		float quality = 10000.f / maximum / maximum;
-		quality = max(1.f, quality); // always > 0
-		quality = min(10000.f, quality);
+		void project_perspective(vec3 r) {
+			// Image coordinates
+			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
 
-		return quality;
-	}
+			vec2 uv = vec2(
+				-n_f.x * r.y / r.x + n_p.x,
+				-n_f.y * r.z / r.x + n_p.y);
 
-	void gen_vertex(int index, float quality) {
-		gs_quality = quality;
-		gs_uv = gs_in[index].uv;
-		gs_depth = gs_in[index].depth;
-		gl_Position = gl_in[index].gl_Position;
-		EmitVertex();
-	}
+			// Image coordinates (in [-1, 1])
+			gl_Position = vec4(
+				 2. * uv.x / w - 1.,
+				-2. * uv.y / h + 1., 0., 1.);
 
-	void main() {
-		// TODO change to the right quality function when the issue is closed
-		float quality = sqrt(get_quality_test()*get_quality());
-		gen_vertex(0, quality);
-		gen_vertex(1, quality);
-		gen_vertex(2, quality);
-		EndPrimitive();
-	}
+			vs_out.uv = vec2(xy.x / w, xy.y / h);
+			vs_out.depth = 1.;
+		}
 
+		void main(void)
+		{
+			vec3 eucl;
+
+			if (erp_in == 1)
+				eucl = unproject_equirectangular();
+			else
+				eucl = unproject_perspective();
+			
+			eucl = R * eucl + t;
+
+			if (erp_out == 1)
+				project_equirectangular(eucl);
+			else
+				project_perspective(eucl);
+		}
 	)";
-	shaders["translate_rotate_ERP"].geometry_source = shaders["translate_rotate_Perspective"].geometry_source;
-	shaders["translate_rotate_Perspective"].fragment_source = R"(
-#version 420 core
-
-uniform sampler2D image_texture;
-
-in vec2 gs_uv;
-in float gs_quality;
-in float gs_depth;
-
-layout(location=0) out vec3 color;
-layout(location=1) out float depth;
-layout(location=2) out float quality;
-
-
-uniform float max_depth;
-
-void main(void)
-{
-	color = texture(image_texture, gs_uv).rgb;
-	depth = gs_depth;
-	quality = gs_quality;
-	// TODO: Check with quality
-	//works ? with unicorn
-	gl_FragDepth = ((gs_depth/max_depth)/*(gs_depth/max_depth)*(gs_depth/max_depth)*/)/gs_quality;
-	//work with 360
-	//gl_FragDepth = ((gs_depth/max_depth)*(gs_depth/max_depth)*(gs_depth/max_depth))/gs_quality;
 }
-)";
 
-	shaders["translate_rotate_ERP"].fragment_source = shaders["translate_rotate_Perspective"].fragment_source;
-	shaders["translate_rotate_Perspective"].compile();
-	shaders["translate_rotate_ERP"].compile();
-
-	shaders["blending1"].vertex_source = R"(
-#version 420 core
-
-// two triangles to form a quad
-layout(location = 0) in vec2 position;
-
-out vec2 vs_position;
-
-void main(void)
+std::string ShadersList::getSynthesisFragmentShaderSource()
 {
-	vs_position = (1.0f+position.xy)/2.0f;
-	gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
+	return R"(
+		#version 420 core
+
+		uniform sampler2D image_texture;
+
+		in vec2 gs_uv;
+		in float gs_quality;
+		in float gs_depth;
+
+		layout(location=0) out vec3 color;
+		layout(location=1) out float depth;
+		layout(location=2) out float quality;
+
+		void main(void)
+		{
+			color = texture(image_texture, gs_uv).rgb;
+			depth = gs_depth;
+			quality = gs_quality;
+			gl_FragDepth = gs_depth / gs_quality;
+		}
+	)";
 }
-)";
 
-	const auto blending_fragment_shader = R"(
-uniform sampler2D accumulator_image;
-uniform sampler2D new_image;
-
-uniform sampler2D accumulator_quality;
-
-uniform sampler2D new_triangle_quality;
-
-uniform sampler2D new_depth;
-
-uniform float blending_factor;
-
-in vec2 vs_position;
-
-void main(void)
+std::string ShadersList::getSynthesisGeometryShaderSource()
 {
-	float accu_quality = texture(accumulator_quality, vs_position).x;
+	return R"(
+		#version 420 core
 
-	float n_triangle_quality = texture(new_triangle_quality, vs_position).x;
-	float n_depth = texture(new_depth, vs_position).x;
+		layout(triangles) in;
+		layout(triangle_strip, max_vertices = 3) out;
 
-	vec4 accu_color = texture(accumulator_image, vs_position);
-	vec4 n_color = texture(new_image, vs_position);
+		in VS_OUT {
+			vec2 uv;
+			float depth;
+		} gs_in[];
 
-	float accu_w;
-	float new_w;
-	if(blending_factor > 0.5f)
-	{
-		accu_w = pow(accu_quality, blending_factor);
-		new_w = pow(n_triangle_quality/n_depth, blending_factor);
-	}
-	else{
-		accu_w = 1.0;
-		new_w = 1.0;
-	}
-	if (n_depth == 0.0f || n_triangle_quality == 0.0f)
-		new_w=0.0f;
-	if (accu_quality == 0.0f)
-		accu_w=0.0f;
+		out vec2 gs_uv;
+		out float gs_quality;
+		out float gs_depth;
 
-	vec4 tmp_color = accu_w*accu_color + new_w*n_color;
-	if (accu_w + new_w >0.0f)
-		tmp_color /= (accu_w + new_w);
-	color = tmp_color;
+		uniform float w;
+		uniform float h;
 
-	float tmp_quality = accu_w + new_w;
-	if (tmp_quality > 0.0f)
-	{
-		if(blending_factor > 0.5f)
+		float valid_tri() {
+			vec2 A = (gl_in[0].gl_Position).xy * vec2(w, h);
+			vec2 B = (gl_in[1].gl_Position).xy * vec2(w, h);
+			vec2 C = (gl_in[2].gl_Position).xy * vec2(w, h);
+
+			float dab = length(A - B);
+			float dac = length(A - C);
+			float dbc = length(B - C);
+
+			float stretch = max(dbc, max(dab, dac));
+
+			float quality = 10000. - 1000. * stretch;
+			quality = max(1., quality); // always > 0
+			quality = min(10000., quality);
+
+			return quality;
+		}
+
+		void gen_vertex(int index, float quality) {
+			gs_quality = quality;
+			gs_uv = gs_in[index].uv;
+			gs_depth = gs_in[index].depth;
+			gl_Position = gl_in[index].gl_Position;
+			EmitVertex();
+		}
+
+		void main() {
+			float quality = valid_tri();
+			gen_vertex(0, quality);
+			gen_vertex(1, quality);
+			gen_vertex(2, quality);
+			EndPrimitive();
+		}
+	)";
+}
+
+std::string ShadersList::getBlendingVertexShaderSource()
+{
+	return R"(
+		#version 420 core
+
+		// two triangles to form a quad
+		layout(location = 0) in vec2 position;
+
+		out vec2 vs_position;
+
+		void main(void)
+		{
+			vs_position = (1.0f+position.xy)/2.0f;
+			gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
+		}
+	)";
+}
+
+std::string ShadersList::getBlendingFragmentShaderSource(int step)
+{
+	return std::string(step == 1
+		? R"(
+			#version 420 core
+			layout(location=3) out vec4 color;
+			layout(location=4) out float quality;
+		)"
+		: R"(
+			#version 420 core
+			layout(location=5) out vec4 color;
+			layout(location=6) out float quality;
+		)") +  R"(
+		uniform sampler2D accumulator_image;
+		uniform sampler2D new_image;
+
+		uniform sampler2D accumulator_quality;
+
+		uniform sampler2D new_triangle_quality;
+
+		uniform sampler2D new_depth;
+
+		uniform float blending_factor;
+
+		in vec2 vs_position;
+
+		void main(void)
+		{
+			float accu_quality = texture(accumulator_quality, vs_position).x;
+
+			float n_triangle_quality = texture(new_triangle_quality, vs_position).x;
+			float n_depth = texture(new_depth, vs_position).x;
+
+			vec4 accu_color = texture(accumulator_image, vs_position);
+			vec4 n_color = texture(new_image, vs_position);
+
+			float accu_w;
+			float new_w;
+			if(blending_factor > 0.5f)
 			{
-				quality = pow(tmp_quality, 1.0f/blending_factor);
+				accu_w = pow(accu_quality, blending_factor);
+				new_w = pow(n_triangle_quality/n_depth, blending_factor);
 			}
 			else{
-				quality = tmp_quality;
+				accu_w = 1.0;
+				new_w = 1.0;
 			}
-	}
-	else 
-		quality = 0.0f;
-}
+			if (n_depth == 0.0f || n_triangle_quality == 0.0f)
+				new_w=0.0f;
+			if (accu_quality == 0.0f)
+				accu_w=0.0f;
 
+			vec4 tmp_color = accu_w*accu_color + new_w*n_color;
+			if (accu_w + new_w >0.0f)
+				tmp_color /= (accu_w + new_w);
+			color = tmp_color;
+
+			float tmp_quality = accu_w + new_w;
+			if (tmp_quality > 0.0f)
+			{
+				if(blending_factor > 0.5f)
+					{
+						quality = pow(tmp_quality, 1.0f/blending_factor);
+					}
+					else{
+						quality = tmp_quality;
+					}
+			}
+			else 
+				quality = 0.0f;
+		}
 	)";
-
-	shaders["blending1"].fragment_source = std::string(R"(
-#version 420 core
-layout(location=3) out vec4 color;
-layout(location=4) out float quality;
-)") + std::string(blending_fragment_shader);
-
-	shaders["blending1"].compile();
-
-
-	shaders["blending2"].vertex_source = shaders["blending1"].vertex_source;
-
-	shaders["blending2"].fragment_source = std::string(R"(
-#version 420 core
-layout(location=5) out vec4 color;
-layout(location=6) out float quality;
-)") + std::string(blending_fragment_shader);
-
-	shaders["blending2"].compile();
 }
-
-
 
 #endif

@@ -11,7 +11,6 @@
 		"TechnicolorHijack/v1_4096_4096_0_5_25_0_420_10b.yuv",
 		"TechnicolorHijack/v4_4096_4096_0_5_25_0_420_10b.yuv"],
 	"OutputFiles": ["TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b_OpenGL.yuv"],
-	"DepthOutputFiles": ["TechnicolorHijack_v9vs_from_v1v4_4096_4096_0_5_25_0_420_10b_OpenGL.yuv"],
 	"StartFrame": 0,
 	"NumberOfFrames": 1,
 	"Precision": 2.0,

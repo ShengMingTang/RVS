@@ -80,7 +80,7 @@ void Pipeline::execute()
 		if (m_config.number_of_frames > 1) {
 			std::cout << std::string(5, '=') << " FRAME " << inputFrame << ' ' << std::string(80, '=') << std::endl;
 		}
-		for (auto virtualView = 0; virtualView != m_config.VirtualCameraNames.size(); ++virtualView) {
+		for (auto virtualView = 0u; virtualView != m_config.VirtualCameraNames.size(); ++virtualView) {
 			computeView(inputFrame, virtualFrame, virtualView);
 		}
 	}
@@ -96,6 +96,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		auto pose = m_config.pose_trace[inputFrame];
 		params_virtual.setPosition(params_virtual.getPosition() + pose.position);
 		params_virtual.setRotation(pose.rotation);
+		std::cout << "Pose: " << params_virtual.getPosition() << ' ' << params_virtual.getRotation() << std::endl;
 	}
 
 	// Initialize OpenGL frame buffer objects
@@ -117,7 +118,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 	spaceTransformer->set_targetPosition(&params_virtual);
 
 	// For each input view
-	for (auto inputView = 0; inputView != m_config.InputCameraNames.size(); ++inputView) {
+	for (auto inputView = 0u; inputView != m_config.InputCameraNames.size(); ++inputView) {
 		std::cout << m_config.InputCameraNames[inputView] << " => " << m_config.VirtualCameraNames[virtualView] << std::endl;
 		auto const& params_real = m_config.params_real[inputView];
 
@@ -226,9 +227,9 @@ std::unique_ptr<BlendedView> Pipeline::createBlender()
 {
 	switch (m_config.blending_method) {
 	case BlendingMethod::simple:
-		return std::make_unique<BlendedViewSimple>(m_config.blending_factor);
+		return std::unique_ptr<BlendedView>(new BlendedViewSimple(m_config.blending_factor));
 	case BlendingMethod::multispectral:
-		return std::make_unique<BlendedViewMultiSpec>(m_config.blending_low_freq_factor, m_config.blending_high_freq_factor);
+		return std::unique_ptr<BlendedView>(new BlendedViewMultiSpec(m_config.blending_low_freq_factor, m_config.blending_high_freq_factor));
 	default:
 		throw std::logic_error("Unknown blending method");
 	}
@@ -238,7 +239,7 @@ std::unique_ptr<SynthesizedView> Pipeline::createSynthesizer()
 {
 	switch (m_config.vs_method) {
 	case ViewSynthesisMethod::triangles:
-		return std::make_unique<SynthetisedViewTriangle>();
+		return std::unique_ptr<SynthesizedView>(new SynthetisedViewTriangle);
 	default:
 		throw std::logic_error("Unknown view synthesis method");
 	}
@@ -248,10 +249,10 @@ std::unique_ptr<SpaceTransformer> Pipeline::createSpaceTransformer()
 {
 #if WITH_OPENGL
 	if (g_with_opengl) {
-		return std::make_unique<OpenGLTransformer>();
+		return std::unique_ptr<SpaceTransformer>(new OpenGLTransformer);
 	}
 #endif
-	return std::make_unique<PUTransformer>();
+	return std::unique_ptr<SpaceTransformer>(new PUTransformer);
 }
 
 void Pipeline::dumpMaps(View const& input_image, std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender)
