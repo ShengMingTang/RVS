@@ -1,0 +1,47 @@
+{
+    "Version": "2.0",
+    "InputCameraParameterFile": "config_files/TechnicolorHijack.json",
+    "VirtualCameraParameterFile": "config_files/TechnicolorHijack.json",
+    "InputCameraNames": [
+        "v0",
+        "v1",
+        "v2",
+        "v3",
+        "v4",
+        "v5",
+        "v6",
+        "v7",
+        "v8",
+        "v9"
+    ],
+    "VirtualCameraNames": [
+        "v2"
+    ],
+    "ViewImageNames": [
+        "TechnicolorHijack/v0_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v1_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v2_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v3_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v4_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v5_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v6_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v7_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v8_4096_4096_420_10b.yuv",
+        "TechnicolorHijack/v9_4096_4096_420_10b.yuv"
+    ],
+    "DepthMapNames": [
+        "TechnicolorHijack/v0_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v1_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v2_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v3_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v4_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v5_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v6_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v7_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v8_4096_4096_0_5_25_0_420_10b.yuv",
+        "TechnicolorHijack/v9_4096_4096_0_5_25_0_420_10b.yuv"
+    ],
+    "OutputFiles": [
+        "TechnicolorHijack/C1_v2_4096_4096_420_10b.yuv"
+    ]
+}
