@@ -30,16 +30,16 @@
         "TechnicolorHijack/v9_4096_4096_420_10b.yuv"
     ],
     "DepthMapNames": [
-        "TechnicolorHijack/v0_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v1_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v2_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v3_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v4_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v5_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v6_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v7_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v8_4096_4096_0_5_25_0_420_10b.yuv",
-        "TechnicolorHijack/v9_4096_4096_0_5_25_0_420_10b.yuv"
+        "TechnicolorHijack/v0_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v1_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v2_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v3_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v4_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v5_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v6_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v7_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v8_4096_4096_0_5_25_0_420_16b.yuv",
+        "TechnicolorHijack/v9_4096_4096_0_5_25_0_420_16b.yuv"
     ],
     "OutputFiles": [
         "TechnicolorHijack/ref_v7_4096_4096_420_10b.yuv"

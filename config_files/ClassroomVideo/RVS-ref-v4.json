@@ -40,21 +40,21 @@
         "ClassroomVideo/v14_4096_2048_420_10b.yuv"
     ],
     "DepthMapNames": [
-        "ClassroomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v1_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v2_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v3_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v4_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v5_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v6_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v7_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v8_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v9_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v10_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v11_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v12_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v13_4096_2048_0_8_1000_0_420_10b.yuv",
-        "ClassroomVideo/v14_4096_2048_0_8_1000_0_420_10b.yuv"
+        "ClassroomVideo/v0_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v1_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v2_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v3_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v4_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v5_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v6_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v7_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v8_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v9_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v10_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v11_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v12_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v13_4096_2048_0_8_1000_0_420_16b.yuv",
+        "ClassroomVideo/v14_4096_2048_0_8_1000_0_420_16b.yuv"
     ],
     "OutputFiles": [
         "ClassroomVideo/ref_v4_4096_2048_420_10b.yuv"

@@ -91,7 +91,7 @@ def generate_configuration(sequence, test_class, input_cameras, virtual_camera, 
 	# Build a camera dictionary
 	cameras = {}
 	for camera in metadata['cameras']:
-		for key, value in enumerate(input_overrides):
+		for key, value in input_overrides.items():
 			camera[key] = value
 		cameras[camera['Name']] = camera
 
