@@ -71,7 +71,7 @@ metadata = {
                 'BitDepthDepth': 16 }
             }  
 
-scale = 1e-3    # Convert from millimeter to meter
+scale = 1e-3    
 
 
 ################################################################################
@@ -114,7 +114,7 @@ def RotationMatrixToEulerAngles(R):
 def main():
     sectionLength = 9
     permute = np.array([ [0, 0, 1], [-1, 0, 0], [0, -1, 0] ] )
-    cameras = [];            
+    cameras = []            
 
     with open(in_filepath) as f:
         lines = f.readlines()
@@ -128,10 +128,11 @@ def main():
             break
         Intrinsics       = np.fromstring( l[1] + ' ' + l[2] + ' ' + l[3], dtype=float, sep=' ' )
         Intrinsics.shape = (3,3)
-        Extrinsics       = np.fromstring( l[5] + ' ' + l[6] + ' ' + l[7], dtype=float, sep=' ' )
-        Extrinsics.shape = (3,4)
         Focal            = [Intrinsics[0,0], Intrinsics[1,1] ]
         Principle_point  = [Intrinsics[0,2], Intrinsics[1,2] ]
+        
+        Extrinsics       = np.fromstring( l[5] + ' ' + l[6] + ' ' + l[7], dtype=float, sep=' ' )
+        Extrinsics.shape = (3,4)
         RotationMatrix   = np.transpose( permute.dot( Extrinsics[:,0:3] ).dot( np.transpose(permute) ) )
         Position         = scale * permute.dot(Extrinsics[:,3])
         EulerAngles      = RotationMatrixToEulerAngles(RotationMatrix);
