@@ -52,9 +52,25 @@
 
 trap exit ERR
 
-cd $PBS_O_WORKDIR
+[ -z "$PBS_O_WORKDIR" ] || cd $PBS_O_WORKDIR
 
-config_files=`find config_files -name \*SVS\*.txt`
-list=($config_files)
-config_file=${list[$PBS_ARRAYID]}
-./RVS $config_file
+list=()
+for sequence in ClassroomVideo TechnicolorMuseum TechnicolorHijack
+do
+    config_files=$(find config_files/$sequence -name \*.json)
+    list+=($config_files)
+done
+
+echo "Number of tasks: ${#list[@]}" 
+
+if [ -z "$PBS_ARRAYID" ]
+then
+    for index in ${!list[@]}
+    do
+        echo "$index: ${list[$index]}"
+    done
+else
+    echo "Executing task: ${PBS_ARRAYID}"
+    config_file=${list[$PBS_ARRAYID]}
+    ./RVS $config_file
+fi

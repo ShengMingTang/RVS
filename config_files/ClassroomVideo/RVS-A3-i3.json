@@ -1,0 +1,20 @@
+{
+    "Version": "2.0",
+    "InputCameraParameterFile": "config_files/ClassroomVideo.json",
+    "VirtualCameraParameterFile": "config_files/ClassroomVideo.json",
+    "InputCameraNames": [
+        "v0"
+    ],
+    "VirtualCameraNames": [
+        "i3"
+    ],
+    "ViewImageNames": [
+        "ClassroomVideo/v0_4096_2048_420_10b.yuv"
+    ],
+    "DepthMapNames": [
+        "ClassroomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv"
+    ],
+    "OutputFiles": [
+        "ClassroomVideo/A3_i3_4096_2048_420_10b.yuv"
+    ]
+}
