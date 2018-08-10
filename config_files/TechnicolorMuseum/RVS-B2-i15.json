@@ -5,7 +5,6 @@
     "InputCameraNames": [
         "v0",
         "v1",
-        "v1",
         "v4",
         "v8",
         "v11",
@@ -19,7 +18,6 @@
     "ViewImageNames": [
         "TechnicolorMuseum/v0_2048_2048_420_10b.yuv",
         "TechnicolorMuseum/v1_2048_2048_420_10b.yuv",
-        "TechnicolorMuseum/v1_2048_2048_420_10b.yuv",
         "TechnicolorMuseum/v4_2048_2048_420_10b.yuv",
         "TechnicolorMuseum/v8_2048_2048_420_10b.yuv",
         "TechnicolorMuseum/v11_2048_2048_420_10b.yuv",
@@ -29,7 +27,6 @@
     ],
     "DepthMapNames": [
         "TechnicolorMuseum/v0_2048_2048_0_5_25_0_420_10b.yuv",
-        "TechnicolorMuseum/v1_2048_2048_0_5_25_0_420_10b.yuv",
         "TechnicolorMuseum/v1_2048_2048_0_5_25_0_420_10b.yuv",
         "TechnicolorMuseum/v4_2048_2048_0_5_25_0_420_10b.yuv",
         "TechnicolorMuseum/v8_2048_2048_0_5_25_0_420_10b.yuv",
