@@ -44,7 +44,7 @@
 # 	Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
 # 	Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
 # 	Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
-# 
+#
 # Koninklijke Philips N.V., Eindhoven, The Netherlands:
 # 	Bart Kroon, bart.kroon@philips.com
 # 	Bart Sonneveldt, bart.sonneveldt@philips.com
@@ -52,7 +52,7 @@
 
 trap exit ERR
 
-[ -z "$PBS_O_WORKDIR" ] || cd $PBS_O_WORKDIR
+[ -z "$PBS_O_WORKDIR" -o -z "$PBS_ARRAYID" ] || cd $PBS_O_WORKDIR
 
 list=()
 for sequence in ClassroomVideo TechnicolorMuseum TechnicolorHijack
@@ -61,7 +61,7 @@ do
     list+=($config_files)
 done
 
-echo "Number of tasks: ${#list[@]}" 
+echo "Number of tasks: ${#list[@]}"
 
 if [ -z "$PBS_ARRAYID" ]
 then
@@ -72,5 +72,5 @@ then
 else
     echo "Executing task: ${PBS_ARRAYID}"
     config_file=${list[$PBS_ARRAYID]}
-    ./RVS $config_file
+    bin/RVS $config_file
 fi
