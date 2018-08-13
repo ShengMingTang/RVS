@@ -130,7 +130,7 @@ def generate_configuration(sequence, test_class, input_cameras, virtual_camera, 
 
 	# Write the configuration
 	if not os.path.exists('config_files/{}'.format(sequence)):
-		os.makedirs('config_files/{}' % sequence)
+		os.makedirs('config_files/{}'.format(sequence))
 
 	filepath = 'config_files/{}/RVS-{}-{}.json'.format(sequence, test_class, virtual_camera)
 	with open(filepath, 'w') as file:
