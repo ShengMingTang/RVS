@@ -198,7 +198,6 @@ void SynthesizedView::compute(View& input)
 		auto const& pu_transformer = static_cast<const PUTransformer*>(m_space_transformer);
 
 		// Generate image coordinates 
-		auto input_size = input.get_size();
 		auto input_uv = pu_transformer->generateImagePos();
 		
 		// Unproject: input view image to input view world coordinates

@@ -148,7 +148,7 @@ unsigned max_level(int bit_depth)
 	return (1u << bit_depth) - 1u;
 }
 
-cv::Mat1f read_color(std::string filepath, int frame, Parameters const& parameters)
+cv::Mat3f read_color(std::string filepath, int frame, Parameters const& parameters)
 {
 	// Load the image
 	cv::Mat image;
@@ -181,10 +181,10 @@ cv::Mat1f read_color(std::string filepath, int frame, Parameters const& paramete
 
 	// Color space conversion
 	if (color_space == ColorSpace::YUV && g_color_space == ColorSpace::RGB) {
-		cv::cvtColor(color, color, CV_YCrCb2BGR);
+		cv::cvtColor(color, color, cv::COLOR_YCrCb2BGR);
 	}
 	else if (color_space == ColorSpace::RGB && g_color_space == ColorSpace::YUV) {
-		cv::cvtColor(color, color, CV_BGR2YCrCb);
+		cv::cvtColor(color, color, cv::COLOR_BGR2YCrCb);
 	}
 
 	return color;

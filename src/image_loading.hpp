@@ -78,7 +78,7 @@ Use openCV cv::imread() function to read non .YUV images.
 @param parameters Camera and video parameters
 @return CV_32FC3 image
 */
-cv::Mat1f read_color(std::string filepath, int frame, Parameters const& parameters);
+cv::Mat3f read_color(std::string filepath, int frame, Parameters const& parameters);
 
 /**
 \brief Read a depth image: a exr depth file or a YUV disparity file. 

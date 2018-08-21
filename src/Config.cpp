@@ -112,7 +112,7 @@ std::vector<Parameters> Config::loadCamerasParametersFromFile(std::string const&
 	// Load parameters (with overrides) and index by camera name
 	std::map<std::string, Parameters> index;
 	auto cameras = root.require("cameras");
-	for (int i = 0; i != cameras.size(); ++i) {
+	for (auto i = 0u; i != cameras.size(); ++i) {
 		auto node = cameras.at(i);
 		auto name = node.require("Name").asString();
 		if (index.count(name)) {
