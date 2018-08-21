@@ -124,10 +124,10 @@ void write_color(std::string filepath, cv::Mat3f color, int frame, Parameters co
 		? ColorSpace::YUV
 		: ColorSpace::RGB;
 	if (g_color_space == ColorSpace::YUV && color_space == ColorSpace::RGB) {
-		cv::cvtColor(color, color, CV_YCrCb2BGR);
+		cv::cvtColor(color, color, cv::COLOR_YCrCb2BGR);
 	}
 	else if (g_color_space == ColorSpace::RGB && color_space == ColorSpace::YUV) {
-		cv::cvtColor(color, color, CV_BGR2YCrCb);
+		cv::cvtColor(color, color, cv::COLOR_BGR2YCrCb);
 	}
 
 	// Quantization
