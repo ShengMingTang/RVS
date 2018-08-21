@@ -74,7 +74,7 @@ Config Config::loadFromFile(std::string const& filename)
 	config.setInputFilepaths(root, "ViewImageNames", config.texture_names);
 	config.setInputFilepaths(root, "DepthMapNames", config.depth_names);
 	config.setOutputFilepaths(root, "OutputFiles", config.outfilenames);
-	config.setOutputFilepaths(root, "MaskedOutputFiles ", config.outmaskedfilenames);
+	config.setOutputFilepaths(root, "MaskedOutputFiles", config.outmaskedfilenames);
 	config.setOutputFilepaths(root, "OutputMasks", config.outmaskfilenames);
 	config.setOutputFilepaths(root, "DepthOutputFiles", config.outdepthfilenames);
 	config.setValidityThreshold(root);
