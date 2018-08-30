@@ -86,6 +86,11 @@ void Pipeline::execute()
 	}
 }
 
+Config const& Pipeline::getConfig() const
+{
+	return m_config;
+}
+
 void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 {
 	PROF_START("computeView");
@@ -130,12 +135,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		synthesizer->setSpaceTransformer(spaceTransformer.get());
 
 		// Load the input image
-		PROF_START("loading");
-		InputView inputImage(
-			m_config.texture_names[inputView], 
-			m_config.depth_names[inputView], 
-			inputFrame, params_real);
-		PROF_END("loading");
+		auto inputImage = loadInputView(inputFrame, inputView, params_real);
 
 		// Start OpenGL instrumentation (if any)
 #if WITH_OPENGL
@@ -144,7 +144,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		}
 #endif
 		// Synthesize view
-		synthesizer->compute(inputImage);
+		synthesizer->compute(*inputImage);
 
 		// Blend with previous results
 		PROF_START("blending");

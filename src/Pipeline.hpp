@@ -86,6 +86,17 @@ public:
 	*/
 	void execute();
 
+	/**
+	\brief Access the configuration
+	*/
+	Config const& getConfig() const;
+
+protected:
+	/**
+	\brief Interface for loading a source view. Implemented by Application
+	*/
+	virtual std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) = 0;
+
 private:	
 	/**
 	\brief Computes one frame of a virtual view

@@ -73,6 +73,9 @@ public:
 	@param filepath Configuration file (JSON format)
 	*/
 	Application(std::string const& filepath);
+
+protected:
+	std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) override;
 };
 
 #endif

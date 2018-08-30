@@ -45,7 +45,18 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "Application.hpp"
+#include "Timer.hpp"
 
 Application::Application(std::string const& filepath)
 	: Pipeline(filepath)
 {}
+
+std::shared_ptr<View> Application::loadInputView(int inputFrame, int inputView, Parameters const& parameters)
+{
+	PROF_START("loading");
+	return std::make_shared<InputView>(
+		getConfig().texture_names[inputView],
+		getConfig().depth_names[inputView],
+		inputFrame, parameters);
+	PROF_END("loading");
+}

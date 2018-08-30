@@ -233,7 +233,7 @@ endif()
 add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${OPENGL_SOURCES} ${OPENGL_HEADERS})
 add_executable(${PROJECT_NAME} src/Application.cpp src/Analyzer.cpp src/Application.hpp src/Analyzer.hpp src/view_synthesis.cpp)
 add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
-add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp ${CONFIGURATION_FILES})
+add_executable(${PROJECT_NAME}IntegrationTest src/Application.cpp src/integration_test.cpp ${CONFIGURATION_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB} ${OPENGL_LIB})
 target_link_libraries(${PROJECT_NAME}UnitTest ${PROJECT_NAME}Lib ${OpenCV_LIBS} ${CUDA_LIB} ${EASYPROFILER_LIB} ${OPENGL_LIB})
