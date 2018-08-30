@@ -86,6 +86,28 @@ int main(int argc, char* argv[])
 			<< "|    MPEG2018/N17759 Reference View Synthesizer (RVS) manual                               |\n"
 			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
 
+		if (argc == 1) {
+			std::cout
+				<< "\n"
+				<< " - -------------------------------------------------------------------------------------- -\n"
+				<< "|    Original authors:                                                                     |\n"
+				<< "|                                                                                          |\n"
+				<< "|    Universite Libre de Bruxelles, Brussels, Belgium:                                     |\n"
+				<< "|      Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be                              |\n"
+				<< "|      Daniele Bonatto, Daniele.Bonatto@ulb.ac.be                                          |\n"
+				<< "|      Arnaud Schenkel, arnaud.schenkel@ulb.ac.be                                          |\n"
+				<< "|                                                                                          |\n"
+				<< "|    Koninklijke Philips N.V., Eindhoven, The Netherlands:                                 |\n"
+				<< "|      Bart Kroon, bart.kroon@philips.com                                                  |\n"
+				<< "|      Bart Sonneveldt, bart.sonneveldt@philips.com                                        |\n"
+				<< " - -------------------------------------------------------------------------------------- -\n"
+				<< "\n"
+				<< "Usage: RVS CONFIGURATION_FILE\n"
+				<< "\n"
+				<< "Consult the manual for more information." << std::endl;
+			return 1;
+		}
+
 		PROF_START("parsing");
 
 		std::string filename = (argc > 1) ? argv[1] : "./config_files/parameter_file.txt";
