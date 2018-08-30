@@ -49,7 +49,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #endif
 
 #include "Timer.hpp"
-#include "Pipeline.hpp"
+#include "Analyzer.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -61,15 +61,28 @@ int main(int argc, char* argv[])
 	{
 		PROF_BEGIN();
 
-		if (argc > 2) // -noopengl
-			g_with_opengl = false;
+		bool with_analyzer = false;
+		std::string filename;
 
-#if !WITH_OPENGL
-		g_with_opengl = false;
-		if (argc > 2 && !g_with_opengl)
-			throw std::logic_error("Too many parameters - not compiled with OpenGL");
-#endif
-
+		for (int i = 1; i < argc; ++i) {
+			if (strcmp(argv[i], "--noopengl") == 0) {
+				g_with_opengl = false;
+			}
+			else if (strcmp(argv[i], "--analyzer") == 0) {
+				with_analyzer = true;
+			}
+			else if (filename.empty()) {
+				filename = argv[i];
+			}
+			else {
+				throw std::runtime_error("Too many parameters");
+				return 1;
+			}
+		}
+		
+		if (filename.empty()) {
+			throw std::runtime_error("Usage: RVS CONFIGURATION_FILE [--noopengl] [--analyzer]");
+		}
 
 #if WITH_OPENGL
 		if (g_with_opengl) {
@@ -77,6 +90,8 @@ int main(int argc, char* argv[])
 			context_init();
 			PROF_END("OpenGL Context");
 		}
+#else
+		g_with_opengl = false;
 #endif
 		
 		std::cout
@@ -88,14 +103,19 @@ int main(int argc, char* argv[])
 
 		PROF_START("parsing");
 
-		std::string filename = (argc > 1) ? argv[1] : "./config_files/parameter_file.txt";
+		std::unique_ptr<Application> application;
 
-		Pipeline p(filename);
+		if (with_analyzer) {
+			application.reset(new Analyzer(filename));
+		}
+		else {
+			application.reset(new Application(filename));
+		}
 
 		PROF_END("parsing");
 		PROF_START("view synthesis");
 
-		p.execute();
+		application->execute();
 
 		PROF_END("view synthesis");
 

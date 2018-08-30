@@ -231,7 +231,7 @@ if (WITH_OPENGL)
 endif()
 
 add_library(${PROJECT_NAME}Lib ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${OPENGL_SOURCES} ${OPENGL_HEADERS})
-add_executable(${PROJECT_NAME} src/view_synthesis.cpp)
+add_executable(${PROJECT_NAME} src/Application.cpp src/Analyzer.cpp src/Application.hpp src/Analyzer.hpp src/view_synthesis.cpp)
 add_executable(${PROJECT_NAME}UnitTest src/unit_test.cpp)
 add_executable(${PROJECT_NAME}IntegrationTest src/integration_test.cpp ${CONFIGURATION_FILES})
 
