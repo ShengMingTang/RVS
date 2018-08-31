@@ -100,10 +100,8 @@ namespace rvs
 	{
 #if WITH_OPENGL
 		if (g_with_opengl) {
-			PROF_START("BLENDING_OPENGL");
-
-			auto FBO = RFBO::getInstance();
-			auto & shaders = ShadersList::getInstance();
+			auto FBO = opengl::RFBO::getInstance();
+			auto & shaders = opengl::ShadersList::getInstance();
 			// QUAD VAO
 			GLfloat quadVertices[] = {
 				-1.0f, 1.0f, 0.0f, 1.0f,
@@ -166,7 +164,6 @@ namespace rvs
 			glBindVertexArray(0);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			PROF_END("BLENDING_OPENGL");
 			FBO->toggle();
 		}
 #endif
@@ -205,7 +202,7 @@ namespace rvs
 #if WITH_OPENGL
 	void BlendedView::assignFromGL2CV(cv::Size size)
 	{
-		auto FBO = RFBO::getInstance();
+		auto FBO = opengl::RFBO::getInstance();
 		cv::Mat3f img(size, CV_32FC3);
 
 		glPixelStorei(GL_PACK_ALIGNMENT, 4);

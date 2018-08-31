@@ -56,7 +56,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 namespace rvs
 {
-	namespace detail 
+	namespace opengl 
 	{
 		class Shader
 		{

@@ -292,7 +292,7 @@ namespace rvs
 
 	void Config::setBlendingLowFreqFactor(json::Node root)
 	{
-		if (blending_method == detail::BlendingMethod::multispectral) {
+		if (blending_method == BlendingMethod::multispectral) {
 			blending_low_freq_factor = static_cast<float>(root.require("BlendingLowFreqFactor").asDouble());
 			std::cout << "BlendingLowFreqFactor: " << blending_low_freq_factor << '\n';
 		}
@@ -300,7 +300,7 @@ namespace rvs
 
 	void Config::setBlendingHighFreqFactor(json::Node root)
 	{
-		if (blending_method == detail::BlendingMethod::multispectral) {
+		if (blending_method == BlendingMethod::multispectral) {
 			blending_high_freq_factor = static_cast<float>(root.require("BlendingHighFreqFactor").asDouble());
 			std::cout << "BlendingHighFreqFactor: " << blending_high_freq_factor << '\n';
 		}

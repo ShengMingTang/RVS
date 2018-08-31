@@ -142,10 +142,10 @@ namespace rvs
 		// Initialize OpenGL frame buffer objects
 #if WITH_OPENGL
 		auto intermediateSize = cv::Size(
-			int(g_rescale*params_virtual.getSize().width),
-			int(g_rescale*params_virtual.getSize().height));
+			int(detail::g_rescale*params_virtual.getSize().width),
+			int(detail::g_rescale*params_virtual.getSize().height));
 		if (g_with_opengl) {
-			auto FBO = RFBO::getInstance();
+			auto FBO = opengl::RFBO::getInstance();
 			FBO->init(intermediateSize);
 		}
 #endif
@@ -175,7 +175,7 @@ namespace rvs
 			// Start OpenGL instrumentation (if any)
 #if WITH_OPENGL
 			if (g_with_opengl) {
-				rd_start_capture_frame();
+				opengl::rd_start_capture_frame();
 			}
 #endif
 			// Synthesize view
@@ -189,7 +189,7 @@ namespace rvs
 			// End OpenGL instrumentation (if any)
 #if WITH_OPENGL
 			if (g_with_opengl) {
-				rd_end_capture_frame();
+				opengl::rd_end_capture_frame();
 			}
 #endif
 		}
@@ -241,7 +241,7 @@ namespace rvs
 
 #if WITH_OPENGL
 		if (g_with_opengl) {
-			auto FBO = RFBO::getInstance();
+			auto FBO = opengl::RFBO::getInstance();
 			FBO->free();
 		}
 #endif
@@ -249,11 +249,11 @@ namespace rvs
 
 	std::unique_ptr<BlendedView> Pipeline::createBlender(int)
 	{
-		if (getConfig().blending_method == detail::BlendingMethod::simple) {
+		if (getConfig().blending_method == BlendingMethod::simple) {
 			return std::unique_ptr<BlendedView>(new BlendedViewSimple(getConfig().blending_factor));
 		}
 
-		if (getConfig().blending_method == detail::BlendingMethod::multispectral) {
+		if (getConfig().blending_method == BlendingMethod::multispectral) {
 			return std::unique_ptr<BlendedView>(new BlendedViewMultiSpec(getConfig().blending_low_freq_factor, getConfig().blending_high_freq_factor));
 		}
 
@@ -264,7 +264,7 @@ namespace rvs
 
 	std::unique_ptr<SynthesizedView> Pipeline::createSynthesizer(int, int)
 	{
-		if (getConfig().vs_method == detail::ViewSynthesisMethod::triangles) {
+		if (getConfig().vs_method == ViewSynthesisMethod::triangles) {
 			return std::unique_ptr<SynthesizedView>(new SynthetisedViewTriangle);
 		}
 

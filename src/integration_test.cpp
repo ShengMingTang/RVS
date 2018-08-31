@@ -185,9 +185,9 @@ FUNC(ULB_Unicorn_Triangles_Simple)
 		cv::Size(1920, 1080), 8, 21.08, 26.12); // VC15 + OpenCV 3.4.1: 21.1318, 26.1742
 
 #if WITH_OPENGL
-	g_with_opengl = true;
-	context_init();
-	Application pgl("./config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.json");
+	rvs::g_with_opengl = true;
+	rvs::opengl::context_init();
+	rvs::Application pgl("./config_files/_integration_tests/Unicorn_Triangles_Simple_OpenGL.json");
 	pgl.execute();
 
 	// OpenGL vs reference
@@ -262,9 +262,9 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 		cv::Size(4096, 2048), 10, 35.54, 36.05); // VC15 + OpenCV 3.4.1: 35.5953, 36.1051
 
 #if WITH_OPENGL
-	g_with_opengl = true;
-	context_init();
-	Application pGL("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_OpenGL.json");
+	rvs::g_with_opengl = true;
+	rvs::opengl::context_init();
+	rvs::Application pGL("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_OpenGL.json");
 	pGL.execute();
 
 	// OpenGL vs reference
@@ -320,9 +320,9 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 		cv::Size(4096, 4096), 10, 23.12, 39.03); // VC15 + OpenCV 3.4.1: 23.1774, 39.0874
 
 #if WITH_OPENGL
-	g_with_opengl = true;
-	context_init();
-	Application pGL("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9_OpenGL.json");
+	rvs::g_with_opengl = true;
+	rvs::opengl::context_init();
+	rvs::Application pGL("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9_OpenGL.json");
 	pGL.execute();
 
 	// OpenGL vs. reference
@@ -365,9 +365,9 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 		cv::Size(2048, 2048), 10, 31.76, 38.15); // VC15 + OpenCV 3.4.1: 31.8139, 38.2091
 
 #if WITH_OPENGL
-	g_with_opengl = true;
-	context_init();
-	Application pGL("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1_OpenGL.json");
+	rvs::g_with_opengl = true;
+	rvs::opengl::context_init();
+	rvs::Application pGL("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1_OpenGL.json");
 	pGL.execute();
 
 	// OpenGL vs reference

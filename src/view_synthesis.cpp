@@ -82,10 +82,8 @@ int main(int argc, char* argv[])
 		}
 
 #if WITH_OPENGL
-		if (g_with_opengl) {
-			PROF_START("OpenGL Context");
-			context_init();
-			PROF_END("OpenGL Context");
+		if (rvs::g_with_opengl) {
+			rvs::opengl::context_init();
 		}
 #else
 		rvs::g_with_opengl = false;

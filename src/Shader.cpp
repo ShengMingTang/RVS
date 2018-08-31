@@ -52,7 +52,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 namespace rvs
 {
-	namespace detail
+	namespace opengl
 	{
 		void Shader::shader_compile_errors(const GLuint &object, const char * type) {
 			std::string type_(type);

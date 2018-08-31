@@ -71,25 +71,29 @@ namespace rvs
 			YUV = 0,
 			RGB = 1
 		};
-		/**\brief View synthesis method
+	}
 
-		For now only the triangle method is available
-		*/
-		namespace ViewSynthesisMethod
-		{
-			auto const triangles = "Triangles";
-		}
+	/**\brief View synthesis method
 
-		/**\brief Blending method
+	For now only the triangle method is available
+	*/
+	namespace ViewSynthesisMethod
+	{
+		auto const triangles = "Triangles";
+	}
 
-		\see BlendedView
-		*/
-		namespace BlendingMethod
-		{
-			auto const simple = "Simple";
-			auto const multispectral = "Multispectral";
-		}
+	/**\brief Blending method
 
+	\see BlendedView
+	*/
+	namespace BlendingMethod
+	{
+		auto const simple = "Simple";
+		auto const multispectral = "Multispectral";
+	}
+
+	namespace detail
+	{
 		/**Precision*/
 		extern float g_rescale;
 

@@ -59,117 +59,118 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// OpenGL Utilities
-
-template<int rows, int cols>
-bool fromCV2GLM(const cv::Mat& cvmat, glm::mat<cols, rows, float, glm::packed_highp>* glmmat) {
-	assert(cvmat.cols == cols && cvmat.rows == rows && cvmat.type() == CV_32FC1);
-
-	memcpy(glm::value_ptr(*glmmat), cvmat.data, rows*cols * sizeof(float));
-	*glmmat = glm::transpose(*glmmat);
-	return true;
-}
-
-template<int rows, int cols>
-bool fromGLM2CV(const glm::mat<cols, rows, float, glm::packed_highp>& glmmat, cv::Mat* cvmat) {
-	if (cvmat->cols != cols || cvmat->rows != rows) {
-		(*cvmat) = cv::Mat(rows, cols, 4, CV_32F);
-	}
-	memcpy(cvmat->data, glm::value_ptr(glmmat), rows*cols * sizeof(float));
-	*cvmat = cvmat->t();
-	return true;
-}
-
-GLuint cvMat2glTexture(const cv::Mat& mat);
-
-// END OpenGL Utilities
-
-struct VAO_VBO_EBO {
-	GLuint VAO;
-	GLuint VBO;
-	GLuint EBO;
-	size_t number_of_elements;
-	
-	VAO_VBO_EBO(const cv::Mat& depth, cv::Size size)
+namespace rvs
+{
+	namespace opengl
 	{
-		//use fast 4-byte alignment (default anyway) if possible
-		glPixelStorei(GL_UNPACK_ALIGNMENT, (depth.step & 3) ? 1 : 4);
+		// OpenGL Utilities
 
-		//set length of one complete row in data (doesn't need to equal image.cols)
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, GLint(depth.step / depth.elemSize()));
+		template<int rows, int cols>
+		bool fromCV2GLM(const cv::Mat& cvmat, glm::mat<cols, rows, float, glm::packed_highp>* glmmat) {
+			assert(cvmat.cols == cols && cvmat.rows == rows && cvmat.type() == CV_32FC1);
 
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
+			memcpy(glm::value_ptr(*glmmat), cvmat.data, rows*cols * sizeof(float));
+			*glmmat = glm::transpose(*glmmat);
+			return true;
+		}
 
-		glGenBuffers(1, &VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		template<int rows, int cols>
+		bool fromGLM2CV(const glm::mat<cols, rows, float, glm::packed_highp>& glmmat, cv::Mat* cvmat) {
+			if (cvmat->cols != cols || cvmat->rows != rows) {
+				(*cvmat) = cv::Mat(rows, cols, 4, CV_32F);
+			}
+			memcpy(cvmat->data, glm::value_ptr(glmmat), rows*cols * sizeof(float));
+			*cvmat = cvmat->t();
+			return true;
+		}
 
-		glBufferData(GL_ARRAY_BUFFER, depth.rows*depth.cols*depth.elemSize(), depth.ptr(), GL_STATIC_DRAW);
+		GLuint cvMat2glTexture(const cv::Mat& mat);
 
-		generate_picture_EBO(size, number_of_elements);
+		// END OpenGL Utilities
 
-		GLuint num_components_per_vertex = 1; // depth
-		glVertexAttribPointer(0, num_components_per_vertex, GL_FLOAT, GL_FALSE,
-			1 * sizeof(GLfloat),
-			(GLvoid*)0);
-		glEnableVertexAttribArray(0);
+		struct VAO_VBO_EBO {
+			GLuint VAO;
+			GLuint VBO;
+			GLuint EBO;
+			size_t number_of_elements;
+
+			VAO_VBO_EBO(const cv::Mat& depth, cv::Size size)
+			{
+				//use fast 4-byte alignment (default anyway) if possible
+				glPixelStorei(GL_UNPACK_ALIGNMENT, (depth.step & 3) ? 1 : 4);
+
+				//set length of one complete row in data (doesn't need to equal image.cols)
+				glPixelStorei(GL_UNPACK_ROW_LENGTH, GLint(depth.step / depth.elemSize()));
+
+				glGenVertexArrays(1, &VAO);
+				glBindVertexArray(VAO);
+
+				glGenBuffers(1, &VBO);
+				glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+				glBufferData(GL_ARRAY_BUFFER, depth.rows*depth.cols*depth.elemSize(), depth.ptr(), GL_STATIC_DRAW);
+
+				generate_picture_EBO(size, number_of_elements);
+
+				GLuint num_components_per_vertex = 1; // depth
+				glVertexAttribPointer(0, num_components_per_vertex, GL_FLOAT, GL_FALSE,
+					1 * sizeof(GLfloat),
+					(GLvoid*)0);
+				glEnableVertexAttribArray(0);
 
 
-		glBindVertexArray(0);
+				glBindVertexArray(0);
 
-	}
+			}
 
-	~VAO_VBO_EBO() {
-		glDeleteBuffers(1, &EBO);
-		glDeleteBuffers(1, &VBO);
-		glDeleteVertexArrays(1, &VAO);
-	}
+			~VAO_VBO_EBO() {
+				glDeleteBuffers(1, &EBO);
+				glDeleteBuffers(1, &VBO);
+				glDeleteVertexArrays(1, &VAO);
+			}
 
 #define INDEX_E(x,y,W) ((y)*(W) + (x))
-	void generate_picture_EBO(const cv::Size &s, size_t &elements_number)
-	{
-		const size_t W = s.width;
-		const size_t H = s.height;
-
-		elements_number = 3 * 2 * (H - 1)*(W - 1);
-		std::vector<GLuint> indices;
-		indices.resize(elements_number);
-
-		size_t offset = 0;
-		for (size_t y = 0; y < H - 1; ++y)
-		{
-			for (size_t x = 0; x < W - 1; ++x)
+			void generate_picture_EBO(const cv::Size &s, size_t &elements_number)
 			{
-				indices[3 * INDEX_E(x, y, (W - 1)) + 0] = GLuint(INDEX_E(x, y, W));
-				indices[3 * INDEX_E(x, y, (W - 1)) + 1] = GLuint(INDEX_E(x + 1, y, W));
-				indices[3 * INDEX_E(x, y, (W - 1)) + 2] = GLuint(INDEX_E(x, y + 1, W));
-				offset += 3;
+				const size_t W = s.width;
+				const size_t H = s.height;
+
+				elements_number = 3 * 2 * (H - 1)*(W - 1);
+				std::vector<GLuint> indices;
+				indices.resize(elements_number);
+
+				size_t offset = 0;
+				for (size_t y = 0; y < H - 1; ++y)
+				{
+					for (size_t x = 0; x < W - 1; ++x)
+					{
+						indices[3 * INDEX_E(x, y, (W - 1)) + 0] = GLuint(INDEX_E(x, y, W));
+						indices[3 * INDEX_E(x, y, (W - 1)) + 1] = GLuint(INDEX_E(x + 1, y, W));
+						indices[3 * INDEX_E(x, y, (W - 1)) + 2] = GLuint(INDEX_E(x, y + 1, W));
+						offset += 3;
+					}
+				}
+
+				for (size_t y = 1; y < H; ++y)
+				{
+					for (size_t x = 0; x < W - 1; ++x)
+					{
+						indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 0] = GLuint(INDEX_E(x, y, W));
+						indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 1] = GLuint(INDEX_E(x + 1, y - 1, W));
+						indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 2] = GLuint(INDEX_E(x + 1, y, W));
+					}
+				}
+
+				glGenBuffers(1, &EBO);
+				// Bind index buffer to corresponding target
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+				// ititialize index buffer, allocate memory, fill it with data
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_number * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+				printf("Real number of elements %i\n", int(elements_number));
 			}
-		}
 
-		for (size_t y = 1; y < H; ++y)
-		{
-			for (size_t x = 0; x < W - 1; ++x)
-			{
-				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 0] = GLuint(INDEX_E(x, y, W));
-				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 1] = GLuint(INDEX_E(x + 1, y - 1, W));
-				indices[offset + 3 * INDEX_E(x, y - 1, (W - 1)) + 2] = GLuint(INDEX_E(x + 1, y, W));
-			}
-		}
-
-		glGenBuffers(1, &EBO);
-		// Bind index buffer to corresponding target
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		// ititialize index buffer, allocate memory, fill it with data
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_number * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
-
-		printf("Real number of elements %i\n", int(elements_number));
-	}
-
-};
-
-
-
+		};
 
 #endif // WITH_OPENGL
 
@@ -182,34 +183,36 @@ struct VAO_VBO_EBO {
 #include <GL/glu.h>
 #include <GL/glx.h>
 #endif
-// NEVER WRITE ON IT.
-struct context_NO_WRITE_H
-{
+		// NEVER WRITE ON IT.
+		struct context_NO_WRITE_H
+		{
 #if _WIN32
-	HWND fakewindow = nullptr;
-	HDC gldc = nullptr;
-	HGLRC glrc = nullptr;
+			HWND fakewindow = nullptr;
+			HDC gldc = nullptr;
+			HGLRC glrc = nullptr;
 #else
-	Display * disp = nullptr;
-	Window win = 0;
-	GLXContext ctx = 0;
+			Display * disp = nullptr;
+			Window win = 0;
+			GLXContext ctx = 0;
 #endif
-	bool initialized = false;
-};
+			bool initialized = false;
+		};
 
-extern context_NO_WRITE_H context_NO_WRITE;
+		extern context_NO_WRITE_H context_NO_WRITE;
 
 #if !defined NDEBUG && WITH_RENDERDOC
 #include <renderdoc_app.h>
-extern RENDERDOC_API_1_1_2 *rdoc_api;
+		extern RENDERDOC_API_1_1_2 *rdoc_api;
 #endif
 
 #endif
 
-void context_init();
-void setGLContext();
+		void context_init();
+		void setGLContext();
 
-void rd_start_capture_frame();
-void rd_end_capture_frame();
+		void rd_start_capture_frame();
+		void rd_end_capture_frame();
+	}
+}
 
 #endif

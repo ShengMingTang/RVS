@@ -88,19 +88,19 @@ namespace rvs
 #if WITH_OPENGL
 		if (g_with_opengl) {
 			auto ogl_transformer = static_cast<const OpenGLTransformer*>(m_space_transformer);
-			GLuint image_texture = cvMat2glTexture(input.get_color());
+			GLuint image_texture = opengl::cvMat2glTexture(input.get_color());
 
-			auto FBO = RFBO::getInstance();
-			auto& shaders = ShadersList::getInstance();
+			auto FBO = opengl::RFBO::getInstance();
+			auto& shaders = opengl::ShadersList::getInstance();
 
 			float w = float(input.get_depth().cols);
 			float h = float(input.get_depth().rows);
 
 			glm::vec3 translation = glm::vec3(t[0], t[1], t[2]);
 			glm::mat3x3 rotation(0);
-			fromCV2GLM<3, 3>(cv::Mat(R), &rotation);
+			opengl::fromCV2GLM<3, 3>(cv::Mat(R), &rotation);
 
-			const VAO_VBO_EBO vve(input.get_depth(), input.get_depth().size());
+			const opengl::VAO_VBO_EBO vve(input.get_depth(), input.get_depth().size());
 
 			GLuint program = shaders("synthesis").getProgramID();
 			assert(program != 0);
@@ -125,18 +125,16 @@ namespace rvs
 
 			auto input_projection_type = ogl_transformer->getInputParameters().getProjectionType();
 			auto output_projection_type = ogl_transformer->getVirtualParameters().getProjectionType();
-			glUniform1i(glGetUniformLocation(program, "erp_in"), static_cast<GLint>(input_projection_type));
-			glUniform1i(glGetUniformLocation(program, "erp_out"), static_cast<GLint>(output_projection_type));
+			glUniform1i(glGetUniformLocation(program, "erp_in"), input_projection_type == ProjectionType::equirectangular);
+			glUniform1i(glGetUniformLocation(program, "erp_out"), output_projection_type == ProjectionType::equirectangular);
 
-			switch (input_projection_type) {
-			case ProjectionType::perspective: {
+			if (input_projection_type == ProjectionType::perspective) {
 				auto f = ogl_transformer->getInputParameters().getFocal();
 				auto p = ogl_transformer->getInputParameters().getPrinciplePoint();
 				glUniform2fv(glGetUniformLocation(program, "f"), 1, f.val);
 				glUniform2fv(glGetUniformLocation(program, "p"), 1, p.val);
-				break;
 			}
-			case ProjectionType::equirectangular: {
+			else if (input_projection_type == ProjectionType::equirectangular) {
 				auto hor_range = ogl_transformer->getInputParameters().getHorRange();
 				auto ver_range = ogl_transformer->getInputParameters().getVerRange();
 				auto constexpr radperdeg = 0.01745329252f;
@@ -144,21 +142,18 @@ namespace rvs
 				glUniform1f(glGetUniformLocation(program, "theta0"), radperdeg * ver_range[1]);
 				glUniform1f(glGetUniformLocation(program, "dphi_du"), -radperdeg * (hor_range[1] - hor_range[0]) / w);
 				glUniform1f(glGetUniformLocation(program, "dtheta_dv"), -radperdeg * (ver_range[1] - ver_range[0]) / h);
-				break;
 			}
-			default:
-				throw std::logic_error("Unknown projection type");
+			else {
+				throw std::logic_error("Unknown projection type (with OpenGL)");
 			}
 
-			switch (output_projection_type) {
-			case ProjectionType::perspective: {
+			if (output_projection_type == ProjectionType::perspective) {
 				auto n_f = ogl_transformer->getVirtualParameters().getFocal();
 				auto n_p = ogl_transformer->getVirtualParameters().getPrinciplePoint();
 				glUniform2fv(glGetUniformLocation(program, "n_f"), 1, n_f.val);
 				glUniform2fv(glGetUniformLocation(program, "n_p"), 1, n_p.val);
-				break;
 			}
-			case ProjectionType::equirectangular: {
+			else if (output_projection_type == ProjectionType::equirectangular) {
 				auto hor_range = ogl_transformer->getVirtualParameters().getHorRange();
 				auto ver_range = ogl_transformer->getVirtualParameters().getVerRange();
 				auto constexpr degperrad = 57.295779513f;
@@ -166,10 +161,9 @@ namespace rvs
 				glUniform1f(glGetUniformLocation(program, "v0"), -(ver_range[0] + ver_range[1]) / (ver_range[1] - ver_range[0]));
 				glUniform1f(glGetUniformLocation(program, "du_dphi"), -2.f * degperrad / (hor_range[1] - hor_range[0]));
 				glUniform1f(glGetUniformLocation(program, "dv_dtheta"), +2.f * degperrad / (ver_range[1] - ver_range[0]));
-				break;
 			}
-			default:
-				throw std::logic_error("Unknown projection type");
+			else {
+				throw std::logic_error("Unknown projection type (with OpenGL)");
 			}
 
 			// end parameters

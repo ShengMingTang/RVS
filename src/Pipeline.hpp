@@ -156,6 +156,8 @@ namespace rvs
 		\brief Interface for making intermediate result available for pruning or analysis
 
 		Pipeline calls this function after synthesizing a single input view
+		With OpenGL the result is available through opengl::RFBO::getInstance()
+		Otherwise the result is available through the blendedView parameter
 		*/
 		virtual void onFinalBlendingResult(int inputFrame, int virtualFrame, int virtualView, BlendedView const& blendedView);
 
