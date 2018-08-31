@@ -98,16 +98,16 @@ void SpaceTransformer::set_targetPosition(Parameters const *parameters)
 	m_output_parameters = parameters;
 }
 
-cv::Mat2f PUTransformer::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
+cv::Mat2f GenericTransformer::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
 {
 	return m_projector->project(world_pos, depth, wrapping_method);
 }
-cv::Mat3f PUTransformer::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+cv::Mat3f GenericTransformer::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
 {
 	return m_unprojector->unproject(image_pos, depth);
 }
 
-void PUTransformer::set_inputPosition(Parameters const *parameters)
+void GenericTransformer::set_inputPosition(Parameters const *parameters)
 {
 	assert(parameters);
 	SpaceTransformer::set_inputPosition(parameters);
@@ -122,7 +122,7 @@ void PUTransformer::set_inputPosition(Parameters const *parameters)
 	}
 }
 
-void PUTransformer::set_targetPosition(Parameters const *parameters)
+void GenericTransformer::set_targetPosition(Parameters const *parameters)
 {
 	assert(parameters);
 	SpaceTransformer::set_targetPosition(parameters);
@@ -137,7 +137,7 @@ void PUTransformer::set_targetPosition(Parameters const *parameters)
 	}
 }
 
-cv::Mat2f PUTransformer::generateImagePos() const
+cv::Mat2f GenericTransformer::generateImagePos() const
 {
 	return m_unprojector->generateImagePos();
 }

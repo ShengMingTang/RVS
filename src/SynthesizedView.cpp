@@ -186,7 +186,7 @@ void SynthesizedView::compute(View& input)
 	}
 #endif
 	if (!g_with_opengl) {
-		auto const& pu_transformer = static_cast<const PUTransformer*>(m_space_transformer);
+		auto const& pu_transformer = static_cast<const GenericTransformer*>(m_space_transformer);
 
 		// Generate image coordinates 
 		auto input_uv = pu_transformer->generateImagePos();

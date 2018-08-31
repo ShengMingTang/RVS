@@ -278,5 +278,5 @@ std::unique_ptr<SpaceTransformer> Pipeline::createSpaceTransformer(int)
 		return std::unique_ptr<SpaceTransformer>(new OpenGLTransformer);
 	}
 #endif
-	return std::unique_ptr<SpaceTransformer>(new PUTransformer);
+	return std::unique_ptr<SpaceTransformer>(new GenericTransformer);
 }

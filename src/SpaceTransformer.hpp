@@ -72,7 +72,7 @@ private:
 	Parameters const *m_output_parameters;
 };
 
-class PUTransformer : public SpaceTransformer 
+class GenericTransformer : public SpaceTransformer 
 {
 public:
 	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
