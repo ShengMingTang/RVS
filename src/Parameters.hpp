@@ -69,6 +69,9 @@ public:
 	*/
 	static Parameters readFrom(json::Node parameters);
 
+	/** Direct access to the parameter set for the software platform and proposals */
+	json::Node const& getRoot() const;
+
 	/** The projection type */
 	ProjectionType getProjectionType() const;
 
@@ -132,7 +135,7 @@ public:
 	void printTo(std::ostream& stream) const;
 
 private:
-	Parameters();
+	Parameters(json::Node root);
 
 	void setProjectionFrom(json::Node root);
 	void setPositionFrom(json::Node root);
@@ -150,6 +153,7 @@ private:
 	/** Validate some fields of the JSON format that RVS is not effectively using */
 	static void validateUnused(json::Node root);
 
+	json::Node m_root;
 	ProjectionType m_projectionType;
 	cv::Vec3f m_position;
 	cv::Vec3f m_rotation;

@@ -86,11 +86,13 @@ namespace
 	}
 }
 
-Parameters::Parameters() {}
+Parameters::Parameters(json::Node root)
+	: m_root(root)
+{}
 
 Parameters Parameters::readFrom(json::Node root)
 {
-	Parameters parameters;
+	Parameters parameters(root);
 
 	parameters.setProjectionFrom(root);
 	parameters.setPositionFrom(root);
@@ -107,6 +109,11 @@ Parameters Parameters::readFrom(json::Node root)
 	Parameters::validateUnused(root);
 
 	return parameters;
+}
+
+json::Node const& Parameters::getRoot() const
+{
+	return m_root;
 }
 
 ProjectionType Parameters::getProjectionType() const
