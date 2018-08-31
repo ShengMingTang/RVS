@@ -56,9 +56,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 /**\brief Projection type
 
 \see Projector*/
-enum class ProjectionType {
-	perspective,
-	equirectangular
+namespace ProjectionType {
+	auto const perspective = "Perspective";
+	auto const equirectangular = "Equirectangular";
 };
 
 /** Camera and video parameters */
@@ -73,7 +73,7 @@ public:
 	json::Node const& getRoot() const;
 
 	/** The projection type */
-	ProjectionType getProjectionType() const;
+	std::string const& getProjectionType() const;
 
 	/** Extrinsic parameter of rotation (Euler angles, degrees) */
 	cv::Vec3f getRotation() const;
@@ -154,7 +154,7 @@ private:
 	static void validateUnused(json::Node root);
 
 	json::Node m_root;
-	ProjectionType m_projectionType;
+	std::string m_projectionType;
 	cv::Vec3f m_position;
 	cv::Vec3f m_rotation;
 	cv::Vec2f m_depthRange;

@@ -116,7 +116,7 @@ json::Node const& Parameters::getRoot() const
 	return m_root;
 }
 
-ProjectionType Parameters::getProjectionType() const
+std::string const& Parameters::getProjectionType() const
 {
 	return m_projectionType;
 }
@@ -212,32 +212,19 @@ void Parameters::printTo(std::ostream& stream) const
 	if (m_cropRegion != cv::Rect(cv::Point(), m_resolution)) {
 		stream << m_cropRegion;
 	}
-	switch (m_projectionType) {
-	case ProjectionType::equirectangular:
-		stream << " equirectangular " << m_horRange << ' ' << m_verRange;
-		break;
-	case ProjectionType::perspective:
-		stream << " perspective " << m_focal << ' ' << m_principlePoint;
-		break;
-	default:
-		throw std::logic_error("Unknown projection type");
+	stream << ' ' << m_projectionType << ' ';	
+	if (m_projectionType == ProjectionType::equirectangular) {
+		stream << m_horRange << ' ' << m_verRange;
+	}
+	if (m_projectionType == ProjectionType::perspective) {
+		stream << m_focal << ' ' << m_principlePoint;
 	}
 	stream << ' ' << m_position << ' ' << m_rotation;
 }
 
 void Parameters::setProjectionFrom(json::Node root)
 {
-	auto projection = root.require("Projection");
-
-	if (projection.asString() == "Equirectangular") {
-		m_projectionType = ProjectionType::equirectangular;
-	}
-	else if (projection.asString() == "Perspective") {
-		m_projectionType = ProjectionType::perspective;
-	}
-	else {
-		throw std::runtime_error("Unknown projection type");
-	}
+	m_projectionType = root.require("Projection").asString();
 }
 
 void Parameters::validateUnused(json::Node root)

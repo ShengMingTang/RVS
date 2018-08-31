@@ -84,7 +84,7 @@ public:
 	/** Generate input image positions */
 	cv::Mat2f generateImagePos() const;
 
-private:
+protected:
 	std::unique_ptr<Unprojector> m_unprojector;
 	std::unique_ptr<Projector> m_projector;
 };
