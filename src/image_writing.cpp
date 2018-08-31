@@ -55,171 +55,177 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-namespace
+namespace rvs
 {
-	void write_raw(std::ofstream& stream, cv::Mat image)
+	namespace
 	{
-		CV_Assert(stream.good() && !image.empty() && image.isContinuous());
-		stream.write(reinterpret_cast<char const*>(image.data), image.size().area() * image.elemSize());
+		using detail::ColorSpace;
+		using detail::g_color_space;
+
+		void write_raw(std::ofstream& stream, cv::Mat image)
+		{
+			CV_Assert(stream.good() && !image.empty() && image.isContinuous());
+			stream.write(reinterpret_cast<char const*>(image.data), image.size().area() * image.elemSize());
+		}
+
+		void write_color_YUV(std::string filepath, cv::Mat image, int frame)
+		{
+			std::ofstream stream(filepath, frame
+				? std::ios::binary | std::ios::app
+				: std::ios::binary);
+			if (!stream.is_open())
+				throw std::runtime_error("Failed to open YUV output image");
+
+			cv::Mat dst[3];
+			cv::split(image, dst);
+
+			cv::resize(dst[1], dst[1], cv::Size(), 0.5, 0.5, cv::INTER_CUBIC);
+			cv::resize(dst[2], dst[2], cv::Size(), 0.5, 0.5, cv::INTER_CUBIC);
+
+			write_raw(stream, dst[0]);
+			write_raw(stream, dst[2]);
+			write_raw(stream, dst[1]);
+		}
+
+		void write_depth_YUV(std::string filepath, cv::Mat image, int frame, Parameters const& parameters)
+		{
+			std::ofstream stream(filepath, frame
+				? std::ios::binary | std::ios::app
+				: std::ios::binary);
+			if (!stream.is_open())
+				throw std::runtime_error("Failed to open YUV output image");
+
+			auto bit_depth = parameters.getDepthBitDepth();
+			auto neutral = bit_depth == 32
+				? 0.5
+				: 0.5 * (1 + max_level(bit_depth));
+			auto chroma = cv::Mat(image.size() / 2, image.type(), cv::Scalar::all(neutral));
+
+			write_raw(stream, image);
+			write_raw(stream, chroma);
+			write_raw(stream, chroma);
+		}
+
+		void write_mask_YUV(std::string filepath, cv::Mat1b image, int frame)
+		{
+			std::ofstream stream(filepath, frame
+				? std::ios::binary | std::ios::app
+				: std::ios::binary);
+			if (!stream.is_open())
+				throw std::runtime_error("Failed to open YUV output image");
+
+			auto chroma = cv::Mat1b(image.size() / 2, 128);
+
+			write_raw(stream, image);
+			write_raw(stream, chroma);
+			write_raw(stream, chroma);
+		}
 	}
 
-	void write_color_YUV(std::string filepath, cv::Mat image, int frame)
+	void write_color(std::string filepath, cv::Mat3f color, int frame, Parameters const& parameters)
 	{
-		std::ofstream stream(filepath, frame 
-			? std::ios::binary | std::ios::app
-			: std::ios::binary);
-		if (!stream.is_open())
-			throw std::runtime_error("Failed to open YUV output image");
+		// Color space conversion
+		auto color_space = filepath.substr(filepath.size() - 4, 4) == ".yuv"
+			? ColorSpace::YUV
+			: ColorSpace::RGB;
+		if (g_color_space == ColorSpace::YUV && color_space == ColorSpace::RGB) {
+			cv::cvtColor(color, color, cv::COLOR_YCrCb2BGR);
+		}
+		else if (g_color_space == ColorSpace::RGB && color_space == ColorSpace::YUV) {
+			cv::cvtColor(color, color, cv::COLOR_BGR2YCrCb);
+		}
 
-		cv::Mat dst[3];
-		cv::split(image, dst);
-
-		cv::resize(dst[1], dst[1], cv::Size(), 0.5, 0.5, cv::INTER_CUBIC);
-		cv::resize(dst[2], dst[2], cv::Size(), 0.5, 0.5, cv::INTER_CUBIC);
-
-		write_raw(stream, dst[0]);
-		write_raw(stream, dst[2]);
-		write_raw(stream, dst[1]);
-	}
-
-	void write_depth_YUV(std::string filepath, cv::Mat image, int frame, Parameters const& parameters)
-	{
-		std::ofstream stream(filepath, frame
-			? std::ios::binary | std::ios::app
-			: std::ios::binary);
-		if (!stream.is_open())
-			throw std::runtime_error("Failed to open YUV output image");
-
-		auto bit_depth = parameters.getDepthBitDepth();
-		auto neutral = bit_depth == 32
-			? 0.5 
-			: 0.5 * (1 + max_level(bit_depth));
-		auto chroma = cv::Mat(image.size() / 2, image.type(), cv::Scalar::all(neutral));
-
-		write_raw(stream, image);
-		write_raw(stream, chroma);
-		write_raw(stream, chroma);
-	}
-
-	void write_mask_YUV(std::string filepath, cv::Mat1b image, int frame)
-	{
-		std::ofstream stream(filepath, frame
-			? std::ios::binary | std::ios::app
-			: std::ios::binary);
-		if (!stream.is_open())
-			throw std::runtime_error("Failed to open YUV output image");
-
-		auto chroma = cv::Mat1b(image.size() / 2, 128);
-
-		write_raw(stream, image);
-		write_raw(stream, chroma);
-		write_raw(stream, chroma);
-	}
-}
-
-void write_color(std::string filepath, cv::Mat3f color, int frame, Parameters const& parameters)
-{
-	// Color space conversion
-	auto color_space = filepath.substr(filepath.size() - 4, 4) == ".yuv"
-		? ColorSpace::YUV
-		: ColorSpace::RGB;
-	if (g_color_space == ColorSpace::YUV && color_space == ColorSpace::RGB) {
-		cv::cvtColor(color, color, cv::COLOR_YCrCb2BGR);
-	}
-	else if (g_color_space == ColorSpace::RGB && color_space == ColorSpace::YUV) {
-		cv::cvtColor(color, color, cv::COLOR_BGR2YCrCb);
-	}
-
-	// Quantization
-	auto bit_depth = parameters.getColorBitDepth();
-	cv::Mat image;
-	if (bit_depth == 32) {
-		image = color;
-	}
-	else {
-		color.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
-	}
-	
-	// Pad image
-	if (parameters.getPaddedSize() != parameters.getSize()) {
-		auto padded = cv::Mat(parameters.getPaddedSize(), image.type(), cv::Scalar::all(0.));
-		padded(parameters.getCropRegion()) = image;
-		image = padded;
-	}
-
-	// Write the image
-	if (color_space == ColorSpace::YUV) {
-		write_color_YUV(filepath, image, frame);
-	}
-	else if (frame == 0) {
-		cv::imwrite(filepath, image);
-	}
-	else {
-		throw std::runtime_error("Writing multiple frames not (yet) supported for image files");
-	}
-}
-
-void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters const& parameters)
-{
-	auto bit_depth = parameters.getDepthBitDepth();
-
-	cv::Mat image;
-	if (bit_depth == 32) {
-		// Do not manipulate floating-point depth maps (e.g. OpenEXR)
-		image = depth;
-	}
-	else {
-		auto near = parameters.getDepthRange()[0];
-		auto far = parameters.getDepthRange()[1];
-
-		// 1000 is for 'infinitly far'
-		if (far >= 1000.f) {
-			depth = near / depth;
+		// Quantization
+		auto bit_depth = parameters.getColorBitDepth();
+		cv::Mat image;
+		if (bit_depth == 32) {
+			image = color;
 		}
 		else {
-			depth = (far * near / depth - near) / (far - near);
+			color.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
 		}
-		depth.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
+
+		// Pad image
+		if (parameters.getPaddedSize() != parameters.getSize()) {
+			auto padded = cv::Mat(parameters.getPaddedSize(), image.type(), cv::Scalar::all(0.));
+			padded(parameters.getCropRegion()) = image;
+			image = padded;
+		}
+
+		// Write the image
+		if (color_space == ColorSpace::YUV) {
+			write_color_YUV(filepath, image, frame);
+		}
+		else if (frame == 0) {
+			cv::imwrite(filepath, image);
+		}
+		else {
+			throw std::runtime_error("Writing multiple frames not (yet) supported for image files");
+		}
 	}
 
-	// Pad image
-	if (parameters.getPaddedSize() != parameters.getSize()) {
-		auto padded = cv::Mat(parameters.getPaddedSize(), image.type(), cv::Scalar::all(0.));
-		padded(parameters.getCropRegion()) = image;
-		image = padded;
-	}
-	
-	// Save the image
-	if (filepath.substr(filepath.size() - 4, 4) == ".yuv") {
-		write_depth_YUV(filepath, image, frame, parameters);
-	}
-	else if (frame == 0) {
-		cv::imwrite(filepath, image);
-	}
-	else {
-		throw std::runtime_error("Writing  multiple frames not (yet) supported for image files");
-	}
-}
+	void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters const& parameters)
+	{
+		auto bit_depth = parameters.getDepthBitDepth();
 
-void write_mask(std::string filepath, cv::Mat1b mask, int frame, Parameters const& parameters)
-{
-	mask.setTo(255, mask);
+		cv::Mat image;
+		if (bit_depth == 32) {
+			// Do not manipulate floating-point depth maps (e.g. OpenEXR)
+			image = depth;
+		}
+		else {
+			auto near = parameters.getDepthRange()[0];
+			auto far = parameters.getDepthRange()[1];
 
-	// Pad image
-	if (parameters.getPaddedSize() != parameters.getSize()) {
-		auto padded = cv::Mat(parameters.getPaddedSize(), mask.type(), cv::Scalar::all(0.));
-		padded(parameters.getCropRegion()) = mask;
-		mask = padded;
+			// 1000 is for 'infinitly far'
+			if (far >= 1000.f) {
+				depth = near / depth;
+			}
+			else {
+				depth = (far * near / depth - near) / (far - near);
+			}
+			depth.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
+		}
+
+		// Pad image
+		if (parameters.getPaddedSize() != parameters.getSize()) {
+			auto padded = cv::Mat(parameters.getPaddedSize(), image.type(), cv::Scalar::all(0.));
+			padded(parameters.getCropRegion()) = image;
+			image = padded;
+		}
+
+		// Save the image
+		if (filepath.substr(filepath.size() - 4, 4) == ".yuv") {
+			write_depth_YUV(filepath, image, frame, parameters);
+		}
+		else if (frame == 0) {
+			cv::imwrite(filepath, image);
+		}
+		else {
+			throw std::runtime_error("Writing  multiple frames not (yet) supported for image files");
+		}
 	}
 
-	// Save the image
-	if (filepath.substr(filepath.size() - 4, 4) == ".yuv") {
-		write_mask_YUV(filepath, mask, frame);
-	}
-	else if (frame == 0) {
-		cv::imwrite(filepath, mask);
-	}
-	else {
-		throw std::runtime_error("Writing multiple frames not (yet) supported for image files");
+	void write_mask(std::string filepath, cv::Mat1b mask, int frame, Parameters const& parameters)
+	{
+		mask.setTo(255, mask);
+
+		// Pad image
+		if (parameters.getPaddedSize() != parameters.getSize()) {
+			auto padded = cv::Mat(parameters.getPaddedSize(), mask.type(), cv::Scalar::all(0.));
+			padded(parameters.getCropRegion()) = mask;
+			mask = padded;
+		}
+
+		// Save the image
+		if (filepath.substr(filepath.size() - 4, 4) == ".yuv") {
+			write_mask_YUV(filepath, mask, frame);
+		}
+		else if (frame == 0) {
+			cv::imwrite(filepath, mask);
+		}
+		else {
+			throw std::runtime_error("Writing multiple frames not (yet) supported for image files");
+		}
 	}
 }

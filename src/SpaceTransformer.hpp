@@ -48,48 +48,51 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "Projector.hpp"
 #include "Unprojector.hpp"
 #include "Config.hpp"
+#include "Shader.hpp"
 
 #include "opencv2/imgproc.hpp"
 
 #include <memory>
 
-class SpaceTransformer
+namespace rvs
 {
-public:
-	SpaceTransformer();
-	virtual ~SpaceTransformer();
+	class SpaceTransformer
+	{
+	public:
+		SpaceTransformer();
+		virtual ~SpaceTransformer();
 
-	Parameters const& getInputParameters() const;
-	Parameters const& getVirtualParameters() const;
-	cv::Vec3f get_translation() const;
-	cv::Matx33f get_rotation() const;
+		Parameters const& getInputParameters() const;
+		Parameters const& getVirtualParameters() const;
+		cv::Vec3f get_translation() const;
+		cv::Matx33f get_rotation() const;
 
-	virtual void set_targetPosition(Parameters const *params_virtual);
-	virtual void set_inputPosition(Parameters const *params_real);
+		virtual void set_targetPosition(Parameters const *params_virtual);
+		virtual void set_inputPosition(Parameters const *params_real);
 
-private:
-	Parameters const *m_input_parameters;
-	Parameters const *m_output_parameters;
-};
+	private:
+		Parameters const *m_input_parameters;
+		Parameters const *m_output_parameters;
+	};
 
-class GenericTransformer : public SpaceTransformer 
-{
-public:
-	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
-	cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const;
+	class GenericTransformer : public SpaceTransformer
+	{
+	public:
+		cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const;
+		cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const;
 
-	void set_targetPosition(Parameters const *params_virtual) override;
-	void set_inputPosition(Parameters const *params_real) override;
+		void set_targetPosition(Parameters const *params_virtual) override;
+		void set_inputPosition(Parameters const *params_real) override;
 
-	/** Generate input image positions */
-	cv::Mat2f generateImagePos() const;
+		/** Generate input image positions */
+		cv::Mat2f generateImagePos() const;
 
-protected:
-	std::unique_ptr<Unprojector> m_unprojector;
-	std::unique_ptr<Projector> m_projector;
-};
+	protected:
+		std::unique_ptr<Unprojector> m_unprojector;
+		std::unique_ptr<Projector> m_projector;
+	};
 
-#include "Shader.hpp"
-class OpenGLTransformer : public SpaceTransformer {};
+	class OpenGLTransformer : public SpaceTransformer {};
+}
 
 #endif

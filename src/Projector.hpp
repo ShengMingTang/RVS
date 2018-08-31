@@ -51,35 +51,38 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Parameters.hpp"
 
-/**\brief Wrapping method*/
-enum class WrappingMethod {
-    none = 0,
-    horizontal = 1
-};
-
-/**\brief Projector.
-
-Unroject the pixels from euclidian coordinate system to image space and depth map.*/
-class Projector
+namespace rvs 
 {
-public:
-	Projector(Parameters const& parameters);
+	/**\brief Wrapping method*/
+	enum class WrappingMethod {
+		none = 0,
+		horizontal = 1
+	};
 
-	virtual ~Projector();
+	/**\brief Projector.
 
-	/** 
-	@param world_pos in OMAF Referential: x forward, y left, z up
-	@param[out] depth increases with distance from virtual camera
-	@param[out] wrapping_method Equirectangular or Perspective
-	@return Result in image coordinates: u right, v down
-	 */
-	virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const = 0;
+	Unroject the pixels from euclidian coordinate system to image space and depth map.*/
+	class Projector
+	{
+	public:
+		Projector(Parameters const& parameters);
 
-	/** Get camera parameters */
-	Parameters const& getParameters() const;
+		virtual ~Projector();
 
-private:
-	Parameters const& m_parameters;
-};
+		/**
+		@param world_pos in OMAF Referential: x forward, y left, z up
+		@param[out] depth increases with distance from virtual camera
+		@param[out] wrapping_method Equirectangular or Perspective
+		@return Result in image coordinates: u right, v down
+		 */
+		virtual cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const = 0;
+
+		/** Get camera parameters */
+		Parameters const& getParameters() const;
+
+	private:
+		Parameters const& m_parameters;
+	};
+}
 
 #endif

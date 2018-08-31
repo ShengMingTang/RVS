@@ -166,16 +166,16 @@ namespace testing
 
 FUNC(ULB_Unicorn_Example)
 {
-	g_with_opengl = false;
-	Application p("./config_files/example_config_file.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/example_config_file.json");
 	p.execute();
 	// No reference
 }
 
 FUNC(ULB_Unicorn_Triangles_Simple)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/Unicorn_Triangles_Simple.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/Unicorn_Triangles_Simple.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -206,8 +206,8 @@ FUNC(ULB_Unicorn_Triangles_Simple)
 
 FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -219,8 +219,8 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 
 FUNC(ULB_Unicorn_Same_View)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/Unicorn_Same_View.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/Unicorn_Same_View.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -232,8 +232,8 @@ FUNC(ULB_Unicorn_Same_View)
 
 FUNC(ClassroomVideo_v0_to_v0)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/ClassroomVideo-v0_to_v0.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v0_to_v0.json");
 	p.execute();
 
 	// No OpenGL vs reference: texture
@@ -251,8 +251,8 @@ FUNC(ClassroomVideo_v0_to_v0)
 
 FUNC(ClassroomVideo_v7v8_to_v0)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -283,8 +283,8 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 
 FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_270deg.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_270deg.json");
 	p.execute();
 
 	auto actual = testing::readYUV420<std::uint16_t>("v0_270deg_from_v7v8_2304_1536_420_10b.yuv", cv::Size(2304, 1536));
@@ -303,8 +303,8 @@ FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 
 FUNC(TechnicolorHijack_v1v4_to_v9)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9.json");
 	p.execute();
 
 	// No OpenGL vs reference: texture
@@ -341,8 +341,8 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 
 FUNC(TechnicolorHijack_BlendByMax)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/TechnicolorHijack-BlendByMax.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorHijack-BlendByMax.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -354,8 +354,8 @@ FUNC(TechnicolorHijack_BlendByMax)
 
 FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -386,8 +386,8 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 
 FUNC(TechnicolorMuseum_v0_to_v0)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/TechnicolorMuseum-v0_to_v0.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v0_to_v0.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -399,8 +399,8 @@ FUNC(TechnicolorMuseum_v0_to_v0)
 
 FUNC(TechnicolorMuseum_v5_to_v5)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v5.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v5.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -412,8 +412,8 @@ FUNC(TechnicolorMuseum_v5_to_v5)
 
 FUNC(TechnicolorMuseum_v5_to_v6)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v6.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v6.json");
 	p.execute();
 
 	// No OpenGL vs reference
@@ -425,8 +425,8 @@ FUNC(TechnicolorMuseum_v5_to_v6)
 
 FUNC(TechnicolorMuseum_PoseTrace)
 {
-	g_with_opengl = false;
-	Application p("./config_files/_integration_tests/TechnicolorMuseum-PoseTrace.json");
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-PoseTrace.json");
 	p.execute();
 
 	// No OpenGL vs reference

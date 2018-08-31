@@ -50,143 +50,147 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <cassert>
 
-void Shader::shader_compile_errors(const GLuint &object, const char * type) {
-	std::string type_(type);
-	GLint success;
-	GLchar infoLog[1024];
+namespace rvs
+{
+	namespace detail
+	{
+		void Shader::shader_compile_errors(const GLuint &object, const char * type) {
+			std::string type_(type);
+			GLint success;
+			GLchar infoLog[1024];
 
-	bool error = false;
+			bool error = false;
 
-	if (type_ != "Program") {
-		glGetShaderiv(object, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			glGetShaderInfoLog(object, 1024, NULL, infoLog);
-			printf("| ERROR::SHADER: Compile-time error -> Type: %s\n", type);
-			error = true;
+			if (type_ != "Program") {
+				glGetShaderiv(object, GL_COMPILE_STATUS, &success);
+				if (!success) {
+					glGetShaderInfoLog(object, 1024, NULL, infoLog);
+					printf("| ERROR::SHADER: Compile-time error -> Type: %s\n", type);
+					error = true;
+				}
+			}
+			else {
+				glGetProgramiv(object, GL_LINK_STATUS, &success);
+				if (!success) {
+					glGetProgramInfoLog(object, 1024, NULL, infoLog);
+					printf("| ERROR::Shader: Link-time error -> Type: %s\n", type);
+					error = true;
+				}
+			}
+
+			if (error) {
+				printf("%s\n", infoLog);
+				printf("-- --------------------------------------------------- -- \n");
+			}
 		}
-	}
-	else {
-		glGetProgramiv(object, GL_LINK_STATUS, &success);
-		if (!success) {
-			glGetProgramInfoLog(object, 1024, NULL, infoLog);
-			printf("| ERROR::Shader: Link-time error -> Type: %s\n", type);
-			error = true;
+
+		const char * Shader::shader_type2string(GLenum shaderType) {
+			std::string ret;
+
+			switch (shaderType) {
+			case GL_COMPUTE_SHADER:
+				ret = "Compute";
+				break;
+			case GL_VERTEX_SHADER:
+				ret = "Vertex";
+				break;
+			case GL_TESS_CONTROL_SHADER:
+				ret = "Tessellation Control";
+				break;
+			case GL_TESS_EVALUATION_SHADER:
+				ret = "Tessellation Evaluation";
+				break;
+			case GL_GEOMETRY_SHADER:
+				ret = "Geometry";
+				break;
+			case GL_FRAGMENT_SHADER:
+				ret = "Fragment";
+				break;
+			default:
+				ret = "unknown";
+				break;
+			}
+			return ret.c_str();
 		}
-	}
 
-	if (error) {
-		printf("%s\n", infoLog);
-		printf("-- --------------------------------------------------- -- \n");
-	}
-}
+		GLuint Shader::compile_shader(const std::string shader, GLenum shaderType)
+		{
+			const GLchar * ccode = shader.c_str();
 
-const char * Shader::shader_type2string(GLenum shaderType) {
-	std::string ret;
+			const GLuint id = glCreateShader(shaderType);
+			glShaderSource(id, 1, &ccode, NULL);
+			glCompileShader(id);
+			shader_compile_errors(id, shader_type2string(shaderType));
 
-	switch (shaderType) {
-	case GL_COMPUTE_SHADER:
-		ret = "Compute";
-		break;
-	case GL_VERTEX_SHADER:
-		ret = "Vertex";
-		break;
-	case GL_TESS_CONTROL_SHADER:
-		ret = "Tessellation Control";
-		break;
-	case GL_TESS_EVALUATION_SHADER:
-		ret = "Tessellation Evaluation";
-		break;
-	case GL_GEOMETRY_SHADER:
-		ret = "Geometry";
-		break;
-	case GL_FRAGMENT_SHADER:
-		ret = "Fragment";
-		break;
-	default:
-		ret = "unknown";
-		break;
-	}
-	return ret.c_str();
-}
-
-GLuint Shader::compile_shader(const std::string shader, GLenum shaderType)
-{
-	const GLchar * ccode = shader.c_str();
-
-	const GLuint id = glCreateShader(shaderType);
-	glShaderSource(id, 1, &ccode, NULL);
-	glCompileShader(id);
-	shader_compile_errors(id, shader_type2string(shaderType));
-
-	return id;
-}
-
-Shader::Shader(std::string vertexSource, std::string fragmentSource, std::string geometrySource)
-	: m_ID(0)
-{
-	// Compile shaders
-	assert(!vertexSource.empty() && !fragmentSource.empty());
-	auto vertexShader = compile_shader(vertexSource, GL_VERTEX_SHADER);
-	auto fragmentShader = compile_shader(fragmentSource, GL_FRAGMENT_SHADER);
-	auto geometryShader = geometrySource.empty() ? GLuint(0) : compile_shader(geometrySource, GL_GEOMETRY_SHADER);
-
-	// Attach shaders to a new program
-	auto ID = glCreateProgram();
-	glAttachShader(ID, vertexShader);
-	glAttachShader(ID, fragmentShader);
-	if (geometryShader) {
-		glAttachShader(ID, geometryShader);
-	}
-	glLinkProgram(ID);
-	shader_compile_errors(ID, "Program");
-	m_ID = ID;
-	printf("NEW PROGRAM WITH ID: %i\n", m_ID);
-
-	// Delete the shaders as they're linked into our ID now and no longer necessery
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	if (geometryShader) {
-		glDeleteShader(geometryShader);
-	}
-}
-
-GLuint Shader::getProgramID() const
-{
-	return m_ID;
-}
-
-ShadersList::ShadersList()
-	: m_shaders({
-		{ "synthesis", Shader(
-			getSynthesisVertexShaderSource(),
-			getSynthesisFragmentShaderSource(),
-			getSynthesisGeometryShaderSource())
-		},
-		{ "blending1", Shader(
-			getBlendingVertexShaderSource(),
-			getBlendingFragmentShaderSource(1))
-		},
-		{ "blending2", Shader(
-			getBlendingVertexShaderSource(),
-			getBlendingFragmentShaderSource(2))
+			return id;
 		}
-	})
-{}
 
-ShadersList const& ShadersList::getInstance()
-{
-	static ShadersList singleton;
-	return singleton;
-}
+		Shader::Shader(std::string vertexSource, std::string fragmentSource, std::string geometrySource)
+			: m_ID(0)
+		{
+			// Compile shaders
+			assert(!vertexSource.empty() && !fragmentSource.empty());
+			auto vertexShader = compile_shader(vertexSource, GL_VERTEX_SHADER);
+			auto fragmentShader = compile_shader(fragmentSource, GL_FRAGMENT_SHADER);
+			auto geometryShader = geometrySource.empty() ? GLuint(0) : compile_shader(geometrySource, GL_GEOMETRY_SHADER);
 
-Shader const& ShadersList::operator () (const char* name) const
-{
-	return m_shaders.at(name);
-}
+			// Attach shaders to a new program
+			auto ID = glCreateProgram();
+			glAttachShader(ID, vertexShader);
+			glAttachShader(ID, fragmentShader);
+			if (geometryShader) {
+				glAttachShader(ID, geometryShader);
+			}
+			glLinkProgram(ID);
+			shader_compile_errors(ID, "Program");
+			m_ID = ID;
+			printf("NEW PROGRAM WITH ID: %i\n", m_ID);
 
-std::string ShadersList::getSynthesisVertexShaderSource()
-{
-	return R"(
+			// Delete the shaders as they're linked into our ID now and no longer necessery
+			glDeleteShader(vertexShader);
+			glDeleteShader(fragmentShader);
+			if (geometryShader) {
+				glDeleteShader(geometryShader);
+			}
+		}
+
+		GLuint Shader::getProgramID() const
+		{
+			return m_ID;
+		}
+
+		ShadersList::ShadersList()
+			: m_shaders({
+				{ "synthesis", Shader(
+					getSynthesisVertexShaderSource(),
+					getSynthesisFragmentShaderSource(),
+					getSynthesisGeometryShaderSource())
+				},
+				{ "blending1", Shader(
+					getBlendingVertexShaderSource(),
+					getBlendingFragmentShaderSource(1))
+				},
+				{ "blending2", Shader(
+					getBlendingVertexShaderSource(),
+					getBlendingFragmentShaderSource(2))
+				}
+				})
+		{}
+
+		ShadersList const& ShadersList::getInstance()
+		{
+			static ShadersList singleton;
+			return singleton;
+		}
+
+		Shader const& ShadersList::operator () (const char* name) const
+		{
+			return m_shaders.at(name);
+		}
+
+		std::string ShadersList::getSynthesisVertexShaderSource()
+		{
+			return R"(
 		#version 420 core
 
 		layout(location = 0) in float d;
@@ -310,11 +314,11 @@ std::string ShadersList::getSynthesisVertexShaderSource()
 				project_perspective(eucl);
 		}
 	)";
-}
+		}
 
-std::string ShadersList::getSynthesisFragmentShaderSource()
-{
-	return R"(
+		std::string ShadersList::getSynthesisFragmentShaderSource()
+		{
+			return R"(
 		#version 420 core
 
 		uniform sampler2D image_texture;
@@ -335,11 +339,11 @@ std::string ShadersList::getSynthesisFragmentShaderSource()
 			gl_FragDepth = gs_depth / gs_quality;
 		}
 	)";
-}
+		}
 
-std::string ShadersList::getSynthesisGeometryShaderSource()
-{
-	return R"(
+		std::string ShadersList::getSynthesisGeometryShaderSource()
+		{
+			return R"(
 		#version 420 core
 
 		layout(triangles) in;
@@ -391,11 +395,11 @@ std::string ShadersList::getSynthesisGeometryShaderSource()
 			EndPrimitive();
 		}
 	)";
-}
+		}
 
-std::string ShadersList::getBlendingVertexShaderSource()
-{
-	return R"(
+		std::string ShadersList::getBlendingVertexShaderSource()
+		{
+			return R"(
 		#version 420 core
 
 		// two triangles to form a quad
@@ -409,21 +413,21 @@ std::string ShadersList::getBlendingVertexShaderSource()
 			gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
 		}
 	)";
-}
+		}
 
-std::string ShadersList::getBlendingFragmentShaderSource(int step)
-{
-	return std::string(step == 1
-		? R"(
+		std::string ShadersList::getBlendingFragmentShaderSource(int step)
+		{
+			return std::string(step == 1
+				? R"(
 			#version 420 core
 			layout(location=3) out vec4 color;
 			layout(location=4) out float quality;
 		)"
-		: R"(
+				: R"(
 			#version 420 core
 			layout(location=5) out vec4 color;
 			layout(location=6) out float quality;
-		)") +  R"(
+		)") + R"(
 		uniform sampler2D accumulator_image;
 		uniform sampler2D new_image;
 
@@ -483,6 +487,8 @@ std::string ShadersList::getBlendingFragmentShaderSource(int step)
 				quality = 0.0f;
 		}
 	)";
+		}
+	}
 }
 
 #endif

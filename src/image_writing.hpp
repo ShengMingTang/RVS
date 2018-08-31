@@ -47,39 +47,42 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Parameters.hpp"
 
-/**
-@file image_writing.hpp
-\brief The file containing the image writing functions
-*/
+namespace rvs
+{
+	/**
+	@file image_writing.hpp
+	\brief The file containing the image writing functions
+	*/
 
-/**
-\brief Write a color image in RGB or YUV 4:2:0 fileformat.
+	/**
+	\brief Write a color image in RGB or YUV 4:2:0 fileformat.
 
-@param filepath Name of the image file to write
-@param color Image to write
-@param frame Frame number (for YUV)
-@param parameters Camera and video parameters
-*/
-void write_color(std::string filepath, cv::Mat3f color, int frame, Parameters const& parameters);
+	@param filepath Name of the image file to write
+	@param color Image to write
+	@param frame Frame number (for YUV)
+	@param parameters Camera and video parameters
+	*/
+	void write_color(std::string filepath, cv::Mat3f color, int frame, Parameters const& parameters);
 
-/**
-\brief Write a depth map in RGB or YUV 4:2:0 fileformat.
+	/**
+	\brief Write a depth map in RGB or YUV 4:2:0 fileformat.
 
-@param filepath Name of the image file to write
-@param depth Image to write
-@param frame Frame number (for YUV)
-@param parameters Camera and video parameters
-*/
-void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters const& parameters);
+	@param filepath Name of the image file to write
+	@param depth Image to write
+	@param frame Frame number (for YUV)
+	@param parameters Camera and video parameters
+	*/
+	void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters const& parameters);
 
-/**
-\brief Write a mask in RGB or YUV 4:2:0 fileformat.
+	/**
+	\brief Write a mask in RGB or YUV 4:2:0 fileformat.
 
-@param filepath Name of the image file to write
-@param depth Image to write
-@param frame Frame number (for YUV)
-@param parameters Camera and video parameters
-*/
-void write_mask(std::string filepath, cv::Mat1b mask, int frame, Parameters const& parameters);
+	@param filepath Name of the image file to write
+	@param depth Image to write
+	@param frame Frame number (for YUV)
+	@param parameters Camera and video parameters
+	*/
+	void write_mask(std::string filepath, cv::Mat1b mask, int frame, Parameters const& parameters);
+}
 
 #endif

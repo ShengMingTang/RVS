@@ -54,39 +54,45 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <map>
 
-class Shader
+namespace rvs
 {
-public:
-	Shader(std::string vertexSource, std::string fragmentSource, std::string geometrySource = std::string());
+	namespace detail 
+	{
+		class Shader
+		{
+		public:
+			Shader(std::string vertexSource, std::string fragmentSource, std::string geometrySource = std::string());
 
-	GLuint getProgramID() const;
+			GLuint getProgramID() const;
 
-private:
-	static void shader_compile_errors(const GLuint &object, const char * type);
-	static const char * shader_type2string(GLenum shaderType);
-	static GLuint compile_shader(const std::string shader, GLenum shaderType);
+		private:
+			static void shader_compile_errors(const GLuint &object, const char * type);
+			static const char * shader_type2string(GLenum shaderType);
+			static GLuint compile_shader(const std::string shader, GLenum shaderType);
 
-	GLuint m_ID = 0;
-};
+			GLuint m_ID = 0;
+		};
 
-class ShadersList
-{
-public:
-	static ShadersList const& getInstance();
+		class ShadersList
+		{
+		public:
+			static ShadersList const& getInstance();
 
-	Shader const& operator () (const char* name) const;
+			Shader const& operator () (const char* name) const;
 
-private:
-	ShadersList();
+		private:
+			ShadersList();
 
-	std::string getSynthesisVertexShaderSource();
-	std::string getSynthesisFragmentShaderSource();
-	std::string getSynthesisGeometryShaderSource();
-	std::string getBlendingVertexShaderSource();
-	std::string getBlendingFragmentShaderSource(int step);
+			std::string getSynthesisVertexShaderSource();
+			std::string getSynthesisFragmentShaderSource();
+			std::string getSynthesisGeometryShaderSource();
+			std::string getBlendingVertexShaderSource();
+			std::string getBlendingFragmentShaderSource(int step);
 
-	std::map<std::string, Shader> m_shaders;
-};
+			std::map<std::string, Shader> m_shaders;
+		};
+	}
+}
 
 #endif
 #endif

@@ -53,66 +53,69 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 @file View.hpp
 */
 
-/**
-Class representing an image, optionally a depth map, and optionally a quality map
-*/
-class View
+namespace rvs
 {
-public:
-	View() = default;
-
-	/** Initialize all maps at once */
-	View(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
-
-	~View();
-
-	/** Assign all maps at once */
-	void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
-
-	/** @return the texture */
-	virtual cv::Mat3f get_color() const;
-
-	/** @return the depth map (same size as texture) */
-	cv::Mat1f get_depth() const;
-
-	/** @return the quality map (same size as texture) */
-	cv::Mat1f get_quality() const;
-
-	/** @return the validity map (same size as texture) */
-	cv::Mat1f get_validity() const;
-
-	/** @return the size of the texture and depth map */
-	cv::Size get_size() const;
-
-	/** @return a mask with all valid depth values */
-	cv::Mat1b get_depth_mask() const;
-
-	/** @return a mask for inpainting */
-	cv::Mat1b get_inpaint_mask() const;
-
-	/** @return a mask for invalid masking */
-	cv::Mat1b get_validity_mask(float threshold) const;
-
-private:
-	void validate() const;
-
-	cv::Mat3f m_color;
-	cv::Mat1f m_depth;
-	cv::Mat1f m_quality;
-	cv::Mat1f m_validity;
-};
-
-/**
-Class representing a loaded image and depth map
-*/
-class InputView : public View
-{
-public:
-	/** Constructor.
-	
-	Loads an input view and its depth map.
+	/**
+	Class representing an image, optionally a depth map, and optionally a quality map
 	*/
-	InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters);
-};
+	class View
+	{
+	public:
+		View() = default;
+
+		/** Initialize all maps at once */
+		View(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
+
+		~View();
+
+		/** Assign all maps at once */
+		void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
+
+		/** @return the texture */
+		virtual cv::Mat3f get_color() const;
+
+		/** @return the depth map (same size as texture) */
+		cv::Mat1f get_depth() const;
+
+		/** @return the quality map (same size as texture) */
+		cv::Mat1f get_quality() const;
+
+		/** @return the validity map (same size as texture) */
+		cv::Mat1f get_validity() const;
+
+		/** @return the size of the texture and depth map */
+		cv::Size get_size() const;
+
+		/** @return a mask with all valid depth values */
+		cv::Mat1b get_depth_mask() const;
+
+		/** @return a mask for inpainting */
+		cv::Mat1b get_inpaint_mask() const;
+
+		/** @return a mask for invalid masking */
+		cv::Mat1b get_validity_mask(float threshold) const;
+
+	private:
+		void validate() const;
+
+		cv::Mat3f m_color;
+		cv::Mat1f m_depth;
+		cv::Mat1f m_quality;
+		cv::Mat1f m_validity;
+	};
+
+	/**
+	Class representing a loaded image and depth map
+	*/
+	class InputView : public View
+	{
+	public:
+		/** Constructor.
+
+		Loads an input view and its depth map.
+		*/
+		InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters);
+	};
+}
 
 #endif

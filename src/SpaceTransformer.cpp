@@ -52,98 +52,101 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <cassert>
 
-SpaceTransformer::SpaceTransformer()
-	: m_input_parameters(nullptr)
-	, m_output_parameters(nullptr)
+namespace rvs
 {
-}
-
-SpaceTransformer::~SpaceTransformer() {}
-
-Parameters const& SpaceTransformer::getInputParameters() const
-{
-	assert(m_input_parameters);
-	return *m_input_parameters;
-}
-
-Parameters const& SpaceTransformer::getVirtualParameters() const
-{
-	assert(m_output_parameters);
-	return *m_output_parameters;
-}
-
-cv::Vec3f SpaceTransformer::get_translation() const
-{
-	auto t_from = getInputParameters().getPosition();
-	auto R_to = getVirtualParameters().getRotationMatrix();
-	auto t_to = getVirtualParameters().getPosition();
-
-	return -R_to.t()*(t_to - t_from);
-}
-
-cv::Matx33f SpaceTransformer::get_rotation() const
-{
-	auto R_from = getInputParameters().getRotationMatrix();
-	auto R_to = getVirtualParameters().getRotationMatrix();
-
-	return R_to.t()*R_from;
-}
-void SpaceTransformer::set_inputPosition(Parameters const *parameters)
-{
-	m_input_parameters = parameters;
-}
-
-void SpaceTransformer::set_targetPosition(Parameters const *parameters)
-{
-	m_output_parameters = parameters;
-}
-
-cv::Mat2f GenericTransformer::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
-{
-	return m_projector->project(world_pos, depth, wrapping_method);
-}
-cv::Mat3f GenericTransformer::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
-{
-	return m_unprojector->unproject(image_pos, depth);
-}
-
-void GenericTransformer::set_inputPosition(Parameters const *parameters)
-{
-	assert(parameters);
-	SpaceTransformer::set_inputPosition(parameters);
-
-	if (parameters->getProjectionType() == ProjectionType::equirectangular) {
-		m_unprojector.reset(new EquirectangularUnprojector(*parameters));
+	SpaceTransformer::SpaceTransformer()
+		: m_input_parameters(nullptr)
+		, m_output_parameters(nullptr)
+	{
 	}
-	else if (parameters->getProjectionType() == ProjectionType::perspective) {
-		m_unprojector.reset(new PerspectiveUnprojector(*parameters));
-	}
-	else {
-		std::ostringstream what;
-		what << "Unknown projection type \"" << parameters->getProjectionType() << "\"";
-		throw std::runtime_error(what.str());
-	}
-}
 
-void GenericTransformer::set_targetPosition(Parameters const *parameters)
-{
-	assert(parameters);
-	SpaceTransformer::set_targetPosition(parameters);
+	SpaceTransformer::~SpaceTransformer() {}
 
-	if (parameters->getProjectionType() == ProjectionType::equirectangular) {
-		m_projector.reset(new EquirectangularProjector(*parameters));
+	Parameters const& SpaceTransformer::getInputParameters() const
+	{
+		assert(m_input_parameters);
+		return *m_input_parameters;
 	}
-	else if (parameters->getProjectionType() == ProjectionType::perspective) {
-		m_projector.reset(new PerspectiveProjector(*parameters));
-	}
-	else {
-		std::ostringstream what;
-		what << "Unknown projection type \"" << parameters->getProjectionType() << "\"";
-		throw std::runtime_error(what.str());
-	}
-}
 
-cv::Mat2f GenericTransformer::generateImagePos() const
-{
-	return m_unprojector->generateImagePos();
+	Parameters const& SpaceTransformer::getVirtualParameters() const
+	{
+		assert(m_output_parameters);
+		return *m_output_parameters;
+	}
+
+	cv::Vec3f SpaceTransformer::get_translation() const
+	{
+		auto t_from = getInputParameters().getPosition();
+		auto R_to = getVirtualParameters().getRotationMatrix();
+		auto t_to = getVirtualParameters().getPosition();
+
+		return -R_to.t()*(t_to - t_from);
+	}
+
+	cv::Matx33f SpaceTransformer::get_rotation() const
+	{
+		auto R_from = getInputParameters().getRotationMatrix();
+		auto R_to = getVirtualParameters().getRotationMatrix();
+
+		return R_to.t()*R_from;
+	}
+	void SpaceTransformer::set_inputPosition(Parameters const *parameters)
+	{
+		m_input_parameters = parameters;
+	}
+
+	void SpaceTransformer::set_targetPosition(Parameters const *parameters)
+	{
+		m_output_parameters = parameters;
+	}
+
+	cv::Mat2f GenericTransformer::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
+	{
+		return m_projector->project(world_pos, depth, wrapping_method);
+	}
+	cv::Mat3f GenericTransformer::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+	{
+		return m_unprojector->unproject(image_pos, depth);
+	}
+
+	void GenericTransformer::set_inputPosition(Parameters const *parameters)
+	{
+		assert(parameters);
+		SpaceTransformer::set_inputPosition(parameters);
+
+		if (parameters->getProjectionType() == ProjectionType::equirectangular) {
+			m_unprojector.reset(new EquirectangularUnprojector(*parameters));
+		}
+		else if (parameters->getProjectionType() == ProjectionType::perspective) {
+			m_unprojector.reset(new PerspectiveUnprojector(*parameters));
+		}
+		else {
+			std::ostringstream what;
+			what << "Unknown projection type \"" << parameters->getProjectionType() << "\"";
+			throw std::runtime_error(what.str());
+		}
+	}
+
+	void GenericTransformer::set_targetPosition(Parameters const *parameters)
+	{
+		assert(parameters);
+		SpaceTransformer::set_targetPosition(parameters);
+
+		if (parameters->getProjectionType() == ProjectionType::equirectangular) {
+			m_projector.reset(new EquirectangularProjector(*parameters));
+		}
+		else if (parameters->getProjectionType() == ProjectionType::perspective) {
+			m_projector.reset(new PerspectiveProjector(*parameters));
+		}
+		else {
+			std::ostringstream what;
+			what << "Unknown projection type \"" << parameters->getProjectionType() << "\"";
+			throw std::runtime_error(what.str());
+		}
+	}
+
+	cv::Mat2f GenericTransformer::generateImagePos() const
+	{
+		return m_unprojector->generateImagePos();
+	}
 }

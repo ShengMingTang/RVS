@@ -47,50 +47,53 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Parameters.hpp"
 
-/**
-@file image_loading.hpp
-\brief The file containing the image loading functions
-*/
+namespace rvs
+{
+	/**
+	@file image_loading.hpp
+	\brief The file containing the image loading functions
+	*/
 
-/**
-\brief Return the depth needed to encode an image according to its bit depth.
+	/**
+	\brief Return the depth needed to encode an image according to its bit depth.
 
-\exception std::invalid_argument("invalid raw image bit depth")
-@param bit_depth Bit depth 
-@return CV_8U for a bit depth between 1 and 8, CV_16U for a bit depth between 9 and 16: CV_16U
-*/
-int cvdepth_from_bit_depth(int bit_depth);
+	\exception std::invalid_argument("invalid raw image bit depth")
+	@param bit_depth Bit depth
+	@return CV_8U for a bit depth between 1 and 8, CV_16U for a bit depth between 9 and 16: CV_16U
+	*/
+	int cvdepth_from_bit_depth(int bit_depth);
 
-/**
-\brief Return the maximum level corresponding to this bit depth.
+	/**
+	\brief Return the maximum level corresponding to this bit depth.
 
-@param bit_depth Bit depth
-@return (1u << bit_depth) - 1u
-*/
-unsigned max_level(int bit_depth);
+	@param bit_depth Bit depth
+	@return (1u << bit_depth) - 1u
+	*/
+	unsigned max_level(int bit_depth);
 
-/**
-\brief Read a color image (RGB or YUV). 
+	/**
+	\brief Read a color image (RGB or YUV).
 
-Use openCV cv::imread() function to read non .YUV images.
-@param filepath Name of the image file (YUV, PNG, etc.)
-@param frame Number of the frame to read
-@param parameters Camera and video parameters
-@return CV_32FC3 image
-*/
-cv::Mat3f read_color(std::string filepath, int frame, Parameters const& parameters);
+	Use openCV cv::imread() function to read non .YUV images.
+	@param filepath Name of the image file (YUV, PNG, etc.)
+	@param frame Number of the frame to read
+	@param parameters Camera and video parameters
+	@return CV_32FC3 image
+	*/
+	cv::Mat3f read_color(std::string filepath, int frame, Parameters const& parameters);
 
-/**
-\brief Read a depth image: a exr depth file or a YUV disparity file. 
+	/**
+	\brief Read a depth image: a exr depth file or a YUV disparity file.
 
-Use openCV cv::imread() function to read non .YUV images.
-@param filepath Name of the image file (YUV, PNG, etc.)
-@param frame Number of the frame to read
-@param parameters Camera and video parameters
-@return CV_32F image
+	Use openCV cv::imread() function to read non .YUV images.
+	@param filepath Name of the image file (YUV, PNG, etc.)
+	@param frame Number of the frame to read
+	@param parameters Camera and video parameters
+	@return CV_32F image
 
-Result may have NaN values to indicate missing depth values
-*/
-cv::Mat1f read_depth(std::string filepath, int frame, Parameters const& parameters);
+	Result may have NaN values to indicate missing depth values
+	*/
+	cv::Mat1f read_depth(std::string filepath, int frame, Parameters const& parameters);
+}
 
 #endif

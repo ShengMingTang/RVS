@@ -51,46 +51,49 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-namespace
+namespace rvs
 {
-	void dump(std::string basename, int inputFrame, int inputView, int virtualFrame, int virtualView, View const& view)
+	namespace
 	{
-		cv::Mat3f rgb;
-		cv::cvtColor(view.get_color(), rgb, cv::COLOR_YCrCb2BGR);
-		cv::Mat3b color;
-		rgb.convertTo(color, CV_8U, 255.);
+		void dump(std::string basename, int inputFrame, int inputView, int virtualFrame, int virtualView, View const& view)
+		{
+			cv::Mat3f rgb;
+			cv::cvtColor(view.get_color(), rgb, cv::COLOR_YCrCb2BGR);
+			cv::Mat3b color;
+			rgb.convertTo(color, CV_8U, 255.);
 
-		cv::Mat1w quality;
-		view.get_quality().convertTo(quality, CV_16U, 4.);
-		std::ostringstream filepath;
-		filepath.str(""); filepath << basename << "-quality-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x4.png";
-		cv::imwrite(filepath.str(), quality);
+			cv::Mat1w quality;
+			view.get_quality().convertTo(quality, CV_16U, 4.);
+			std::ostringstream filepath;
+			filepath.str(""); filepath << basename << "-quality-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x4.png";
+			cv::imwrite(filepath.str(), quality);
 
-		cv::Mat1w depth;
-		view.get_depth().convertTo(depth, CV_16U, 2000.);
-		filepath.str(""); filepath << basename << "-depth-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x2000.png";
-		cv::imwrite(filepath.str(), depth);
+			cv::Mat1w depth;
+			view.get_depth().convertTo(depth, CV_16U, 2000.);
+			filepath.str(""); filepath << basename << "-depth-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x2000.png";
+			cv::imwrite(filepath.str(), depth);
 
-		cv::Mat1w validity; // triangle shape
-		view.get_validity().convertTo(validity, CV_16U, 6.);
-		filepath.str(""); filepath << basename << "-validity-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x6.png";
-		cv::imwrite(filepath.str(), validity);
+			cv::Mat1w validity; // triangle shape
+			view.get_validity().convertTo(validity, CV_16U, 6.);
+			filepath.str(""); filepath << basename << "-validity-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x6.png";
+			cv::imwrite(filepath.str(), validity);
 
-		filepath.str(""); filepath << basename << "-depth_mask-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << ".png";
-		cv::imwrite(filepath.str(), view.get_depth_mask());
+			filepath.str(""); filepath << basename << "-depth_mask-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << ".png";
+			cv::imwrite(filepath.str(), view.get_depth_mask());
+		}
 	}
-}
 
-Analyzer::Analyzer(std::string const& filepath)
-	: Application(filepath)
-{}
+	Analyzer::Analyzer(std::string const& filepath)
+		: Application(filepath)
+	{}
 
-void Analyzer::onIntermediateSynthesisResult(int inputFrame, int inputView, int virtualFrame, int virtualView, SynthesizedView const& synthesizedView)
-{
-	dump("warping", inputFrame, inputView, virtualFrame, virtualView, synthesizedView);
-}
+	void Analyzer::onIntermediateSynthesisResult(int inputFrame, int inputView, int virtualFrame, int virtualView, SynthesizedView const& synthesizedView)
+	{
+		dump("warping", inputFrame, inputView, virtualFrame, virtualView, synthesizedView);
+	}
 
-void Analyzer::onIntermediateBlendingResult(int inputFrame, int inputView, int virtualFrame, int virtualView, BlendedView const& blendedView)
-{
-	dump("blending", inputFrame, inputView, virtualFrame, virtualView, blendedView);
+	void Analyzer::onIntermediateBlendingResult(int inputFrame, int inputView, int virtualFrame, int virtualView, BlendedView const& blendedView)
+	{
+		dump("blending", inputFrame, inputView, virtualFrame, virtualView, blendedView);
+	}
 }

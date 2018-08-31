@@ -54,183 +54,186 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "RFBO.hpp"
 #endif
 
-BlendedView::~BlendedView() {}
-
-BlendedViewMultiSpec::BlendedViewMultiSpec(float exp_low_freq, float exp_high_freq)
-	: m_low_freq(exp_low_freq)
-	, m_high_freq(exp_high_freq)
-{}
-
-BlendedViewMultiSpec::~BlendedViewMultiSpec() {}
-
-void BlendedViewMultiSpec::blend(View const& view)
+namespace rvs
 {
-	// Split color frequencies in low and high band
-	cv::Mat3f low_color;
-	cv::Mat3f high_color;
-	auto mask = cv::Mat1b(view.get_quality() > 0.f);
-	split_frequencies(view.get_color(), low_color, high_color, mask);
+	BlendedView::~BlendedView() {}
 
-	// Repack as views
-	auto low_view = View(low_color, view.get_depth(), view.get_quality(), view.get_validity());
-	auto high_view = View(high_color, view.get_depth(), view.get_quality(), view.get_validity());
+	BlendedViewMultiSpec::BlendedViewMultiSpec(float exp_low_freq, float exp_high_freq)
+		: m_low_freq(exp_low_freq)
+		, m_high_freq(exp_high_freq)
+	{}
 
-	// Blend low and high frequency separately
-	m_low_freq.blend(low_view);
-	m_high_freq.blend(high_view);
+	BlendedViewMultiSpec::~BlendedViewMultiSpec() {}
 
-	// Combine result
-	assign(m_low_freq.get_color() + m_high_freq.get_color(), m_low_freq.get_depth(), m_low_freq.get_quality(), m_low_freq.get_validity());
-}
+	void BlendedViewMultiSpec::blend(View const& view)
+	{
+		// Split color frequencies in low and high band
+		cv::Mat3f low_color;
+		cv::Mat3f high_color;
+		auto mask = cv::Mat1b(view.get_quality() > 0.f);
+		detail::split_frequencies(view.get_color(), low_color, high_color, mask);
 
-BlendedViewSimple::BlendedViewSimple(float blending_exp)
-	: m_is_empty(true)
-	, m_blending_exp(blending_exp)
-{
-	assign(cv::Mat3f(), cv::Mat1f(), cv::Mat1f(), cv::Mat1f());
-}
+		// Repack as views
+		auto low_view = View(low_color, view.get_depth(), view.get_quality(), view.get_validity());
+		auto high_view = View(high_color, view.get_depth(), view.get_quality(), view.get_validity());
 
-BlendedViewSimple::~BlendedViewSimple() {}
+		// Blend low and high frequency separately
+		m_low_freq.blend(low_view);
+		m_high_freq.blend(high_view);
 
-const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
+		// Combine result
+		assign(m_low_freq.get_color() + m_high_freq.get_color(), m_low_freq.get_depth(), m_low_freq.get_quality(), m_low_freq.get_validity());
+	}
 
-void BlendedViewSimple::blend(View const& view)
-{ 
+	BlendedViewSimple::BlendedViewSimple(float blending_exp)
+		: m_is_empty(true)
+		, m_blending_exp(blending_exp)
+	{
+		assign(cv::Mat3f(), cv::Mat1f(), cv::Mat1f(), cv::Mat1f());
+	}
+
+	BlendedViewSimple::~BlendedViewSimple() {}
+
+	const cv::Vec3f empty_rgb_color(0.0f, 1.0f, 0.0f);
+
+	void BlendedViewSimple::blend(View const& view)
+	{
 #if WITH_OPENGL
-	if (g_with_opengl) {
-		PROF_START("BLENDING_OPENGL");
+		if (g_with_opengl) {
+			PROF_START("BLENDING_OPENGL");
 
+			auto FBO = RFBO::getInstance();
+			auto & shaders = ShadersList::getInstance();
+			// QUAD VAO
+			GLfloat quadVertices[] = {
+				-1.0f, 1.0f, 0.0f, 1.0f,
+				-1.0f, -1.0f, 0.0f, 0.0f,
+				1.0f, -1.0f, 1.0f, 0.0f,
+				-1.0f, 1.0f, 0.0f, 1.0f,
+				1.0f, -1.0f, 1.0f, 0.0f,
+				1.0f, 1.0f, 1.0f, 1.0f };
+			GLuint quadVAO, quadVBO;
+			glGenVertexArrays(1, &quadVAO);
+			glGenBuffers(1, &quadVBO);
+			glBindVertexArray(quadVAO);
+			glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE,
+				4 * sizeof(GLfloat), (GLvoid*)0);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
+				4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+			glBindVertexArray(0);
+			// END QUAD VAO
+
+			GLuint program = shaders("blending2").getProgramID();
+			if (FBO->value) program = shaders("blending1").getProgramID();
+
+			assert(program != 0);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
+			//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			glUseProgram(program);
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, FBO->image);
+			glUniform1i(glGetUniformLocation(program, "new_image"), 0);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, FBO->depth);
+			glUniform1i(glGetUniformLocation(program, "new_depth"), 1);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, FBO->quality_triangle);
+			glUniform1i(glGetUniformLocation(program, "new_triangle_quality"), 2);
+
+			glActiveTexture(GL_TEXTURE3 + 2 * FBO->value);
+			glBindTexture(GL_TEXTURE_2D, FBO->swap_image[FBO->value]);
+			glUniform1i(glGetUniformLocation(program, "accumulator_image"), 3 + 2 * FBO->value);
+
+			glActiveTexture(GL_TEXTURE4 + 2 * FBO->value);
+			glBindTexture(GL_TEXTURE_2D, FBO->swap_quality[FBO->value]);
+			glUniform1i(glGetUniformLocation(program, "accumulator_quality"), 4 + 2 * FBO->value);
+
+			// parameters
+			glUniform1f(glGetUniformLocation(program, "blending_factor"), m_blending_exp);
+			// end parameters
+
+			glBindVertexArray(quadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glUseProgram(0);
+			glBindVertexArray(0);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			PROF_END("BLENDING_OPENGL");
+			FBO->toggle();
+		}
+#endif
+		if (!g_with_opengl) {
+			if (m_is_empty) {
+				m_is_empty = false;
+				assign(view.get_color(), view.get_depth(), view.get_quality(), view.get_validity());
+				m_depth_mask = view.get_depth_mask();
+			}
+			else {
+				std::vector<cv::Mat> colors = { get_color(), view.get_color() };
+				std::vector<cv::Mat> qualities = { get_quality(), view.get_quality() };
+				std::vector<cv::Mat> depth_masks = { m_depth_mask, view.get_depth_mask() };
+
+				cv::Mat quality;
+				cv::Mat depth_prolongation_mask;
+				cv::Mat inpaint_mask; // don't care
+
+				auto color = detail::blend_img(
+					colors, qualities, depth_masks,
+					empty_rgb_color,
+					/*out*/ quality,
+					/*out*/ depth_prolongation_mask,
+					/*out*/ inpaint_mask,
+					m_blending_exp);
+
+				auto depth = get_depth().clone();
+				view.get_depth().copyTo(depth, view.get_quality() > get_quality());
+
+				assign(color, depth, quality, max(get_validity(), view.get_validity()));
+				m_depth_mask = depth_prolongation_mask;
+			}
+		}
+	}
+
+#if WITH_OPENGL
+	void BlendedView::assignFromGL2CV(cv::Size size)
+	{
 		auto FBO = RFBO::getInstance();
-		auto & shaders = ShadersList::getInstance();
-		// QUAD VAO
-		GLfloat quadVertices[] = {
-			-1.0f, 1.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f,
-			1.0f, -1.0f, 1.0f, 0.0f,
-			-1.0f, 1.0f, 0.0f, 1.0f,
-			1.0f, -1.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 1.0f, 1.0f };
-		GLuint quadVAO, quadVBO;
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE,
-			4 * sizeof(GLfloat), (GLvoid*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
-			4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
-		glBindVertexArray(0);
-		// END QUAD VAO
+		cv::Mat3f img(size, CV_32FC3);
 
-		GLuint program = shaders("blending2").getProgramID();
-		if (FBO->value) program = shaders("blending1").getProgramID();
-
-		assert(program != 0);
+		glPixelStorei(GL_PACK_ALIGNMENT, 4);
+		glPixelStorei(GL_PACK_ROW_LENGTH, GLint(img.step / img.elemSize()));
 
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
-		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glUseProgram(program);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, FBO->image);
-		glUniform1i(glGetUniformLocation(program, "new_image"), 0);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, FBO->depth);
-		glUniform1i(glGetUniformLocation(program, "new_depth"), 1);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, FBO->quality_triangle);
-		glUniform1i(glGetUniformLocation(program, "new_triangle_quality"), 2);
-
-		glActiveTexture(GL_TEXTURE3 + 2 * FBO->value);
-		glBindTexture(GL_TEXTURE_2D, FBO->swap_image[FBO->value]);
-		glUniform1i(glGetUniformLocation(program, "accumulator_image"), 3 + 2 * FBO->value);
-
-		glActiveTexture(GL_TEXTURE4 + 2 * FBO->value);
-		glBindTexture(GL_TEXTURE_2D, FBO->swap_quality[FBO->value]);
-		glUniform1i(glGetUniformLocation(program, "accumulator_quality"), 4 + 2 * FBO->value);
-
-		// parameters
-		glUniform1f(glGetUniformLocation(program, "blending_factor"), m_blending_exp);
-		// end parameters
-
-		glBindVertexArray(quadVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glUseProgram(0);
-		glBindVertexArray(0);
+		glReadBuffer(GL_COLOR_ATTACHMENT3 + 2 * FBO->value);
+		glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_FLOAT, img.ptr());
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		PROF_END("BLENDING_OPENGL");
-		FBO->toggle();
+
+		cv::flip(img, img, 0);
+
+		cv::Mat validity = cv::Mat::ones(size, CV_32FC1);
+
+		glPixelStorei(GL_PACK_ALIGNMENT, 4);
+		glPixelStorei(GL_PACK_ROW_LENGTH, GLint(validity.step / validity.elemSize()));
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
+		glReadBuffer(GL_COLOR_ATTACHMENT4 + 2 * (FBO->value));
+		glReadPixels(0, 0, validity.cols, validity.rows, GL_RED, GL_FLOAT, validity.ptr());
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		cv::flip(validity, validity, 0);
+
+		assign(img, cv::Mat1f(), validity, validity);
+		FBO->clear_buffers();
 	}
 #endif
-	if (!g_with_opengl) {
-		if (m_is_empty) {
-			m_is_empty = false;
-			assign(view.get_color(), view.get_depth(), view.get_quality(), view.get_validity());
-			m_depth_mask = view.get_depth_mask();
-		}
-		else {
-			std::vector<cv::Mat> colors = { get_color(), view.get_color() };
-			std::vector<cv::Mat> qualities = { get_quality(), view.get_quality() };
-			std::vector<cv::Mat> depth_masks = { m_depth_mask, view.get_depth_mask() };
-
-			cv::Mat quality;
-			cv::Mat depth_prolongation_mask;
-			cv::Mat inpaint_mask; // don't care
-
-			auto color = blend_img(
-				colors, qualities, depth_masks,
-				empty_rgb_color,
-				/*out*/ quality,
-				/*out*/ depth_prolongation_mask,
-				/*out*/ inpaint_mask,
-				m_blending_exp);
-
-			auto depth = get_depth().clone();
-			view.get_depth().copyTo(depth, view.get_quality() > get_quality());
-
-			assign(color, depth, quality, max(get_validity(), view.get_validity()));
-			m_depth_mask = depth_prolongation_mask;
-		}
-	}
 }
-
-#if WITH_OPENGL
-void BlendedView::assignFromGL2CV(cv::Size size)
-{
-	auto FBO = RFBO::getInstance();
-	cv::Mat3f img(size, CV_32FC3);
-
-	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	glPixelStorei(GL_PACK_ROW_LENGTH, GLint(img.step / img.elemSize()));
-
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
-	glReadBuffer(GL_COLOR_ATTACHMENT3 + 2 * FBO->value);
-	glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_FLOAT, img.ptr());
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	cv::flip(img, img, 0);
-
-	cv::Mat validity = cv::Mat::ones(size, CV_32FC1);
-
-	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	glPixelStorei(GL_PACK_ROW_LENGTH, GLint(validity.step / validity.elemSize()));
-
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO->ID);
-	glReadBuffer(GL_COLOR_ATTACHMENT4 + 2 * (FBO->value));
-	glReadPixels(0, 0, validity.cols, validity.rows, GL_RED, GL_FLOAT, validity.ptr());
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	cv::flip(validity, validity, 0);
-
-	assign(img, cv::Mat1f(), validity, validity);
-	FBO->clear_buffers();
-}
-#endif

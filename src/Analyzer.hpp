@@ -56,23 +56,26 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 In addition to the functionality of the regular RVS application, the Analyzer also outputs all intermediate results to disc for analysis.
 */
 
-/**
-\brief The main class of the RVS Analyzer application
-
-In addition to the functionality of the regular RVS application, the Analyzer also outputs all intermediate results to disc for analysis.
-*/
-class Analyzer : public Application
+namespace rvs
 {
-public:
 	/**
-	\brief Constructor
-	@param filepath Configuration file (JSON format)
-	*/
-	Analyzer(std::string const& filepath);
+	\brief The main class of the RVS Analyzer application
 
-protected:
-	void onIntermediateSynthesisResult(int inputFrame, int inputView, int virtualFrame, int virtualView, SynthesizedView const& synthesizedView) override;
-	void onIntermediateBlendingResult(int inputFrame, int inputView, int virtualFrame, int virtualView, BlendedView const& blendedView) override;
-};
+	In addition to the functionality of the regular RVS application, the Analyzer also outputs all intermediate results to disc for analysis.
+	*/
+	class Analyzer : public Application
+	{
+	public:
+		/**
+		\brief Constructor
+		@param filepath Configuration file (JSON format)
+		*/
+		Analyzer(std::string const& filepath);
+
+	protected:
+		void onIntermediateSynthesisResult(int inputFrame, int inputView, int virtualFrame, int virtualView, SynthesizedView const& synthesizedView) override;
+		void onIntermediateBlendingResult(int inputFrame, int inputView, int virtualFrame, int virtualView, BlendedView const& blendedView) override;
+	};
+}
 
 #endif

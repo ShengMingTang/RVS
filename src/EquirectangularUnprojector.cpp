@@ -44,51 +44,54 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "EquirectangularUnprojector.hpp"
 
-EquirectangularUnprojector::EquirectangularUnprojector(Parameters const& parameters)
-	: Unprojector(parameters)
-{}
-
-cv::Mat3f EquirectangularUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+namespace rvs
 {
-	auto world_pos = cv::Mat3f(image_pos.size());
-	auto size = getParameters().getSize();
-	auto hor_range = getParameters().getHorRange();
-	auto ver_range = getParameters().getVerRange();
+	EquirectangularUnprojector::EquirectangularUnprojector(Parameters const& parameters)
+		: Unprojector(parameters)
+	{}
 
-	auto const radperdeg = 0.01745329252f;
-	auto phi0 = radperdeg * hor_range[1];
-	auto theta0 = radperdeg * ver_range[1];
-	auto dphi_du = -radperdeg * (hor_range[1] - hor_range[0]) / size.width;
-	auto dtheta_dv = -radperdeg * (ver_range[1] - ver_range[0]) / size.height;
+	cv::Mat3f EquirectangularUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+	{
+		auto world_pos = cv::Mat3f(image_pos.size());
+		auto size = getParameters().getSize();
+		auto hor_range = getParameters().getHorRange();
+		auto ver_range = getParameters().getVerRange();
 
-	for (int i = 0; i != image_pos.rows; ++i) {
-		for (int j = 0; j != image_pos.cols; ++j) {
-			auto uv = image_pos(i, j);
+		auto const radperdeg = 0.01745329252f;
+		auto phi0 = radperdeg * hor_range[1];
+		auto theta0 = radperdeg * ver_range[1];
+		auto dphi_du = -radperdeg * (hor_range[1] - hor_range[0]) / size.width;
+		auto dtheta_dv = -radperdeg * (ver_range[1] - ver_range[0]) / size.height;
 
-			// Spherical coordinates
-			auto phi = phi0 + dphi_du * uv[0];
-			auto theta = theta0 + dtheta_dv * uv[1];
+		for (int i = 0; i != image_pos.rows; ++i) {
+			for (int j = 0; j != image_pos.cols; ++j) {
+				auto uv = image_pos(i, j);
 
-			// World position
-			world_pos(i, j) = depth(i, j) * cv::Vec3f(
-				std::cos(theta) * std::cos(phi),
-				std::cos(theta) * std::sin(phi),
-				std::sin(theta));
+				// Spherical coordinates
+				auto phi = phi0 + dphi_du * uv[0];
+				auto theta = theta0 + dtheta_dv * uv[1];
+
+				// World position
+				world_pos(i, j) = depth(i, j) * cv::Vec3f(
+					std::cos(theta) * std::cos(phi),
+					std::cos(theta) * std::sin(phi),
+					std::sin(theta));
+			}
 		}
+
+		return world_pos;
 	}
 
-	return world_pos;
-}
+	cv::Mat2f EquirectangularUnprojector::generateImagePos() const
+	{
+		auto image_pos = Unprojector::generateImagePos();
+		float const eps = 1e-3f;
 
-cv::Mat2f EquirectangularUnprojector::generateImagePos() const
-{
-	auto image_pos = Unprojector::generateImagePos();
-	float const eps = 1e-3f;
+		for (int j = 0; j != image_pos.cols; ++j) {
+			image_pos(0, j)[1] = eps;
+			image_pos(image_pos.rows - 1, j)[1] = image_pos.rows - eps;
+		}
 
-	for (int j = 0; j != image_pos.cols; ++j) {
-		image_pos(0, j)[1] = eps;
-		image_pos(image_pos.rows - 1, j)[1] = image_pos.rows - eps;
+		return image_pos;
 	}
-
-	return image_pos;
 }

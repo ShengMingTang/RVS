@@ -52,29 +52,32 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 @file EquirectangularUnprojector.hpp
 */
 
-/**\brief EquirectangularUnprojector*/
-class EquirectangularUnprojector : public Unprojector
+namespace rvs
 {
-public:
-	/**\brief Constructor
-	@param parameters Parameters of the View
-	*/
-	EquirectangularUnprojector(Parameters const& parameters);
+	/**\brief EquirectangularUnprojector*/
+	class EquirectangularUnprojector : public Unprojector
+	{
+	public:
+		/**\brief Constructor
+		@param parameters Parameters of the View
+		*/
+		EquirectangularUnprojector(Parameters const& parameters);
 
-	/**\brief Project in 3D the normalized euclidian coordinates thanks to the depth map
-	
-	image_pos in image coordinates: u right, v down
-	depth is equal to x
-	world_pos in OMAF Referential: x forward, y left, z up
+		/**\brief Project in 3D the normalized euclidian coordinates thanks to the depth map
 
-	@param image_pos UV coordinate in the image
-	@param depth Perspective depth map
-	@return Map of the pixels in euclidian coordinates
-	*/
-	cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const override;
+		image_pos in image coordinates: u right, v down
+		depth is equal to x
+		world_pos in OMAF Referential: x forward, y left, z up
 
-	/** Override to adjust rendering of poles */
-	cv::Mat2f generateImagePos() const override;
-};
+		@param image_pos UV coordinate in the image
+		@param depth Perspective depth map
+		@return Map of the pixels in euclidian coordinates
+		*/
+		cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const override;
+
+		/** Override to adjust rendering of poles */
+		cv::Mat2f generateImagePos() const override;
+	};
+}
 
 #endif

@@ -64,7 +64,7 @@ namespace testing
 {
 	namespace erp
 	{
-		Parameters generateParameters()
+		rvs::Parameters generateParameters()
 		{
 			std::istringstream text(R"({
 				"Name": "v0",
@@ -85,7 +85,7 @@ namespace testing
 
 			// Construct unprojector
 			auto root = json::Node::readFrom(text);
-			return Parameters::readFrom(root);
+			return rvs::Parameters::readFrom(root);
 		}
 
 		cv::Mat2f generateReferenceImagePos()
@@ -129,7 +129,7 @@ FUNC(Test_EquirectangularUnprojector_generateImagePos)
 {
 	// Construct unprojector
 	auto parameters = testing::erp::generateParameters();
-	EquirectangularUnprojector unprojector(parameters);
+	rvs::EquirectangularUnprojector unprojector(parameters);
 
 	// Generate image positions
 	auto actualImagePos = unprojector.generateImagePos();
@@ -144,7 +144,7 @@ FUNC(Test_EquirectangularUnprojector_unproject)
 {
 	// Construct unprojector
 	auto parameters = testing::erp::generateParameters();
-	EquirectangularUnprojector unprojector(parameters);
+	rvs::EquirectangularUnprojector unprojector(parameters);
 
 	// Unproject to world coordinates
 	auto imagePos = testing::erp::generateReferenceImagePos();
@@ -161,14 +161,14 @@ FUNC(Test_EquirectangularProjector_project)
 {
 	// Construct projector
 	auto parameters = testing::erp::generateParameters();
-	EquirectangularProjector projector(parameters);
+	rvs::EquirectangularProjector projector(parameters);
 
 	// Project to image coordinates
 	auto referenceImagePos = testing::erp::generateReferenceImagePos();
 	auto referenceDepth = testing::erp::generateReferenceDepth();
 	auto worldPos = testing::erp::generateReferenceWorldPos(referenceImagePos, referenceDepth);
 	cv::Mat1f actualDepth;
-	WrappingMethod actualWrappingMethod = WrappingMethod::none;
+	rvs::WrappingMethod actualWrappingMethod = rvs::WrappingMethod::none;
 	auto actualImagePos = projector.project(worldPos, actualDepth, actualWrappingMethod);
 
 	// Check image positions against reference
@@ -180,14 +180,14 @@ FUNC(Test_EquirectangularProjector_project)
 	CHECK(referenceDepthError < 1e-6f);
 	
 	// Check wrapping
-	CHECK(actualWrappingMethod == WrappingMethod::horizontal);
+	CHECK(actualWrappingMethod == rvs::WrappingMethod::horizontal);
 }
 
 namespace testing
 {
 	namespace persp
 	{
-		Parameters generateParameters()
+		rvs::Parameters generateParameters()
 		{
 			std::istringstream text(R"({
 			"Name"				: "v0",
@@ -207,7 +207,7 @@ namespace testing
 		})");
 
 			auto root = json::Node::readFrom(text);
-			return Parameters::readFrom(root);
+			return rvs::Parameters::readFrom(root);
 		}
 
 		cv::Mat2f generateReferenceImagePos()
@@ -249,7 +249,7 @@ FUNC(Test_PerspectiveUnprojector_generateImagePos)
 {
 	// Construct unprojector
 	auto parameters = testing::persp::generateParameters();
-	PerspectiveUnprojector unprojector(parameters);
+	rvs::PerspectiveUnprojector unprojector(parameters);
 
 	// Generate image positions
 	auto actualImagePos = unprojector.generateImagePos();
@@ -264,7 +264,7 @@ FUNC(Test_PerspectiveUnprojector_unproject)
 {
 	// Construct unprojector
 	auto parameters = testing::persp::generateParameters();
-	PerspectiveUnprojector unprojector(parameters);
+	rvs::PerspectiveUnprojector unprojector(parameters);
 
 	// Unproject to world coordinates
 	auto imagePos = testing::persp::generateReferenceImagePos();
@@ -281,14 +281,14 @@ FUNC(Test_PerspectiveProjector_project)
 {
 	// Construct projector
 	auto parameters = testing::persp::generateParameters();
-	PerspectiveProjector projector(parameters);
+	rvs::PerspectiveProjector projector(parameters);
 
 	// Project to image coordinates
 	auto referenceImagePos = testing::persp::generateReferenceImagePos();
 	auto referenceDepth = testing::persp::generateReferenceDepth();
 	auto worldPos = testing::persp::generateReferenceWorldPos(referenceImagePos, referenceDepth);
 	cv::Mat1f actualDepth;
-	WrappingMethod actualWrappingMethod = WrappingMethod::horizontal;
+	rvs::WrappingMethod actualWrappingMethod = rvs::WrappingMethod::horizontal;
 	auto actualImagePos = projector.project(worldPos, actualDepth, actualWrappingMethod);
 
 	// Check image positions against reference
@@ -300,7 +300,7 @@ FUNC(Test_PerspectiveProjector_project)
 	CHECK(referenceDepthError < 1e-6f);
 
 	// Check wrapping
-	CHECK(actualWrappingMethod == WrappingMethod::none);
+	CHECK(actualWrappingMethod == rvs::WrappingMethod::none);
 }
 
 FUNC(Test_JsonParser_readFrom)
@@ -373,7 +373,7 @@ FUNC(Test_PoseTrace_loadFrom)
 
 )");
 
-	auto poseTrace = PoseTrace::loadFrom(stream);
+	auto poseTrace = rvs::PoseTrace::loadFrom(stream);
 	EQUAL(poseTrace.size(), 4u);
 	EQUAL(poseTrace[0].position[0], 0.f);
 	CHECK((poseTrace[1].position[1] + 4.49e-05) < 1e-12);

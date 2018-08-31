@@ -50,36 +50,39 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <iostream>
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
-PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
-	: Projector(parameters)
-{}
-
-cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
+namespace rvs
 {
-	auto f = getParameters().getFocal();
-	auto p = getParameters().getPrinciplePoint();
+	PerspectiveProjector::PerspectiveProjector(Parameters const& parameters)
+		: Projector(parameters)
+	{}
 
-	cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
-	depth = cv::Mat1f(world_pos.size(), NaN);
+	cv::Mat2f PerspectiveProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
+	{
+		auto f = getParameters().getFocal();
+		auto p = getParameters().getPrinciplePoint();
 
-	for (int i = 0; i != world_pos.rows; ++i) {
-		for (int j = 0; j != world_pos.cols; ++j) {
-			auto xyz = world_pos(i, j);
+		cv::Mat2f image_pos(world_pos.size(), cv::Vec2f::all(NaN));
+		depth = cv::Mat1f(world_pos.size(), NaN);
 
-			// OMAF Referential: x forward, y left, z up
-			// Image plane: x right, y down
+		for (int i = 0; i != world_pos.rows; ++i) {
+			for (int j = 0; j != world_pos.cols; ++j) {
+				auto xyz = world_pos(i, j);
 
-			if (xyz[0] > 0.f) {
-				auto uv = cv::Vec2f(
-					-f[0] * xyz[1] / xyz[0] + p[0],
-					-f[1] * xyz[2] / xyz[0] + p[1]);
+				// OMAF Referential: x forward, y left, z up
+				// Image plane: x right, y down
 
-				image_pos(i, j) = uv;
-				depth(i, j) = xyz[0];
+				if (xyz[0] > 0.f) {
+					auto uv = cv::Vec2f(
+						-f[0] * xyz[1] / xyz[0] + p[0],
+						-f[1] * xyz[2] / xyz[0] + p[1]);
+
+					image_pos(i, j) = uv;
+					depth(i, j) = xyz[0];
+				}
 			}
 		}
-	}
 
-	wrapping_method = WrappingMethod::none;
-	return image_pos;
+		wrapping_method = WrappingMethod::none;
+		return image_pos;
+	}
 }

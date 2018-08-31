@@ -49,51 +49,54 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <fstream>
 #include <regex>
 
-PoseTrace PoseTrace::loadFrom(std::istream & stream)
+namespace rvs
 {
-	std::string line;
-	std::getline(stream, line);
+	PoseTrace PoseTrace::loadFrom(std::istream & stream)
+	{
+		std::string line;
+		std::getline(stream, line);
 
-	std::regex re_header("\\s*X\\s*,\\s*Y\\s*,\\s*Z\\s*,\\s*Yaw\\s*,\\s*Pitch\\s*,\\s*Roll\\s*");
-	if (!std::regex_match(line, re_header)) {
-		throw std::runtime_error("Format error in the pose trace header");
+		std::regex re_header("\\s*X\\s*,\\s*Y\\s*,\\s*Z\\s*,\\s*Yaw\\s*,\\s*Pitch\\s*,\\s*Roll\\s*");
+		if (!std::regex_match(line, re_header)) {
+			throw std::runtime_error("Format error in the pose trace header");
+		}
+
+		PoseTrace trace;
+		std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+		std::regex re_empty("\\s*");
+		bool trailing_empty_lines = false;
+
+		while (std::getline(stream, line)) {
+			std::smatch match;
+			if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
+				trace.push_back({
+					cv::Vec3f(
+						std::stof(match[1].str()),
+						std::stof(match[2].str()),
+						std::stof(match[3].str())),
+					cv::Vec3f(
+						std::stof(match[4].str()),
+						std::stof(match[5].str()),
+						std::stof(match[6].str()))
+					});
+			}
+			else if (std::regex_match(line, re_empty)) {
+				trailing_empty_lines = true;
+			}
+			else {
+				throw std::runtime_error("Format error in a pose trace row");
+			}
+		}
+
+		return trace;
 	}
 
-	PoseTrace trace;
-	std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
-	std::regex re_empty("\\s*");
-	bool trailing_empty_lines = false;
-
-	while (std::getline(stream, line)) {
-		std::smatch match;
-		if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
-			trace.push_back({
-				cv::Vec3f(
-					std::stof(match[1].str()),
-					std::stof(match[2].str()),
-					std::stof(match[3].str())),
-				cv::Vec3f(
-					std::stof(match[4].str()),
-					std::stof(match[5].str()),
-					std::stof(match[6].str()))
-			});
+	PoseTrace PoseTrace::loadFromFile(std::string const& filename)
+	{
+		std::ifstream stream(filename);
+		if (!stream.good()) {
+			throw std::runtime_error("Failed to load pose trace");
 		}
-		else if (std::regex_match(line, re_empty)) {
-			trailing_empty_lines = true;
-		}
-		else {
-			throw std::runtime_error("Format error in a pose trace row");
-		}
+		return loadFrom(stream);
 	}
-
-	return trace;
-}
-
-PoseTrace PoseTrace::loadFromFile(std::string const& filename)
-{
-	std::ifstream stream(filename);
-	if (!stream.good()) {
-		throw std::runtime_error("Failed to load pose trace");
-	}
-	return loadFrom(stream);
 }

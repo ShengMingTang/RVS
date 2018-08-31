@@ -52,14 +52,19 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 \brief The file containing the inpainting functions
 */
 
-
-/**
-	Inpaints the image following the mask
-	@param img Image to inpaint
-	@param mask Area to inpaint
-	@param color True if the image is color, false if it is grayscale
-	@return inpainted image
-*/
-cv::Mat inpaint(const cv::Mat& img, const cv::Mat& mask, bool color);
+namespace rvs
+{
+	namespace detail
+	{
+		/**
+			Inpaints the image following the mask
+			@param img Image to inpaint
+			@param mask Area to inpaint
+			@param color True if the image is color, false if it is grayscale
+			@return inpainted image
+		*/
+		cv::Mat inpaint(const cv::Mat& img, const cv::Mat& mask, bool color);
+	}
+}
 
 #endif

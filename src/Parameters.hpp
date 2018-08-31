@@ -53,120 +53,123 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 \brief Definition of extrinsic and intrinsic camera parameters as well as video parameters
 */
 
-/**\brief Projection type
+namespace rvs
+{
+	/**\brief Projection type
 
-\see Projector*/
-namespace ProjectionType {
-	auto const perspective = "Perspective";
-	auto const equirectangular = "Equirectangular";
-};
+	\see Projector*/
+	namespace ProjectionType {
+		auto const perspective = "Perspective";
+		auto const equirectangular = "Equirectangular";
+	};
 
-/** Camera and video parameters */
-class Parameters {
-public:
-	/** Camera parameters
-	@param parameters The camera and video parameters of this camera	
-	*/
-	static Parameters readFrom(json::Node parameters);
+	/** Camera and video parameters */
+	class Parameters {
+	public:
+		/** Camera parameters
+		@param parameters The camera and video parameters of this camera
+		*/
+		static Parameters readFrom(json::Node parameters);
 
-	/** Direct access to the parameter set for the software platform and proposals */
-	json::Node const& getRoot() const;
+		/** Direct access to the parameter set for the software platform and proposals */
+		json::Node const& getRoot() const;
 
-	/** The projection type */
-	std::string const& getProjectionType() const;
+		/** The projection type */
+		std::string const& getProjectionType() const;
 
-	/** Extrinsic parameter of rotation (Euler angles, degrees) */
-	cv::Vec3f getRotation() const;
+		/** Extrinsic parameter of rotation (Euler angles, degrees) */
+		cv::Vec3f getRotation() const;
 
-	/** Set rotation (Euler angles, degrees) */
-	void setRotation(cv::Vec3f);
+		/** Set rotation (Euler angles, degrees) */
+		void setRotation(cv::Vec3f);
 
-	/** Get rotation as a matrix */
-	cv::Matx33f getRotationMatrix() const;
+		/** Get rotation as a matrix */
+		cv::Matx33f getRotationMatrix() const;
 
-	/** Extrinsic parameter of translation */
-	cv::Vec3f getPosition() const;
+		/** Extrinsic parameter of translation */
+		cv::Vec3f getPosition() const;
 
-	/** Set a new translation */
-	void setPosition(cv::Vec3f);
+		/** Set a new translation */
+		void setPosition(cv::Vec3f);
 
-	/** Depth range
+		/** Depth range
 
-	perspective: [znear, zfar]
-	equirectangular: [Rmin, Rmax] */
-	cv::Vec2f getDepthRange() const;
+		perspective: [znear, zfar]
+		equirectangular: [Rmin, Rmax] */
+		cv::Vec2f getDepthRange() const;
 
-	/** Padded image size (before cropping) */
-	cv::Size getPaddedSize() const;
+		/** Padded image size (before cropping) */
+		cv::Size getPaddedSize() const;
 
-	/** Image size after cropping */
-	cv::Size getSize() const;
+		/** Image size after cropping */
+		cv::Size getSize() const;
 
-	/** Image parameter of crop region:
+		/** Image parameter of crop region:
 
-	perspective: principle point relates to uncropped region
-	equirectangular: angular ranges relate to cropped region */
-	cv::Rect getCropRegion() const;
+		perspective: principle point relates to uncropped region
+		equirectangular: angular ranges relate to cropped region */
+		cv::Rect getCropRegion() const;
 
-	/** Texture bit depth */
-	int getColorBitDepth() const;
+		/** Texture bit depth */
+		int getColorBitDepth() const;
 
-	/** Depth map bit depth */
-	int getDepthBitDepth() const;
+		/** Depth map bit depth */
+		int getDepthBitDepth() const;
 
-	/** Horizontal angular range (degrees) */
-	cv::Vec2f getHorRange() const;
+		/** Horizontal angular range (degrees) */
+		cv::Vec2f getHorRange() const;
 
-	/** Vertical angular range (degrees) */
-	cv::Vec2f getVerRange() const;
+		/** Vertical angular range (degrees) */
+		cv::Vec2f getVerRange() const;
 
-	/** Is full horizontal angular range? */
-	bool isFullHorRange() const;
+		/** Is full horizontal angular range? */
+		bool isFullHorRange() const;
 
-	/** Intrinsic parameter of focal length (perspective) */
-	cv::Vec2f getFocal() const;
+		/** Intrinsic parameter of focal length (perspective) */
+		cv::Vec2f getFocal() const;
 
-	/** Intrinsic parameter of principle point (perspective)
-	
-	The value returned is already adjusted to refer to the cropped region. */
-	cv::Vec2f getPrinciplePoint() const;
+		/** Intrinsic parameter of principle point (perspective)
 
-	/** Print a description */
-	void printTo(std::ostream& stream) const;
+		The value returned is already adjusted to refer to the cropped region. */
+		cv::Vec2f getPrinciplePoint() const;
 
-private:
-	Parameters(json::Node root);
+		/** Print a description */
+		void printTo(std::ostream& stream) const;
 
-	void setProjectionFrom(json::Node root);
-	void setPositionFrom(json::Node root);
-	void setRotationFrom(json::Node root);
-	void setDepthRangeFrom(json::Node root);
-	void setResolutionFrom(json::Node root);
-	void setBitDepthColorFrom(json::Node root);
-	void setBitDepthDepthFrom(json::Node root);
-	void setHorRangeFrom(json::Node root);
-	void setVerRangeFrom(json::Node root);
-	void setCropRegionFrom(json::Node root);
-	void setFocalFrom(json::Node root);
-	void setPrinciplePointFrom(json::Node root);
+	private:
+		Parameters(json::Node root);
 
-	/** Validate some fields of the JSON format that RVS is not effectively using */
-	static void validateUnused(json::Node root);
+		void setProjectionFrom(json::Node root);
+		void setPositionFrom(json::Node root);
+		void setRotationFrom(json::Node root);
+		void setDepthRangeFrom(json::Node root);
+		void setResolutionFrom(json::Node root);
+		void setBitDepthColorFrom(json::Node root);
+		void setBitDepthDepthFrom(json::Node root);
+		void setHorRangeFrom(json::Node root);
+		void setVerRangeFrom(json::Node root);
+		void setCropRegionFrom(json::Node root);
+		void setFocalFrom(json::Node root);
+		void setPrinciplePointFrom(json::Node root);
 
-	json::Node m_root;
-	std::string m_projectionType;
-	cv::Vec3f m_position;
-	cv::Vec3f m_rotation;
-	cv::Vec2f m_depthRange;
-	cv::Size m_resolution;
-	int m_bitDepthColor;
-	int m_bitDepthDepth;
-	cv::Vec2f m_horRange;
-	cv::Vec2f m_verRange;
-	bool m_isFullHorRange;
-	cv::Rect m_cropRegion;
-	cv::Vec2f m_focal;
-	cv::Vec2f m_principlePoint;
-};
+		/** Validate some fields of the JSON format that RVS is not effectively using */
+		static void validateUnused(json::Node root);
+
+		json::Node m_root;
+		std::string m_projectionType;
+		cv::Vec3f m_position;
+		cv::Vec3f m_rotation;
+		cv::Vec2f m_depthRange;
+		cv::Size m_resolution;
+		int m_bitDepthColor;
+		int m_bitDepthDepth;
+		cv::Vec2f m_horRange;
+		cv::Vec2f m_verRange;
+		bool m_isFullHorRange;
+		cv::Rect m_cropRegion;
+		cv::Vec2f m_focal;
+		cv::Vec2f m_principlePoint;
+	};
+}
 
 #endif

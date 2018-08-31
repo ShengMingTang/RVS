@@ -48,47 +48,50 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "EquirectangularProjector.hpp"
 
-EquirectangularProjector::EquirectangularProjector(Parameters const& parameters)
-	: Projector(parameters)
-{}
-
-cv::Mat2f EquirectangularProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
+namespace rvs
 {
-	depth = cv::Mat1f(world_pos.size());
+	EquirectangularProjector::EquirectangularProjector(Parameters const& parameters)
+		: Projector(parameters)
+	{}
 
-	auto image_pos = cv::Mat2f(world_pos.size());
-	auto size = getParameters().getSize();
-	auto hor_range = getParameters().getHorRange();
-	auto ver_range = getParameters().getVerRange();
+	cv::Mat2f EquirectangularProjector::project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const
+	{
+		depth = cv::Mat1f(world_pos.size());
 
-	auto const degperrad = 57.295779513f;
-	auto u0 = size.width * hor_range[1] / (hor_range[1] - hor_range[0]);
-	auto v0 = size.height * ver_range[1] / (ver_range[1] - ver_range[0]);
-	auto du_dphi = -degperrad * size.width  / (hor_range[1] - hor_range[0]);
-	auto dv_dtheta = -degperrad * size.height / (ver_range[1] - ver_range[0]);
+		auto image_pos = cv::Mat2f(world_pos.size());
+		auto size = getParameters().getSize();
+		auto hor_range = getParameters().getHorRange();
+		auto ver_range = getParameters().getVerRange();
 
-	for (int i = 0; i != world_pos.rows; ++i) {
-		for (int j = 0; j != world_pos.cols; ++j) {
-			auto xyz = world_pos(i, j);
+		auto const degperrad = 57.295779513f;
+		auto u0 = size.width * hor_range[1] / (hor_range[1] - hor_range[0]);
+		auto v0 = size.height * ver_range[1] / (ver_range[1] - ver_range[0]);
+		auto du_dphi = -degperrad * size.width  / (hor_range[1] - hor_range[0]);
+		auto dv_dtheta = -degperrad * size.height / (ver_range[1] - ver_range[0]);
 
-			// Radius is depth
-			auto radius = static_cast<float>(cv::norm(xyz));
-			depth(i, j) = radius;
+		for (int i = 0; i != world_pos.rows; ++i) {
+			for (int j = 0; j != world_pos.cols; ++j) {
+				auto xyz = world_pos(i, j);
 
-			// Spherical coordinates
-			auto phi = std::atan2(xyz[1], xyz[0]);
-			auto theta = std::asin(xyz[2] / radius);
+				// Radius is depth
+				auto radius = static_cast<float>(cv::norm(xyz));
+				depth(i, j) = radius;
 
-			// Image coordinates
-			image_pos(i, j) = cv::Vec2f(
-				u0 + du_dphi * phi,
-				v0 + dv_dtheta * theta);
+				// Spherical coordinates
+				auto phi = std::atan2(xyz[1], xyz[0]);
+				auto theta = std::asin(xyz[2] / radius);
+
+				// Image coordinates
+				image_pos(i, j) = cv::Vec2f(
+					u0 + du_dphi * phi,
+					v0 + dv_dtheta * theta);
+			}
 		}
+
+		wrapping_method = getParameters().isFullHorRange()
+			? WrappingMethod::horizontal
+			: WrappingMethod::none;
+
+		return image_pos;
 	}
-
-	wrapping_method = getParameters().isFullHorRange()
-		? WrappingMethod::horizontal
-		: WrappingMethod::none;
-
-	return image_pos;
 }

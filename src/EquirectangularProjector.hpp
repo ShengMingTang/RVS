@@ -52,27 +52,30 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "Projector.hpp"
 #include "Config.hpp"
 
-/**\brief EquirectangularProjector*/
-class EquirectangularProjector : public Projector
+namespace rvs
 {
-public:
-	/**\brief Constructor
-	@param parameters Parameters of the View
-	*/
-	EquirectangularProjector(Parameters const& parameters);
+	/**\brief EquirectangularProjector*/
+	class EquirectangularProjector : public Projector
+	{
+	public:
+		/**\brief Constructor
+		@param parameters Parameters of the View
+		*/
+		EquirectangularProjector(Parameters const& parameters);
 
-	/**\brief Project from 3D to images coordinates and outputs a depth map
+		/**\brief Project from 3D to images coordinates and outputs a depth map
 
-	world_pos in OMAF Referential: x forward, y left, z up
-	depth [out] is equal to x
-	result in image coordinates: u right, v down
+		world_pos in OMAF Referential: x forward, y left, z up
+		depth [out] is equal to x
+		result in image coordinates: u right, v down
 
-	@param world_pos 3D coordinates of the pixels
-	@param depth Output perpective depth map
-	@param wrapping_method
-	@return Map of the pixels in image coordinates
-	*/
-	cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const override;
-};
+		@param world_pos 3D coordinates of the pixels
+		@param depth Output perpective depth map
+		@param wrapping_method
+		@return Map of the pixels in image coordinates
+		*/
+		cv::Mat2f project(cv::Mat3f world_pos, /*out*/ cv::Mat1f& depth, /*out*/ WrappingMethod& wrapping_method) const override;
+	};
+}
 
 #endif

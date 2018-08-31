@@ -49,35 +49,38 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <limits>
 auto const NaN = std::numeric_limits<float>::quiet_NaN();
 
-PerspectiveUnprojector::PerspectiveUnprojector(Parameters const& parameters)
-	: Unprojector(parameters)
-{}
-
-cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+namespace rvs
 {
-	assert(image_pos.size() == depth.size());
+	PerspectiveUnprojector::PerspectiveUnprojector(Parameters const& parameters)
+		: Unprojector(parameters)
+	{}
 
-	auto f = getParameters().getFocal();
-	auto p = getParameters().getPrinciplePoint();
+	cv::Mat3f PerspectiveUnprojector::unproject(cv::Mat2f image_pos, cv::Mat1f depth) const
+	{
+		assert(image_pos.size() == depth.size());
 
-	cv::Mat3f world_pos(image_pos.size(), cv::Vec3f::all(NaN));
+		auto f = getParameters().getFocal();
+		auto p = getParameters().getPrinciplePoint();
 
-	for (int i = 0; i != image_pos.rows; ++i) {
-		for (int j = 0; j != image_pos.cols; ++j) {
-			auto uv = image_pos(i, j);
-			auto d = depth(i, j);
+		cv::Mat3f world_pos(image_pos.size(), cv::Vec3f::all(NaN));
 
-			// OMAF Referential: x forward, y left, z up
-			// Image plane: x right, y down
+		for (int i = 0; i != image_pos.rows; ++i) {
+			for (int j = 0; j != image_pos.cols; ++j) {
+				auto uv = image_pos(i, j);
+				auto d = depth(i, j);
 
-			if (d > 0.f) {
-				world_pos(i, j) = cv::Vec3f(
-					d,
-					-(d / f[0]) * (uv[0] - p[0]),
-					-(d / f[1]) * (uv[1] - p[1]));
+				// OMAF Referential: x forward, y left, z up
+				// Image plane: x right, y down
+
+				if (d > 0.f) {
+					world_pos(i, j) = cv::Vec3f(
+						d,
+						-(d / f[0]) * (uv[0] - p[0]),
+						-(d / f[1]) * (uv[1] - p[1]));
+				}
 			}
 		}
-	}
 
-	return world_pos;
+		return world_pos;
+	}
 }

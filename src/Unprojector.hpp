@@ -52,32 +52,35 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Parameters.hpp"
 
-/**\brief Unprojector. 
-
-Project the pixels from image space and depth map to euclidian coordinate system.
-*/
-class Unprojector
+namespace rvs
 {
-public:
-	Unprojector(Parameters const& parameters);
+	/**\brief Unprojector.
 
-	virtual ~Unprojector();
+	Project the pixels from image space and depth map to euclidian coordinate system.
+	*/
+	class Unprojector
+	{
+	public:
+		Unprojector(Parameters const& parameters);
 
-	/** 
-	\brief Unproject points in the image space to 3D space
-	@param image_pos Position in image coordinates: u right, v down
-	@param depth The depth increases with distance from virtual camera
-	@return Result in OMAF Referential: x forward, y left, z up*/
-	virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const = 0;
+		virtual ~Unprojector();
 
-	/** Get camera parameters */
-	Parameters const& getParameters() const;
+		/**
+		\brief Unproject points in the image space to 3D space
+		@param image_pos Position in image coordinates: u right, v down
+		@param depth The depth increases with distance from virtual camera
+		@return Result in OMAF Referential: x forward, y left, z up*/
+		virtual cv::Mat3f unproject(cv::Mat2f image_pos, cv::Mat1f depth) const = 0;
 
-	/** Generate image positions */
-	virtual cv::Mat2f generateImagePos() const;
+		/** Get camera parameters */
+		Parameters const& getParameters() const;
 
-private:
-	Parameters const& m_parameters;
-};
+		/** Generate image positions */
+		virtual cv::Mat2f generateImagePos() const;
+
+	private:
+		Parameters const& m_parameters;
+	};
+}
 
 #endif

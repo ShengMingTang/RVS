@@ -59,134 +59,140 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 \brief The file containing the configuration
 */
 
-/**\brief Working color space
-
-Doesn't need to be the same as the input our output color space
-*/
-enum class ColorSpace {
-	YUV = 0,
-	RGB = 1
-};
-/**\brief View synthesis method
-
-For now only the triangle method is available
-*/
-namespace ViewSynthesisMethod
+namespace rvs
 {
-	auto const triangles = "Triangles";
+	namespace detail
+	{
+		/**\brief Working color space
+
+		Doesn't need to be the same as the input our output color space
+		*/
+		enum class ColorSpace {
+			YUV = 0,
+			RGB = 1
+		};
+		/**\brief View synthesis method
+
+		For now only the triangle method is available
+		*/
+		namespace ViewSynthesisMethod
+		{
+			auto const triangles = "Triangles";
+		}
+
+		/**\brief Blending method
+
+		\see BlendedView
+		*/
+		namespace BlendingMethod
+		{
+			auto const simple = "Simple";
+			auto const multispectral = "Multispectral";
+		}
+
+		/**Precision*/
+		extern float g_rescale;
+
+		/**Working color space (RGB or YUV). Independent of the input or output formats*/
+		extern ColorSpace g_color_space;
+	}
+
+	/** Enable OpenGL acceleration */
+	extern bool g_with_opengl;
+
+	/**
+	\brief Configuration parameters
+	*/
+	class Config {
+	public:
+		/** Load configuration from file */
+		static Config loadFromFile(std::string const& filename);
+
+		/** Version of the configuration file */
+		std::string version;
+
+		/** Input camera names to lookup in the config file */
+		std::vector<std::string> InputCameraNames;
+
+		/** Virtual camera names to lookup in the config file */
+		std::vector<std::string> VirtualCameraNames;
+
+		/** input cameras parameters */
+		std::vector<Parameters> params_real;
+
+		/** virtual cameras parameters */
+		std::vector<Parameters> params_virtual;
+
+		/** filenames of the input color images */
+		std::vector<std::string> texture_names;
+
+		/** filenames of the input depth images */
+		std::vector<std::string> depth_names;
+
+		/** Name of the output files */
+		std::vector<std::string> outfilenames;
+
+		/** Name of the output masked files */
+		std::vector<std::string> outmaskedfilenames;
+
+		/** Name of the output masks */
+		std::vector<std::string> outmaskfilenames;
+
+		/**	Name of the output masked files	*/
+		std::vector<std::string> outdepthfilenames;
+
+		/** Threshold for valid pixels */
+		float validity_threshold = 5000.f;
+
+		/** Method for view synthesis */
+		std::string vs_method = "Triangles";
+
+		/** Blending method (see BlendedView) */
+		std::string blending_method = "Simple";
+
+		/** Low frequency blending factor in BlendedViewMultiSpec */
+		float blending_low_freq_factor;
+
+		/** High frequency blending factor in BlendedViewMultiSpec */
+		float blending_high_freq_factor;
+
+		/** Blending factor in BlendedViewSimple */
+		float blending_factor = 5.f;
+
+		/** First frame to process (zero-based) */
+		int start_frame = 0;
+
+		/** Number of frames to process */
+		int number_of_frames = 1;
+
+		/** The loaded pose trace */
+		PoseTrace pose_trace;
+
+	private:
+		Config() = default;
+
+		std::vector<Parameters> loadCamerasParametersFromFile(std::string const& filepath, std::vector<std::string> names, json::Node overrides);
+		void loadPoseTraceFromFile(std::string const& filepath);
+
+		void setVersionFrom(json::Node root);
+		void setInputCameraNamesFrom(json::Node root);
+		void setVirtualCameraNamesFrom(json::Node root);
+		void setInputCameraParameters(json::Node root);
+		void setVirtualCameraParameters(json::Node root);
+		void setInputFilepaths(json::Node root, char const *name, std::vector<std::string>&);
+		void setOutputFilepaths(json::Node root, char const *name, std::vector<std::string>&);
+		void setValidityThreshold(json::Node root);
+		void setSynthesisMethod(json::Node root);
+		void setBlendingMethod(json::Node root);
+		void setBlendingFactor(json::Node root);
+		void setBlendingLowFreqFactor(json::Node root);
+		void setBlendingHighFreqFactor(json::Node root);
+		void setStartFrame(json::Node root);
+		void setNumberOfFrames(json::Node root);
+
+		static void setPrecision(json::Node root);
+		static void setColorSpace(json::Node root);
+	};
 }
-
-/**\brief Blending method
-
-\see BlendedView
-*/
-namespace BlendingMethod
-{
-	auto const simple = "Simple";
-	auto const multispectral = "Multispectral";
-}
-
-/**Precision*/
-extern float g_rescale;
-
-/**Working color space (RGB or YUV). Independent of the input or output formats*/
-extern ColorSpace g_color_space;
-
-/** Enable OpenGL acceleration */
-extern bool g_with_opengl;
-
-/**
-\brief Configuration parameters
-*/
-class Config {
-public:
-	/** Load configuration from file */
-	static Config loadFromFile(std::string const& filename);
-
-	/** Version of the configuration file */
-	std::string version;
-
-	/** Input camera names to lookup in the config file */
-	std::vector<std::string> InputCameraNames;
-
-	/** Virtual camera names to lookup in the config file */
-	std::vector<std::string> VirtualCameraNames;
-
-	/** input cameras parameters */
-	std::vector<Parameters> params_real;
-
-	/** virtual cameras parameters */
-	std::vector<Parameters> params_virtual;
-
-	/** filenames of the input color images */
-	std::vector<std::string> texture_names;
-
-	/** filenames of the input depth images */
-	std::vector<std::string> depth_names;
-
-	/** Name of the output files */
-	std::vector<std::string> outfilenames;
-
-	/** Name of the output masked files */
-	std::vector<std::string> outmaskedfilenames;
-
-	/** Name of the output masks */
-	std::vector<std::string> outmaskfilenames;
-
-	/**	Name of the output masked files	*/
-	std::vector<std::string> outdepthfilenames;
-
-	/** Threshold for valid pixels */
-	float validity_threshold = 5000.f;
-	
-	/** Method for view synthesis */
-	std::string vs_method = "Triangles";
-	
-	/** Blending method (see BlendedView) */
-	std::string blending_method = "Simple";
-
-	/** Low frequency blending factor in BlendedViewMultiSpec */
-	float blending_low_freq_factor;
-
-	/** High frequency blending factor in BlendedViewMultiSpec */
-	float blending_high_freq_factor;
-
-	/** Blending factor in BlendedViewSimple */
-	float blending_factor = 5.f;
-
-	/** First frame to process (zero-based) */
-	int start_frame = 0;
-
-	/** Number of frames to process */
-	int number_of_frames = 1;
-
-	/** The loaded pose trace */
-    PoseTrace pose_trace;
-
-private:
-	Config() = default;
-
-	std::vector<Parameters> loadCamerasParametersFromFile(std::string const& filepath, std::vector<std::string> names, json::Node overrides);
-	void loadPoseTraceFromFile(std::string const& filepath);
-
-	void setVersionFrom(json::Node root);
-	void setInputCameraNamesFrom(json::Node root);
-	void setVirtualCameraNamesFrom(json::Node root);
-	void setInputCameraParameters(json::Node root);
-	void setVirtualCameraParameters(json::Node root);
-	void setInputFilepaths(json::Node root, char const *name, std::vector<std::string>&);
-	void setOutputFilepaths(json::Node root, char const *name, std::vector<std::string>&);
-	void setValidityThreshold(json::Node root);
-	void setSynthesisMethod(json::Node root);
-	void setBlendingMethod(json::Node root);
-	void setBlendingFactor(json::Node root);
-	void setBlendingLowFreqFactor(json::Node root);
-	void setBlendingHighFreqFactor(json::Node root);
-	void setStartFrame(json::Node root);
-	void setNumberOfFrames(json::Node root);
-	
-	static void setPrecision(json::Node root); 
-	static void setColorSpace(json::Node root);	
-};
 
 #endif

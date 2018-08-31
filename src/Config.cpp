@@ -51,192 +51,179 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <iostream>
 #include <map>
 
-float const defaultPrecision = 1.f;
-ColorSpace const defaultColorSpace = ColorSpace::YUV;
-
-float g_rescale = defaultPrecision;
-ColorSpace g_color_space = defaultColorSpace;
-bool g_with_opengl = true;
-
-Config Config::loadFromFile(std::string const& filename)
+namespace rvs
 {
-	std::cout << '\n';
-	std::ifstream stream(filename);
-	auto root = json::Node::readFrom(stream);
+	namespace detail
+	{
+		float const defaultPrecision = 1.f;
+		ColorSpace const defaultColorSpace = ColorSpace::YUV;
 
-	Config config;
-
-	config.setVersionFrom(root);
-	config.setInputCameraNamesFrom(root);
-	config.setVirtualCameraNamesFrom(root);
-	config.setInputCameraParameters(root);
-	config.setVirtualCameraParameters(root);
-	config.setInputFilepaths(root, "ViewImageNames", config.texture_names);
-	config.setInputFilepaths(root, "DepthMapNames", config.depth_names);
-	config.setOutputFilepaths(root, "OutputFiles", config.outfilenames);
-	config.setOutputFilepaths(root, "MaskedOutputFiles", config.outmaskedfilenames);
-	config.setOutputFilepaths(root, "OutputMasks", config.outmaskfilenames);
-	config.setOutputFilepaths(root, "DepthOutputFiles", config.outdepthfilenames);
-	config.setValidityThreshold(root);
-	config.setSynthesisMethod(root);
-	config.setBlendingMethod(root);
-	config.setBlendingFactor(root);
-	config.setBlendingLowFreqFactor(root);
-	config.setBlendingHighFreqFactor(root);
-	config.setStartFrame(root);
-	config.setNumberOfFrames(root);
-
-	setPrecision(root);
-	setColorSpace(root);
-
-	auto node = root.optional("VirtualPoseTraceName");
-	if (node) {
-		auto filepath = node.asString();
-		std::cout << "VirtualPoseTraceName: " << filepath << '\n';
-		config.loadPoseTraceFromFile(filepath);
+		float g_rescale = defaultPrecision;
+		ColorSpace g_color_space = defaultColorSpace;
 	}
 
-	return config;
-}
+	bool g_with_opengl = true;
 
-std::vector<Parameters> Config::loadCamerasParametersFromFile(std::string const& filepath, std::vector<std::string> names, json::Node overrides)
-{
-	// Load the camera parameters
-	std::ifstream stream(filepath);
-	auto root = json::Node::readFrom(stream);
-	auto version_ = root.require("Version").asString();
-	if (version_.substr(0, 2) != "2.") {
-		throw std::runtime_error("Version of the camera parameters file is not compatible with this version of RVS");
-	}
+	Config Config::loadFromFile(std::string const& filename)
+	{
+		std::cout << '\n';
+		std::ifstream stream(filename);
+		auto root = json::Node::readFrom(stream);
 
-	// Load parameters (with overrides) and index by camera name
-	std::map<std::string, Parameters> index;
-	auto cameras = root.require("cameras");
-	for (auto i = 0u; i != cameras.size(); ++i) {
-		auto node = cameras.at(i);
-		auto name = node.require("Name").asString();
-		if (index.count(name)) {
-			std::ostringstream what;
-			what << "Camera parameters file has duplicate camera '" << name << "'";
-			throw std::runtime_error(what.str());
+		Config config;
+
+		config.setVersionFrom(root);
+		config.setInputCameraNamesFrom(root);
+		config.setVirtualCameraNamesFrom(root);
+		config.setInputCameraParameters(root);
+		config.setVirtualCameraParameters(root);
+		config.setInputFilepaths(root, "ViewImageNames", config.texture_names);
+		config.setInputFilepaths(root, "DepthMapNames", config.depth_names);
+		config.setOutputFilepaths(root, "OutputFiles", config.outfilenames);
+		config.setOutputFilepaths(root, "MaskedOutputFiles", config.outmaskedfilenames);
+		config.setOutputFilepaths(root, "OutputMasks", config.outmaskfilenames);
+		config.setOutputFilepaths(root, "DepthOutputFiles", config.outdepthfilenames);
+		config.setValidityThreshold(root);
+		config.setSynthesisMethod(root);
+		config.setBlendingMethod(root);
+		config.setBlendingFactor(root);
+		config.setBlendingLowFreqFactor(root);
+		config.setBlendingHighFreqFactor(root);
+		config.setStartFrame(root);
+		config.setNumberOfFrames(root);
+
+		setPrecision(root);
+		setColorSpace(root);
+
+		auto node = root.optional("VirtualPoseTraceName");
+		if (node) {
+			auto filepath = node.asString();
+			std::cout << "VirtualPoseTraceName: " << filepath << '\n';
+			config.loadPoseTraceFromFile(filepath);
 		}
+
+		return config;
+	}
+
+	std::vector<Parameters> Config::loadCamerasParametersFromFile(std::string const& filepath, std::vector<std::string> names, json::Node overrides)
+	{
+		// Load the camera parameters
+		std::ifstream stream(filepath);
+		auto root = json::Node::readFrom(stream);
+		auto version_ = root.require("Version").asString();
+		if (version_.substr(0, 2) != "2.") {
+			throw std::runtime_error("Version of the camera parameters file is not compatible with this version of RVS");
+		}
+
+		// Load parameters (with overrides) and index by camera name
+		std::map<std::string, Parameters> index;
+		auto cameras = root.require("cameras");
+		for (auto i = 0u; i != cameras.size(); ++i) {
+			auto node = cameras.at(i);
+			auto name = node.require("Name").asString();
+			if (index.count(name)) {
+				std::ostringstream what;
+				what << "Camera parameters file has duplicate camera '" << name << "'";
+				throw std::runtime_error(what.str());
+			}
+			if (overrides) {
+				node.setOverrides(overrides);
+			}
+			index.emplace(name, Parameters::readFrom(node));
+		}
+
+		// Assign in the requested order
+		std::vector<Parameters> parameters;
+		for (auto name : names) {
+			try {
+				std::cout << "  * " << name << ": ";
+				index.at(name).printTo(std::cout);
+				std::cout << '\n';
+				parameters.push_back(index.at(name));
+			}
+			catch (std::out_of_range&) {
+				std::ostringstream what;
+				what << "Camera parameters file does not have camera '" << name << "'";
+				throw std::runtime_error(what.str());
+			}
+		}
+		return parameters;
+	}
+
+	void Config::loadPoseTraceFromFile(std::string const& filepath)
+	{
+		if (!filepath.empty()) {
+			pose_trace = PoseTrace::loadFromFile(filepath);
+			if (static_cast<unsigned>(start_frame + number_of_frames) > pose_trace.size()) {
+				throw std::runtime_error("Error: Number of frames to process is larger then number of entries in pose trace file");
+			}
+			std::cout << std::endl << "Using pose trace with " << pose_trace.size() << " entries" << std::endl;
+		}
+	}
+
+	void Config::setVersionFrom(json::Node root)
+	{
+		version = root.require("Version").asString();
+		if (version.substr(0, 2) != "2.") {
+			throw std::runtime_error("Configuration file does not match the RVS version");
+		}
+		std::cout << "Version: " << version << '\n';
+	}
+
+	void Config::setInputCameraNamesFrom(json::Node root)
+	{
+		auto node = root.require("InputCameraNames");
+		for (auto i = 0u; i != node.size(); ++i) {
+			InputCameraNames.push_back(node.at(i).asString());
+		}
+		std::cout << "InputCameraNames:";
+		for (auto x : InputCameraNames) {
+			std::cout << ' ' << x;
+		}
+		std::cout << '\n';
+	}
+
+	void Config::setVirtualCameraNamesFrom(json::Node root)
+	{
+		auto node = root.require("VirtualCameraNames");
+		for (auto i = 0u; i != node.size(); ++i) {
+			VirtualCameraNames.push_back(node.at(i).asString());
+		}
+		std::cout << "VirtualCameraNames:";
+		for (auto x : VirtualCameraNames) {
+			std::cout << ' ' << x;
+		}
+		std::cout << '\n';
+	}
+
+	void Config::setInputCameraParameters(json::Node root)
+	{
+		auto filepath = root.require("InputCameraParameterFile").asString();
+		std::cout << "InputCameraParameterFile: " << filepath << '\n';
+		auto overrides = root.optional("InputOverrides");
 		if (overrides) {
-			node.setOverrides(overrides);
+			std::cout << "InputOverrides: " << overrides.size() << " keys\n";
 		}
-		index.emplace(name, Parameters::readFrom(node));
+		params_real = loadCamerasParametersFromFile(filepath, InputCameraNames, overrides);
 	}
 
-	// Assign in the requested order
-	std::vector<Parameters> parameters;
-	for (auto name : names) {
-		try {
-			std::cout << "  * " << name << ": ";
-			index.at(name).printTo(std::cout);
-			std::cout << '\n';
-			parameters.push_back(index.at(name));
+	void Config::setVirtualCameraParameters(json::Node root)
+	{
+		auto filepath = root.require("VirtualCameraParameterFile").asString();
+		std::cout << "VirtualCameraParameterFile: " << filepath << '\n';
+		auto overrides = root.optional("VirtualOverrides");
+		if (overrides) {
+			std::cout << "VirtualOverrides: " << overrides.size() << " keys\n";
 		}
-		catch (std::out_of_range&) {
+		params_virtual = loadCamerasParametersFromFile(filepath, VirtualCameraNames, overrides);
+	}
+
+	void Config::setInputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
+	{
+		auto node = root.require(name);
+		if (node.size() != InputCameraNames.size()) {
 			std::ostringstream what;
-			what << "Camera parameters file does not have camera '" << name << "'";
-			throw std::runtime_error(what.str());
-		}
-	}
-	return parameters;
-}
-
-void Config::loadPoseTraceFromFile(std::string const& filepath)
-{
-	if (!filepath.empty()) {
-		pose_trace = PoseTrace::loadFromFile(filepath);
-		if (static_cast<unsigned>(start_frame + number_of_frames) > pose_trace.size()) {
-			throw std::runtime_error("Error: Number of frames to process is larger then number of entries in pose trace file");
-		}
-		std::cout << std::endl << "Using pose trace with " << pose_trace.size() << " entries" << std::endl;
-	}
-}
-
-void Config::setVersionFrom(json::Node root)
-{
-	version = root.require("Version").asString();
-	if (version.substr(0, 2) != "2.") {
-		throw std::runtime_error("Configuration file does not match the RVS version");
-	}
-	std::cout << "Version: " << version << '\n';
-}
-
-void Config::setInputCameraNamesFrom(json::Node root)
-{
-	auto node = root.require("InputCameraNames");
-	for (auto i = 0u; i != node.size(); ++i) {
-		InputCameraNames.push_back(node.at(i).asString());
-	}
-	std::cout << "InputCameraNames:";
-	for (auto x : InputCameraNames) {
-		std::cout << ' ' << x;
-	}
-	std::cout << '\n';
-}
-
-void Config::setVirtualCameraNamesFrom(json::Node root)
-{
-	auto node = root.require("VirtualCameraNames");
-	for (auto i = 0u; i != node.size(); ++i) {
-		VirtualCameraNames.push_back(node.at(i).asString());
-	}
-	std::cout << "VirtualCameraNames:";
-	for (auto x : VirtualCameraNames) {
-		std::cout << ' ' << x;
-	}
-	std::cout << '\n';
-}
-
-void Config::setInputCameraParameters(json::Node root)
-{
-	auto filepath = root.require("InputCameraParameterFile").asString();
-	std::cout << "InputCameraParameterFile: " << filepath << '\n';
-	auto overrides = root.optional("InputOverrides");
-	if (overrides) {
-		std::cout << "InputOverrides: " << overrides.size() << " keys\n";
-	}
-	params_real = loadCamerasParametersFromFile(filepath, InputCameraNames, overrides);
-}
-
-void Config::setVirtualCameraParameters(json::Node root)
-{
-	auto filepath = root.require("VirtualCameraParameterFile").asString();
-	std::cout << "VirtualCameraParameterFile: " << filepath << '\n';
-	auto overrides = root.optional("VirtualOverrides");
-	if (overrides) {
-		std::cout << "VirtualOverrides: " << overrides.size() << " keys\n";
-	}
-	params_virtual = loadCamerasParametersFromFile(filepath, VirtualCameraNames, overrides);
-}
-
-void Config::setInputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
-{
-	auto node = root.require(name);
-	if (node.size() != InputCameraNames.size()) {
-		std::ostringstream what;
-		what << "Length of " << name << " should match with InputCameraNames";
-		throw std::runtime_error(what.str());
-	}
-	for (auto i = 0u; i != node.size(); ++i) {
-		filepaths.push_back(node.at(i).asString());
-	}
-	std::cout << name << ':';
-	for (auto x : filepaths) {
-		std::cout << "\n  * " << x;
-	}
-	std::cout << '\n';
-}
-
-void Config::setOutputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
-{
-	auto node = root.optional(name);
-	if (node) {
-		if (node.size() != VirtualCameraNames.size()) {
-			std::ostringstream what;
-			what << "Length of " << name << " should match with VirtualCameraNames";
+			what << "Length of " << name << " should match with InputCameraNames";
 			throw std::runtime_error(what.str());
 		}
 		for (auto i = 0u; i != node.size(); ++i) {
@@ -248,105 +235,125 @@ void Config::setOutputFilepaths(json::Node root, char const *name, std::vector<s
 		}
 		std::cout << '\n';
 	}
-}
 
-void Config::setValidityThreshold(json::Node root)
-{
-	auto node = root.optional("ValidityThreshold");
-	if (node) {
-		validity_threshold = static_cast<float>(node.asDouble());
-		std::cout << "ValidityThreshold: " << validity_threshold << '\n';
-	}
-}
-
-void Config::setSynthesisMethod(json::Node root)
-{
-	auto node = root.optional("ViewSynthesisMethod");
-	if (node) {
-		vs_method = node.asString();
-	}
-}
-
-void Config::setBlendingMethod(json::Node root)
-{
-	auto node = root.optional("BlendingMethod");
-	if (node) {
-		blending_method = node.asString();
-	}
-}
-
-void Config::setBlendingFactor(json::Node root)
-{
-	auto node = root.optional("BlendingFactor");
-	if (node) {
-		blending_factor = static_cast<float>(node.asDouble());
-		std::cout << "BlendingFactor: " << blending_factor << '\n';
-	}
-}
-
-void Config::setBlendingLowFreqFactor(json::Node root)
-{
-	if (blending_method == BlendingMethod::multispectral) {
-		blending_low_freq_factor = static_cast<float>(root.require("BlendingLowFreqFactor").asDouble());
-		std::cout << "BlendingLowFreqFactor: " << blending_low_freq_factor << '\n';
-	}
-}
-
-void Config::setBlendingHighFreqFactor(json::Node root)
-{
-	if (blending_method == BlendingMethod::multispectral) {
-		blending_high_freq_factor = static_cast<float>(root.require("BlendingHighFreqFactor").asDouble());
-		std::cout << "BlendingHighFreqFactor: " << blending_high_freq_factor << '\n';
-	}
-}
-
-void Config::setStartFrame(json::Node root)
-{
-	auto node = root.optional("StartFrame");
-	if (node) {
-		start_frame = node.asInt();
-		std::cout << "StartFrame: " << start_frame << '\n';
-	}
-}
-
-void Config::setNumberOfFrames(json::Node root)
-{
-	auto node = root.optional("NumberOfFrames");
-	if (node) {
-		number_of_frames = node.asInt();
-		std::cout << "NumberOfFrames: " << number_of_frames << '\n';
-	}
-}
-
-void Config::setPrecision(json::Node root)
-{
-	auto node = root.optional("Precision");
-	if (node) {
-		g_rescale = static_cast<float>(node.asDouble());
-		std::cout << "Precision: " << g_rescale << '\n';
-	}
-	else {
-		g_rescale = defaultPrecision;
-	}
-}
-
-void Config::setColorSpace(json::Node root)
-{
-	auto node = root.optional("ColorSpace");
-	if (node) {
-		if (node.asString() == "YUV") {
-			g_color_space = ColorSpace::YUV;
-			std::cout << "ColorSpace: YUV\n";
+	void Config::setOutputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
+	{
+		auto node = root.optional(name);
+		if (node) {
+			if (node.size() != VirtualCameraNames.size()) {
+				std::ostringstream what;
+				what << "Length of " << name << " should match with VirtualCameraNames";
+				throw std::runtime_error(what.str());
+			}
+			for (auto i = 0u; i != node.size(); ++i) {
+				filepaths.push_back(node.at(i).asString());
+			}
+			std::cout << name << ':';
+			for (auto x : filepaths) {
+				std::cout << "\n  * " << x;
+			}
+			std::cout << '\n';
 		}
-		else if (node.asString() == "RGB") {
-			g_color_space = ColorSpace::RGB;
-			std::cout << "ColorSpace: RGB\n";
+	}
+
+	void Config::setValidityThreshold(json::Node root)
+	{
+		auto node = root.optional("ValidityThreshold");
+		if (node) {
+			validity_threshold = static_cast<float>(node.asDouble());
+			std::cout << "ValidityThreshold: " << validity_threshold << '\n';
+		}
+	}
+
+	void Config::setSynthesisMethod(json::Node root)
+	{
+		auto node = root.optional("ViewSynthesisMethod");
+		if (node) {
+			vs_method = node.asString();
+		}
+	}
+
+	void Config::setBlendingMethod(json::Node root)
+	{
+		auto node = root.optional("BlendingMethod");
+		if (node) {
+			blending_method = node.asString();
+		}
+	}
+
+	void Config::setBlendingFactor(json::Node root)
+	{
+		auto node = root.optional("BlendingFactor");
+		if (node) {
+			blending_factor = static_cast<float>(node.asDouble());
+			std::cout << "BlendingFactor: " << blending_factor << '\n';
+		}
+	}
+
+	void Config::setBlendingLowFreqFactor(json::Node root)
+	{
+		if (blending_method == detail::BlendingMethod::multispectral) {
+			blending_low_freq_factor = static_cast<float>(root.require("BlendingLowFreqFactor").asDouble());
+			std::cout << "BlendingLowFreqFactor: " << blending_low_freq_factor << '\n';
+		}
+	}
+
+	void Config::setBlendingHighFreqFactor(json::Node root)
+	{
+		if (blending_method == detail::BlendingMethod::multispectral) {
+			blending_high_freq_factor = static_cast<float>(root.require("BlendingHighFreqFactor").asDouble());
+			std::cout << "BlendingHighFreqFactor: " << blending_high_freq_factor << '\n';
+		}
+	}
+
+	void Config::setStartFrame(json::Node root)
+	{
+		auto node = root.optional("StartFrame");
+		if (node) {
+			start_frame = node.asInt();
+			std::cout << "StartFrame: " << start_frame << '\n';
+		}
+	}
+
+	void Config::setNumberOfFrames(json::Node root)
+	{
+		auto node = root.optional("NumberOfFrames");
+		if (node) {
+			number_of_frames = node.asInt();
+			std::cout << "NumberOfFrames: " << number_of_frames << '\n';
+		}
+	}
+
+	void Config::setPrecision(json::Node root)
+	{
+		auto node = root.optional("Precision");
+		if (node) {
+			detail::g_rescale = static_cast<float>(node.asDouble());
+			std::cout << "Precision: " << detail::g_rescale << '\n';
 		}
 		else {
-			throw std::runtime_error("Unknown color space");
+			detail::g_rescale = detail::defaultPrecision;
 		}
 	}
-	else {
-		g_color_space = defaultColorSpace;
+
+	void Config::setColorSpace(json::Node root)
+	{
+		auto node = root.optional("ColorSpace");
+		if (node) {
+			if (node.asString() == "YUV") {
+				detail::g_color_space = detail::ColorSpace::YUV;
+				std::cout << "ColorSpace: YUV\n";
+			}
+			else if (node.asString() == "RGB") {
+				detail::g_color_space = detail::ColorSpace::RGB;
+				std::cout << "ColorSpace: RGB\n";
+			}
+			else {
+				throw std::runtime_error("Unknown color space");
+			}
+		}
+		else {
+			detail::g_color_space = detail::defaultColorSpace;
+		}
 	}
 }

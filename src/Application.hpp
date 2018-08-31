@@ -54,46 +54,49 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 \brief The file containing the regular RVS application
 */
 
-/**
-\brief The main class of the regular RVS application
-
-The application executes the following steps:
-	- Parsing the configuration file (see Parser)
-	- Loading the input reference views (see InputView, and load_images());
-	- View synthesis of the target view once for each input reference view (see SynthesizedView);
-	- Blending all the SynthesizedView together by assigning a per-pixel quality to each synthesized view (see BlendedView);
-	- Inpainting to fill the remaining holes (see inpaint());
-	- Writing the output (see write_color()).
-*/
-class Application : public Pipeline
+namespace rvs
 {
-public:
 	/**
-	\brief Constructor
+	\brief The main class of the regular RVS application
 
-	Please note that Application itself also calls getConfig() to allow derived classees overriding the configuration.
-	
-	@param filepath Configuration file (JSON format)
+	The application executes the following steps:
+		- Parsing the configuration file (see Parser)
+		- Loading the input reference views (see InputView, and load_images());
+		- View synthesis of the target view once for each input reference view (see SynthesizedView);
+		- Blending all the SynthesizedView together by assigning a per-pixel quality to each synthesized view (see BlendedView);
+		- Inpainting to fill the remaining holes (see inpaint());
+		- Writing the output (see write_color()).
 	*/
-	Application(std::string const& filepath);
+	class Application : public Pipeline
+	{
+	public:
+		/**
+		\brief Constructor
 
-protected:
-	Config const& getConfig() const override;
+		Please note that Application itself also calls getConfig() to allow derived classees overriding the configuration.
 
-	std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) override;
+		@param filepath Configuration file (JSON format)
+		*/
+		Application(std::string const& filepath);
 
-	virtual bool wantColor();
-	virtual bool wantMaskedColor();
-	virtual bool wantMask();
-	virtual bool wantDepth();
+	protected:
+		Config const& getConfig() const override;
 
-	void saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
-	void saveMaskedColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
-	void saveMask(cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters) override;
-	void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters) override;
+		std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) override;
 
-private:
-	Config m_config;
-};
+		virtual bool wantColor();
+		virtual bool wantMaskedColor();
+		virtual bool wantMask();
+		virtual bool wantDepth();
+
+		void saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
+		void saveMaskedColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
+		void saveMask(cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters) override;
+		void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters) override;
+
+	private:
+		Config m_config;
+	};
+}
 
 #endif

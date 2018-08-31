@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
 		for (int i = 1; i < argc; ++i) {
 			if (strcmp(argv[i], "--noopengl") == 0) {
-				g_with_opengl = false;
+				rvs::g_with_opengl = false;
 			}
 			else if (strcmp(argv[i], "--analyzer") == 0) {
 				with_analyzer = true;
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 			PROF_END("OpenGL Context");
 		}
 #else
-		g_with_opengl = false;
+		rvs::g_with_opengl = false;
 #endif
 		
 		std::cout
@@ -98,13 +98,13 @@ int main(int argc, char* argv[])
 			<< "|    MPEG2018/N17759 Reference View Synthesizer (RVS) manual                               |\n"
 			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
 
-		std::unique_ptr<Application> application;
+		std::unique_ptr<rvs::Application> application;
 
 		if (with_analyzer) {
-			application.reset(new Analyzer(filename));
+			application.reset(new rvs::Analyzer(filename));
 		}
 		else {
-			application.reset(new Application(filename));
+			application.reset(new rvs::Application(filename));
 		}
 
 		application->execute();

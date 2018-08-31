@@ -56,21 +56,24 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 \brief The file caintaining the tool to handle rotations and translations
 */
 
-/**\brief Describe a position and orientation (rotation and translation) */
-struct Pose
+namespace rvs 
 {
-	cv::Vec3f position;
-	cv::Vec3f rotation;
-};
+	/**\brief Describe a position and orientation (rotation and translation) */
+	struct Pose
+	{
+		cv::Vec3f position;
+		cv::Vec3f rotation;
+	};
 
-class PoseTrace : public std::vector<Pose>
-{
-public:
-	/** Load a pose trace from a stream */
-	static PoseTrace loadFrom(std::istream& stream);
+	class PoseTrace : public std::vector<Pose>
+	{
+	public:
+		/** Load a pose trace from a stream */
+		static PoseTrace loadFrom(std::istream& stream);
 
-	/** Load a pose trace from a file */
-	static PoseTrace loadFromFile(std::string const& filename);
-};
+		/** Load a pose trace from a file */
+		static PoseTrace loadFromFile(std::string const& filename);
+	};
+}
 
 #endif
