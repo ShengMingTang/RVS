@@ -263,13 +263,7 @@ void Config::setSynthesisMethod(json::Node root)
 {
 	auto node = root.optional("ViewSynthesisMethod");
 	if (node) {
-		if (node.asString() == "Triangles") {
-			vs_method = ViewSynthesisMethod::triangles;
-			std::cout << "ViewSynthesisMethod: Triangles\n";
-		}
-		else {
-			throw std::runtime_error("Unknown view synthesis method");
-		}
+		vs_method = node.asString();
 	}
 }
 
@@ -277,28 +271,16 @@ void Config::setBlendingMethod(json::Node root)
 {
 	auto node = root.optional("BlendingMethod");
 	if (node) {
-		if (node.asString() == "Simple") {
-			blending_method = BlendingMethod::simple;
-			std::cout << "BlendingMethod: Simple\n";
-		}
-		else if (node.asString() == "Multispectral") {
-			blending_method = BlendingMethod::multispectral;
-			std::cout << "BlendingMethod: MultiSpectral\n";
-		}
-		else {
-			throw std::runtime_error("Unknown blending method");
-		}
+		blending_method = node.asString();
 	}
 }
 
 void Config::setBlendingFactor(json::Node root)
 {
-	if (blending_method == BlendingMethod::simple) {
-		auto node = root.optional("BlendingFactor");
-		if (node) {
-			blending_factor = static_cast<float>(node.asDouble());
-			std::cout << "BlendingFactor: " << blending_factor << '\n';
-		}
+	auto node = root.optional("BlendingFactor");
+	if (node) {
+		blending_factor = static_cast<float>(node.asDouble());
+		std::cout << "BlendingFactor: " << blending_factor << '\n';
 	}
 }
 

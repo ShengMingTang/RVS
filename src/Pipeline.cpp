@@ -149,10 +149,10 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 #endif
 
 	// Setup a view blender
-	auto blender = createBlender();
+	auto blender = createBlender(virtualView);
 
 	// Partial setup of a space transformer
-	auto spaceTransformer = createSpaceTransformer();
+	auto spaceTransformer = createSpaceTransformer(virtualView);
 	spaceTransformer->set_targetPosition(&params_virtual);
 
 	// For each input view
@@ -164,7 +164,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		spaceTransformer->set_inputPosition(&params_real);
 
 		// Setup a view synthesizer
-		auto synthesizer = createSynthesizer();
+		auto synthesizer = createSynthesizer(inputView, virtualView);
 		synthesizer->setSpaceTransformer(spaceTransformer.get());
 
 		// Load the input image
@@ -245,29 +245,33 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 #endif
 }
 
-std::unique_ptr<BlendedView> Pipeline::createBlender()
+std::unique_ptr<BlendedView> Pipeline::createBlender(int)
 {
-	switch (getConfig().blending_method) {
-	case BlendingMethod::simple:
+	if (getConfig().blending_method == BlendingMethod::simple) {
 		return std::unique_ptr<BlendedView>(new BlendedViewSimple(getConfig().blending_factor));
-	case BlendingMethod::multispectral:
+	}
+
+	if (getConfig().blending_method == BlendingMethod::multispectral) {
 		return std::unique_ptr<BlendedView>(new BlendedViewMultiSpec(getConfig().blending_low_freq_factor, getConfig().blending_high_freq_factor));
-	default:
-		throw std::logic_error("Unknown blending method");
 	}
+
+	std::ostringstream what;
+	what << "Unknown view blending method \"" << getConfig().blending_method << "\"";
+	throw std::runtime_error(what.str());
 }
 
-std::unique_ptr<SynthesizedView> Pipeline::createSynthesizer()
+std::unique_ptr<SynthesizedView> Pipeline::createSynthesizer(int, int)
 {
-	switch (getConfig().vs_method) {
-	case ViewSynthesisMethod::triangles:
+	if (getConfig().vs_method == ViewSynthesisMethod::triangles) {
 		return std::unique_ptr<SynthesizedView>(new SynthetisedViewTriangle);
-	default:
-		throw std::logic_error("Unknown view synthesis method");
 	}
+
+	std::ostringstream what;
+	what << "Unknown view synthesis method \"" << getConfig().vs_method << "\"";
+	throw std::runtime_error(what.str());
 }
 
-std::unique_ptr<SpaceTransformer> Pipeline::createSpaceTransformer()
+std::unique_ptr<SpaceTransformer> Pipeline::createSpaceTransformer(int)
 {
 #if WITH_OPENGL
 	if (g_with_opengl) {

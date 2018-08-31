@@ -71,18 +71,20 @@ enum class ColorSpace {
 
 For now only the triangle method is available
 */
-enum class ViewSynthesisMethod {
-	triangles = 0
-};
+namespace ViewSynthesisMethod
+{
+	auto const triangles = "Triangles";
+}
 
 /**\brief Blending method
 
 \see BlendedView
 */
-enum class BlendingMethod {
-	simple = 0,
-	multispectral = 1
-};
+namespace BlendingMethod
+{
+	auto const simple = "Simple";
+	auto const multispectral = "Multispectral";
+}
 
 /**Precision*/
 extern float g_rescale;
@@ -137,11 +139,11 @@ public:
 	/** Threshold for valid pixels */
 	float validity_threshold = 5000.f;
 	
-	/**Method for view synthesis*/
-	ViewSynthesisMethod vs_method = ViewSynthesisMethod::triangles;
+	/** Method for view synthesis */
+	std::string vs_method = "Triangles";
 	
 	/** Blending method (see BlendedView) */
-	BlendingMethod blending_method = BlendingMethod::simple;
+	std::string blending_method = "Simple";
 
 	/** Low frequency blending factor in BlendedViewMultiSpec */
 	float blending_low_freq_factor;

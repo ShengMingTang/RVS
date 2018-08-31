@@ -157,6 +157,21 @@ protected:
 	*/
 	virtual void onFinalBlendingResult(int inputFrame, int virtualFrame, int virtualView, BlendedView const& blendedView);
 
+	/**
+	\brief Create a view blender to blend the warped input views to one virtual view
+	*/
+	virtual std::unique_ptr<BlendedView> createBlender(int virtualView);
+
+	/**
+	\brief Create a space transformer to reproject the input view to the virtual view
+	*/
+	virtual std::unique_ptr<SpaceTransformer> createSpaceTransformer(int virtualView);
+
+	/**
+	\brief Create a view synthesizer to warp one input view to one virtual view
+	*/
+	virtual std::unique_ptr<SynthesizedView> createSynthesizer(int inputView, int virtualView);
+
 private:
 	/**
 	\brief Computes one frame of a virtual view
@@ -167,10 +182,6 @@ private:
 	@param virtualView Index of the virtual view to compute
 	*/
 	void computeView(int inputFrame, int virtualFrame, int virtualView);
-
-	std::unique_ptr<BlendedView> createBlender();
-	std::unique_ptr<SynthesizedView> createSynthesizer();
-	std::unique_ptr<SpaceTransformer> createSpaceTransformer();
 };
 
 #endif
