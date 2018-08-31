@@ -46,6 +46,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Application.hpp"
 #include "Timer.hpp"
+#include "image_writing.hpp"
 
 Application::Application(std::string const& filepath)
 	: Pipeline(filepath)
@@ -53,10 +54,49 @@ Application::Application(std::string const& filepath)
 
 std::shared_ptr<View> Application::loadInputView(int inputFrame, int inputView, Parameters const& parameters)
 {
-	PROF_START("loading");
 	return std::make_shared<InputView>(
 		getConfig().texture_names[inputView],
 		getConfig().depth_names[inputView],
 		inputFrame, parameters);
-	PROF_END("loading");
+}
+
+bool Application::wantColor()
+{
+	return !getConfig().outfilenames.empty();
+}
+
+bool Application::wantMaskedColor()
+{
+	return !getConfig().outmaskedfilenames.empty();
+}
+
+bool Application::wantMask()
+{
+	return !getConfig().outmaskfilenames.empty();
+}
+
+bool Application::wantDepth()
+{
+	return !getConfig().outdepthfilenames.empty();
+}
+
+void Application::saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters)
+{
+	write_color(getConfig().outfilenames[virtualView], color, virtualFrame, parameters);
+}
+
+void Application::saveMaskedColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters)
+{
+	write_color(getConfig().outmaskedfilenames[virtualView], color, virtualFrame, parameters);
+}
+
+
+void Application::saveMask(cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters)
+{
+	write_mask(getConfig().outmaskfilenames[virtualView], mask, virtualFrame, parameters);
+}
+
+void Application::saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const & parameters)
+{
+	write_depth(getConfig().outdepthfilenames[virtualView], depth, virtualFrame, parameters);
 }

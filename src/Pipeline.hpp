@@ -97,6 +97,46 @@ protected:
 	*/
 	virtual std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) = 0;
 
+	/**
+	\brief Does the derived class want to save color?
+	*/
+	virtual bool wantColor();
+
+	/**
+	\brief Does the derived class want to save masked color?
+	*/
+	virtual bool wantMaskedColor();
+
+	/**
+	\brief Does the derived class want to save the validity mask itself?
+	*/
+	virtual bool wantMask();
+
+	/**
+	\brief does the derived class want to save the depth map?
+	*/
+	virtual bool wantDepth();
+
+	/**
+	\brief Interface for saving a regular (inpainted) synthesis result. Implemented by Application
+	*/
+	virtual void saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters);
+
+	/**
+	\brief Interface for saving a masked synthesis result. Implemented by Application
+	*/
+	virtual void saveMaskedColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters);
+
+	/**
+	\brief Interface for saving the validity mask. Implemented by Application
+	*/
+	virtual void saveMask(cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters);
+
+	/**
+	\brief Interface for saving the synthesized depth map. Implemented by Application
+	*/
+	virtual void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters);
+
 private:	
 	/**
 	\brief Computes one frame of a virtual view

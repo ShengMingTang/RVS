@@ -49,7 +49,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "BlendedView.hpp"
 #include "SynthesizedView.hpp"
 #include "inpainting.hpp"
-#include "image_writing.hpp"
 
 #include <iostream>
 #include <vector>
@@ -89,6 +88,46 @@ void Pipeline::execute()
 Config const& Pipeline::getConfig() const
 {
 	return m_config;
+}
+
+bool Pipeline::wantColor()
+{
+	return false;
+}
+
+bool Pipeline::wantMaskedColor()
+{
+	return false;
+}
+
+bool Pipeline::wantMask()
+{
+	return false;
+}
+
+bool Pipeline::wantDepth()
+{
+	return false;
+}
+
+void Pipeline::saveColor(cv::Mat3f, int, int, Parameters const&)
+{
+	throw std::logic_error(__FUNCTION__ " not implemented");
+}
+
+void Pipeline::saveMaskedColor(cv::Mat3f, int, int, Parameters const&)
+{
+	throw std::logic_error(__FUNCTION__ " not implemented");
+}
+
+void Pipeline::saveMask(cv::Mat1b, int , int , Parameters const&)
+{
+	throw std::logic_error(__FUNCTION__ " not implemented");
+}
+
+void Pipeline::saveDepth(cv::Mat1f, int, int, Parameters const&)
+{
+	throw std::logic_error(__FUNCTION__ " not implemented");
 }
 
 void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
@@ -135,7 +174,9 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		synthesizer->setSpaceTransformer(spaceTransformer.get());
 
 		// Load the input image
+		PROF_START("loading");
 		auto inputImage = loadInputView(inputFrame, inputView, params_real);
+		PROF_END("loading");
 
 		// Start OpenGL instrumentation (if any)
 #if WITH_OPENGL
@@ -181,37 +222,37 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 	resize(color, color, params_virtual.getSize());
 	PROF_END("downscale");
 
+	PROF_START("saving");
 	// Write regular output (activated by OutputFiles)
-	if (!m_config.outfilenames.empty()) {
-		PROF_START("write");
-		write_color(m_config.outfilenames[virtualView], color, virtualFrame, params_virtual);
-		PROF_END("write");
+	if (wantColor()) {
+		saveColor(color, virtualFrame, virtualView, params_virtual);
 	}
 
 	// Compute mask (activated by OutputMasks or MaskedOutputFiles)
 	cv::Mat1b mask;
-	if (!m_config.outmaskfilenames.empty() || !m_config.outmaskedfilenames.empty()) {
+	if (wantMask() || wantMaskedColor()) {
 		mask = blender->get_validity_mask(m_config.validity_threshold);
 		resize(mask, mask, params_virtual.getSize(), cv::INTER_NEAREST);
 	}
 
 	// Write mask (activated by OutputMasks)
-	if (!m_config.outmaskfilenames.empty()) {
-		write_mask(m_config.outmaskfilenames[virtualView], mask, virtualFrame, params_virtual);
+	if (wantMask()) {
+		saveMask(mask, virtualFrame, virtualView, params_virtual);
 	}
 
 	// Write masked output (activated by MaskedOutputFiles)
-	if (!m_config.outmaskedfilenames.empty()) {
+	if (wantMaskedColor()) {
 		color.setTo(cv::Vec3f::all(0.5f), mask);
-		write_color(m_config.outmaskedfilenames[virtualView], color, virtualFrame, params_virtual);
+		saveMaskedColor(color, virtualFrame, virtualView, params_virtual);
 	}
 
 	// Write depth maps (activated by DepthOutputFiles)
-	if (!m_config.outdepthfilenames.empty()) {
+	if (wantDepth()) {
 		auto depth = blender->get_depth();
 		resize(depth, depth, params_virtual.getSize());
-		write_depth(m_config.outdepthfilenames[virtualView], depth, virtualFrame, params_virtual);
+		saveDepth(depth, virtualFrame, virtualView, params_virtual);
 	}
+	PROF_END("saving");
 
 #if WITH_OPENGL
 	if (g_with_opengl) {

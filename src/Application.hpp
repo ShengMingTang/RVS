@@ -76,6 +76,16 @@ public:
 
 protected:
 	std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) override;
+
+	virtual bool wantColor();
+	virtual bool wantMaskedColor();
+	virtual bool wantMask();
+	virtual bool wantDepth();
+
+	void saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
+	void saveMaskedColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
+	void saveMask(cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters) override;
+	void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters) override;
 };
 
 #endif
