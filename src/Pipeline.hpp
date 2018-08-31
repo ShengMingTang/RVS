@@ -75,9 +75,8 @@ class Pipeline
 public:
 	/**
 	\brief Constructor
-	@param filepath Configuration file (JSON format)
 	*/
-	Pipeline(std::string const& filepath);
+	Pipeline();
 
 	/**
 	\brief Execution of the view synthesis
@@ -86,12 +85,12 @@ public:
 	*/
 	void execute();
 
-	/**
-	\brief Access the configuration
-	*/
-	Config const& getConfig() const;
-
 protected:
+	/**
+	\brief Interface to provide access to the configuration
+	*/
+	virtual Config const& getConfig() const = 0;
+
 	/**
 	\brief Interface for loading a source view. Implemented by Application
 	*/
@@ -172,9 +171,6 @@ private:
 	std::unique_ptr<BlendedView> createBlender();
 	std::unique_ptr<SynthesizedView> createSynthesizer();
 	std::unique_ptr<SpaceTransformer> createSpaceTransformer();
-
-	/** Config of the view synthesis*/
-	Config m_config;
 };
 
 #endif

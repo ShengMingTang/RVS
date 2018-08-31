@@ -70,11 +70,16 @@ class Application : public Pipeline
 public:
 	/**
 	\brief Constructor
+
+	Please note that Application itself also calls getConfig() to allow derived classees overriding the configuration.
+	
 	@param filepath Configuration file (JSON format)
 	*/
 	Application(std::string const& filepath);
 
 protected:
+	Config const& getConfig() const override;
+
 	std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) override;
 
 	virtual bool wantColor();
@@ -86,6 +91,9 @@ protected:
 	void saveMaskedColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
 	void saveMask(cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters) override;
 	void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters) override;
+
+private:
+	Config m_config;
 };
 
 #endif

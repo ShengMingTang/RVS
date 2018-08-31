@@ -60,8 +60,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "RFBO.hpp"
 #endif
 
-Pipeline::Pipeline(std::string const& filepath)
-	: m_config(Config::loadFromFile(filepath))
+Pipeline::Pipeline()
 {
 #ifndef NDEBUG
 	cv::setBreakOnError(true);
@@ -70,20 +69,15 @@ Pipeline::Pipeline(std::string const& filepath)
 
 void Pipeline::execute()
 {
-	for (auto virtualFrame = 0; virtualFrame < m_config.number_of_frames; ++virtualFrame) {
-		auto inputFrame = m_config.start_frame + virtualFrame;
-		if (m_config.number_of_frames > 1) {
+	for (auto virtualFrame = 0; virtualFrame < getConfig().number_of_frames; ++virtualFrame) {
+		auto inputFrame = getConfig().start_frame + virtualFrame;
+		if (getConfig().number_of_frames > 1) {
 			std::cout << std::string(5, '=') << " FRAME " << inputFrame << ' ' << std::string(80, '=') << std::endl;
 		}
-		for (auto virtualView = 0u; virtualView != m_config.VirtualCameraNames.size(); ++virtualView) {
+		for (auto virtualView = 0u; virtualView != getConfig().VirtualCameraNames.size(); ++virtualView) {
 			computeView(inputFrame, virtualFrame, virtualView);
 		}
 	}
-}
-
-Config const& Pipeline::getConfig() const
-{
-	return m_config;
 }
 
 bool Pipeline::wantColor()
@@ -135,9 +129,9 @@ void Pipeline::onFinalBlendingResult(int, int, int, BlendedView const&) {}
 void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 {
 	// Virtual view parameters for this frame and view
-	auto params_virtual = m_config.params_virtual[virtualView];
-	if (!m_config.pose_trace.empty()) {
-		auto pose = m_config.pose_trace[inputFrame];
+	auto params_virtual = getConfig().params_virtual[virtualView];
+	if (!getConfig().pose_trace.empty()) {
+		auto pose = getConfig().pose_trace[inputFrame];
 		params_virtual.setPosition(params_virtual.getPosition() + pose.position);
 		params_virtual.setRotation(pose.rotation);
 		std::cout << "Pose: " << params_virtual.getPosition() << ' ' << params_virtual.getRotation() << std::endl;
@@ -162,9 +156,9 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 	spaceTransformer->set_targetPosition(&params_virtual);
 
 	// For each input view
-	for (auto inputView = 0u; inputView != m_config.InputCameraNames.size(); ++inputView) {
-		std::cout << m_config.InputCameraNames[inputView] << " => " << m_config.VirtualCameraNames[virtualView] << std::endl;
-		auto const& params_real = m_config.params_real[inputView];
+	for (auto inputView = 0u; inputView != getConfig().InputCameraNames.size(); ++inputView) {
+		std::cout << getConfig().InputCameraNames[inputView] << " => " << getConfig().VirtualCameraNames[virtualView] << std::endl;
+		auto const& params_real = getConfig().params_real[inputView];
 
 		// Complete setup of space transformer
 		spaceTransformer->set_inputPosition(&params_real);
@@ -221,7 +215,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 	// Compute mask (activated by OutputMasks or MaskedOutputFiles)
 	cv::Mat1b mask;
 	if (wantMask() || wantMaskedColor()) {
-		mask = blender->get_validity_mask(m_config.validity_threshold);
+		mask = blender->get_validity_mask(getConfig().validity_threshold);
 		resize(mask, mask, params_virtual.getSize(), cv::INTER_NEAREST);
 	}
 
@@ -253,11 +247,11 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 
 std::unique_ptr<BlendedView> Pipeline::createBlender()
 {
-	switch (m_config.blending_method) {
+	switch (getConfig().blending_method) {
 	case BlendingMethod::simple:
-		return std::unique_ptr<BlendedView>(new BlendedViewSimple(m_config.blending_factor));
+		return std::unique_ptr<BlendedView>(new BlendedViewSimple(getConfig().blending_factor));
 	case BlendingMethod::multispectral:
-		return std::unique_ptr<BlendedView>(new BlendedViewMultiSpec(m_config.blending_low_freq_factor, m_config.blending_high_freq_factor));
+		return std::unique_ptr<BlendedView>(new BlendedViewMultiSpec(getConfig().blending_low_freq_factor, getConfig().blending_high_freq_factor));
 	default:
 		throw std::logic_error("Unknown blending method");
 	}
@@ -265,7 +259,7 @@ std::unique_ptr<BlendedView> Pipeline::createBlender()
 
 std::unique_ptr<SynthesizedView> Pipeline::createSynthesizer()
 {
-	switch (m_config.vs_method) {
+	switch (getConfig().vs_method) {
 	case ViewSynthesisMethod::triangles:
 		return std::unique_ptr<SynthesizedView>(new SynthetisedViewTriangle);
 	default:

@@ -48,8 +48,13 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "image_writing.hpp"
 
 Application::Application(std::string const& filepath)
-	: Pipeline(filepath)
+	: m_config(Config::loadFromFile(filepath))
 {}
+
+Config const& Application::getConfig() const
+{
+	return m_config;
+}
 
 std::shared_ptr<View> Application::loadInputView(int inputFrame, int inputView, Parameters const& parameters)
 {
