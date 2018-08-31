@@ -46,7 +46,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "SynthesizedView.hpp"
 #include "transform.hpp"
-#include "Timer.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -87,7 +86,6 @@ SynthesizedView::~SynthesizedView() {}
 void SynthesizedView::compute(View& input)
 {
 	assert(m_space_transformer);
-	PROF_START("warping");
 
 	auto R = m_space_transformer->get_rotation();
 	auto t = m_space_transformer->get_translation();
@@ -237,8 +235,6 @@ void SynthesizedView::compute(View& input)
 		std::cout << "scaled_uv(i, j) == " << scaled_uv(DUMP_I, DUMP_J) << std::endl;
 #endif // DUMP_VALUES
 	}
-
-	PROF_END("warping");
 }
 
 SynthetisedViewTriangle::SynthetisedViewTriangle() {}

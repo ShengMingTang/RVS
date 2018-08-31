@@ -137,7 +137,28 @@ protected:
 	*/
 	virtual void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters);
 
-private:	
+	/**
+	\brief Interface for making intermediate result available for pruning or analysis
+
+	Pipeline calls this function after synthesizing a single input view
+	*/
+	virtual void onIntermediateSynthesisResult(int inputFrame, int inputView, int virtualFrame, int virtualView, SynthesizedView const& synthesizedView);
+
+	/**
+	\brief Interface for making intermediate result available for pruning or analysis
+
+	Pipeline calls this function after synthesizing a single input view
+	*/
+	virtual void onIntermediateBlendingResult(int inputFrame, int inputView, int virtualFrame, int virtualView, BlendedView const& blendedView);
+
+	/**
+	\brief Interface for making intermediate result available for pruning or analysis
+
+	Pipeline calls this function after synthesizing a single input view
+	*/
+	virtual void onFinalBlendingResult(int inputFrame, int virtualFrame, int virtualView, BlendedView const& blendedView);
+
+private:
 	/**
 	\brief Computes one frame of a virtual view
 
@@ -151,11 +172,6 @@ private:
 	std::unique_ptr<BlendedView> createBlender();
 	std::unique_ptr<SynthesizedView> createSynthesizer();
 	std::unique_ptr<SpaceTransformer> createSpaceTransformer();
-
-	/**
-	\brief Dump maps for analysis purposes
-	*/
-	void dumpMaps(View const& input_image, std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender);
 
 	/** Config of the view synthesis*/
 	Config m_config;

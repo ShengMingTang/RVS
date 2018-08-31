@@ -48,7 +48,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "helpersGL.hpp"
 #endif
 
-#include "Timer.hpp"
 #include "Analyzer.hpp"
 
 #include <iostream>
@@ -59,8 +58,6 @@ int main(int argc, char* argv[])
 {
 	try
 	{
-		PROF_BEGIN();
-
 		bool with_analyzer = false;
 		std::string filename;
 
@@ -101,8 +98,6 @@ int main(int argc, char* argv[])
 			<< "|    MPEG2018/N17759 Reference View Synthesizer (RVS) manual                               |\n"
 			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
 
-		PROF_START("parsing");
-
 		std::unique_ptr<Application> application;
 
 		if (with_analyzer) {
@@ -112,14 +107,7 @@ int main(int argc, char* argv[])
 			application.reset(new Application(filename));
 		}
 
-		PROF_END("parsing");
-		PROF_START("view synthesis");
-
 		application->execute();
-
-		PROF_END("view synthesis");
-
-		PROF_FINALIZE();
 		return 0;
 	}
 	catch (std::exception& e)

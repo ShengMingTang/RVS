@@ -45,7 +45,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "Application.hpp"
-#include "Timer.hpp"
 #include "image_writing.hpp"
 
 Application::Application(std::string const& filepath)

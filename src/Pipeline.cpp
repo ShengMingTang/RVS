@@ -45,7 +45,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 */
 
 #include "Pipeline.hpp"
-#include "Timer.hpp"
 #include "BlendedView.hpp"
 #include "SynthesizedView.hpp"
 #include "inpainting.hpp"
@@ -55,14 +54,11 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <memory>
 
 #include <opencv2/imgproc.hpp>
-#include <opencv2/imgcodecs.hpp>
 
 #if WITH_OPENGL
 #include "helpersGL.hpp"
 #include "RFBO.hpp"
 #endif
-
-#define DUMP_MAPS false
 
 Pipeline::Pipeline(std::string const& filepath)
 	: m_config(Config::loadFromFile(filepath))
@@ -130,10 +126,14 @@ void Pipeline::saveDepth(cv::Mat1f, int, int, Parameters const&)
 	throw std::logic_error(__FUNCTION__ " not implemented");
 }
 
+void Pipeline::onIntermediateSynthesisResult(int, int, int, int, SynthesizedView const&) {}
+
+void Pipeline::onIntermediateBlendingResult(int, int, int, int, BlendedView const&) {}
+
+void Pipeline::onFinalBlendingResult(int, int, int, BlendedView const&) {}
+
 void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 {
-	PROF_START("computeView");
-
 	// Virtual view parameters for this frame and view
 	auto params_virtual = m_config.params_virtual[virtualView];
 	if (!m_config.pose_trace.empty()) {
@@ -174,9 +174,7 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		synthesizer->setSpaceTransformer(spaceTransformer.get());
 
 		// Load the input image
-		PROF_START("loading");
 		auto inputImage = loadInputView(inputFrame, inputView, params_real);
-		PROF_END("loading");
 
 		// Start OpenGL instrumentation (if any)
 #if WITH_OPENGL
@@ -186,11 +184,11 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 #endif
 		// Synthesize view
 		synthesizer->compute(*inputImage);
+		onIntermediateSynthesisResult(inputFrame, inputView, virtualFrame, virtualView, *synthesizer);
 
 		// Blend with previous results
-		PROF_START("blending");
 		blender->blend(*synthesizer);
-		PROF_END("blending");
+		onIntermediateBlendingResult(inputFrame, inputView, virtualFrame, virtualView, *blender);
 
 		// End OpenGL instrumentation (if any)
 #if WITH_OPENGL
@@ -198,12 +196,9 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 			rd_end_capture_frame();
 		}
 #endif
-
-#if DUMP_MAPS
-		// Dump texture, depth, quality and validity maps for analysis (with DUMP_MAPS enabled)
-		dumpMaps(inputImage, inputView, virtualView, *synthesizer, *blender);
-#endif
 	}
+
+	onFinalBlendingResult(inputFrame, virtualFrame, virtualView, *blender);
 		
 	// Download maps from GPU
 #if WITH_OPENGL
@@ -213,16 +208,11 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 #endif
 
 	// Perform inpainting
-	PROF_START("inpainting");
 	cv::Mat3f color = inpaint(blender->get_color(), blender->get_inpaint_mask(), true);
-	PROF_END("inpainting");
 
 	// Downscale (when g_Precision != 1)
-	PROF_START("downscale");
 	resize(color, color, params_virtual.getSize());
-	PROF_END("downscale");
 
-	PROF_START("saving");
 	// Write regular output (activated by OutputFiles)
 	if (wantColor()) {
 		saveColor(color, virtualFrame, virtualView, params_virtual);
@@ -252,7 +242,6 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		resize(depth, depth, params_virtual.getSize());
 		saveDepth(depth, virtualFrame, virtualView, params_virtual);
 	}
-	PROF_END("saving");
 
 #if WITH_OPENGL
 	if (g_with_opengl) {
@@ -260,8 +249,6 @@ void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 		FBO->free();
 	}
 #endif
-
-	PROF_END("computeView");
 }
 
 std::unique_ptr<BlendedView> Pipeline::createBlender()
@@ -294,46 +281,4 @@ std::unique_ptr<SpaceTransformer> Pipeline::createSpaceTransformer()
 	}
 #endif
 	return std::unique_ptr<SpaceTransformer>(new PUTransformer);
-}
-
-void Pipeline::dumpMaps(View const& input_image, std::size_t input_idx, std::size_t virtual_idx, View const& synthesizer, View const& blender)
-{
-	cv::Mat3f rgb;
-	cv::Mat3b color;
-	cv::Mat1w depth;
-	cv::Mat1w quality;
-	cv::Mat1w validity; // triangle shape
-	std::ostringstream filepath;
-
-	cv::cvtColor(input_image.get_color(), rgb, cv::COLOR_YCrCb2BGR);
-	rgb.convertTo(color, CV_8U, 255.);
-	input_image.get_depth().convertTo(depth, CV_16U, 2000.);
-
-	filepath.str(""); filepath << "dump-input-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
-	filepath.str(""); filepath << "dump-input-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
-	filepath.str(""); filepath << "dump-input-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), input_image.get_depth_mask());
-
-	cv::cvtColor(synthesizer.get_color(), rgb, cv::COLOR_YCrCb2BGR);
-	rgb.convertTo(color, CV_8U, 255.);
-	synthesizer.get_quality().convertTo(quality, CV_16U, 4.);
-	synthesizer.get_depth().convertTo(depth, CV_16U, 2000.);
-	synthesizer.get_validity().convertTo(validity, CV_16U, 6.);
-
-	filepath.str(""); filepath << "dump-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
-	filepath.str(""); filepath << "dump-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
-	filepath.str(""); filepath << "dump-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity);
-	filepath.str(""); filepath << "dump-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
-	filepath.str(""); filepath << "dump-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), synthesizer.get_depth_mask());
-
-	cv::cvtColor(blender.get_color(), rgb, cv::COLOR_YCrCb2BGR);
-	rgb.convertTo(color, CV_8U, 255.);
-	blender.get_quality().convertTo(quality, CV_16U, 4.);
-	blender.get_depth().convertTo(depth, CV_16U, 2000.);
-	blender.get_validity().convertTo(validity, CV_16U, 6.);
-
-	filepath.str(""); filepath << "dump-blended-color-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), color);
-	filepath.str(""); filepath << "dump-blended-quality-" << input_idx << "to" << virtual_idx << "_x4.png"; cv::imwrite(filepath.str(), quality);
-	filepath.str(""); filepath << "dump-blended-validity-" << input_idx << "to" << virtual_idx << "_x6.png"; cv::imwrite(filepath.str(), validity);
-	filepath.str(""); filepath << "dump-blended-depth-" << input_idx << "to" << virtual_idx << "_x2000.png"; cv::imwrite(filepath.str(), depth);
-	filepath.str(""); filepath << "dump-blended-depth_mask-" << input_idx << "to" << virtual_idx << ".png"; cv::imwrite(filepath.str(), blender.get_depth_mask());
 }

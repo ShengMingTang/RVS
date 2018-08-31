@@ -46,7 +46,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "blending.hpp"
 #include "IntegralImage2D.h"
-#include "Timer.hpp"
 #include "Config.hpp"
 
 #include <iostream>
@@ -366,7 +365,6 @@ cv::Mat blend_img(const std::vector<cv::Mat>& imgs, const std::vector<cv::Mat>& 
 
 void split_frequencies(const cv::Mat & img, cv::Mat & low_freq, cv::Mat & high_freq, const cv::Mat& mask)
 {
-	PROF_START("blur");
 	int kernel_size = ((int)MAX(img.rows, img.cols) / 20);
 	//RGB: blur all three channels
 	if (g_color_space == ColorSpace::RGB) {
@@ -388,6 +386,4 @@ void split_frequencies(const cv::Mat & img, cv::Mat & low_freq, cv::Mat & high_f
 
 		high_freq = img - low_freq;
 	}
-
-	PROF_END("blur");
 }

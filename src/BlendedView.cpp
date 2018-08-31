@@ -46,7 +46,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "BlendedView.hpp"
 #include "blending.hpp"
-#include "Timer.hpp"
 
 #include "iostream"
 

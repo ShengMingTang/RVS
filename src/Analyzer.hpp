@@ -69,6 +69,10 @@ public:
 	@param filepath Configuration file (JSON format)
 	*/
 	Analyzer(std::string const& filepath);
+
+protected:
+	void onIntermediateSynthesisResult(int inputFrame, int inputView, int virtualFrame, int virtualView, SynthesizedView const& synthesizedView) override;
+	void onIntermediateBlendingResult(int inputFrame, int inputView, int virtualFrame, int virtualView, BlendedView const& blendedView) override;
 };
 
 #endif

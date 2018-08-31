@@ -159,7 +159,6 @@ set(PROJECT_SOURCES
 	src/JsonParser.cpp
 	src/Pipeline.cpp
 	src/SynthesizedView.cpp
-	src/Timer.cpp
 	src/View.cpp
 	src/blending.cpp
 	src/image_loading.cpp
@@ -181,7 +180,6 @@ set(PROJECT_HEADERS
 	src/JsonParser.hpp
 	src/Pipeline.hpp
 	src/SynthesizedView.hpp
-	src/Timer.hpp
 	src/View.hpp
 	src/blending.hpp
 	src/Parameters.hpp
