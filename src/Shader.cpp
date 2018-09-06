@@ -46,8 +46,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "Shader.hpp"
 
-#if WITH_OPENGL
-
 #include <cassert>
 
 namespace rvs
@@ -490,5 +488,3 @@ namespace rvs
 		}
 	}
 }
-
-#endif

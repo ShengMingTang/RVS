@@ -48,7 +48,10 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "Projector.hpp"
 #include "Unprojector.hpp"
 #include "Config.hpp"
+
+#if WITH_OPENGL
 #include "Shader.hpp"
+#endif
 
 #include "opencv2/imgproc.hpp"
 

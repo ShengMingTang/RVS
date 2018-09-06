@@ -45,7 +45,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #ifndef _SHADER_HPP_
 #define _SHADER_HPP_
 
-#ifdef WITH_OPENGL
+#if !WITH_OPENGL
+#error "This header requires WITH_OPENGL"
+#endif
 
 #include "gl_core_4.5.hpp"
 #include <string>
@@ -94,5 +96,4 @@ namespace rvs
 	}
 }
 
-#endif
 #endif

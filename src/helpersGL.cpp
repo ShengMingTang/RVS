@@ -44,19 +44,28 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#ifdef WITH_OPENGL
-
 #include "helpersGL.hpp"
 #include "RFBO.hpp"
 #include "Shader.hpp"
 
 #include <string>
 
+#include "gl_core_4.5.hpp"
 
 // OpenGL Utilities
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
+
+#if _WIN32
+#include <gl/gl.h>
+#else
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <GL/glx.h>
+#include <X11/Xlib.h>
+#endif
 
 namespace rvs
 {
@@ -136,10 +145,7 @@ namespace rvs
 		RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 #endif
 
-#include "gl_core_4.5.hpp"
-
 #if _WIN32
-#include <gl/gl.h>
 		// Inspired by https://gist.github.com/nickrolfe/1127313ed1dbf80254b614a721b3ee9c
 
 		typedef HGLRC WINAPI wglCreateContextAttribsARB_type(HDC hdc, HGLRC hShareContext,
@@ -375,12 +381,6 @@ namespace rvs
 		}
 #else // linux
 		// Inspired by http://apoorvaj.io/creating-a-modern-opengl-context.html
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <GL/glx.h>
-#include <X11/Xlib.h>
-
 		typedef GLXContext(*glXCreateContextAttribsARBProc) (Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 		void create_opengl_context()
@@ -460,10 +460,8 @@ namespace rvs
 				glGetString(GL_RENDERER));
 		}
 #endif
-#endif
 
 		void context_init() {
-#ifdef WITH_OPENGL
 			if (context_NO_WRITE.initialized)
 				return;
 
@@ -504,17 +502,14 @@ namespace rvs
 			// Linux:
 			//show_window(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
 			context_NO_WRITE.initialized = true;
-#endif
 		}
 
 		void setGLContext()
 		{
-#ifdef WITH_OPENGL
 #if _WIN32
 			wglMakeCurrent(context_NO_WRITE.gldc, context_NO_WRITE.glrc);
 #else // linux
 			glXMakeCurrent(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
-#endif
 #endif
 		}
 

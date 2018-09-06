@@ -44,7 +44,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#if WITH_OPENGL
 #include "RFBO.hpp"
 
 namespace rvs
@@ -180,5 +179,3 @@ namespace rvs
 		}
 	}
 }
-
-#endif

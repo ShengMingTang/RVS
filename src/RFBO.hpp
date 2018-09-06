@@ -45,7 +45,10 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #ifndef _RFBO_HPP_
 #define _RFBO_HPP_
 
-#if WITH_OPENGL
+#if !WITH_OPENGL
+#error "This header requires WITH_OPENGL"
+#endif
+
 #include "helpersGL.hpp"
 
 namespace rvs
@@ -125,5 +128,4 @@ namespace rvs
 	}
 }
 
-#endif
 #endif

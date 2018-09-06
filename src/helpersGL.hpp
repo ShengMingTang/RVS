@@ -45,7 +45,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #ifndef _HELPERS_GL_HPP_
 #define _HELPERS_GL_HPP_
 
-#if WITH_OPENGL
+#if !WITH_OPENGL
+#error "This header requires WITH_OPENGL"
+#endif
 
 #include "gl_core_4.5.hpp"
 #include "Config.hpp"
@@ -58,6 +60,20 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#if _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glx.h>
+#endif
+
+#if WITH_RENDERDOC
+#include <renderdoc_app.h>
+extern RENDERDOC_API_1_1_2 *rdoc_api;
+#endif
 
 namespace rvs
 {
@@ -172,17 +188,6 @@ namespace rvs
 
 		};
 
-#endif // WITH_OPENGL
-
-#if WITH_OPENGL
-#define NOMINMAX
-#if _WIN32
-#include <Windows.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glx.h>
-#endif
 		// NEVER WRITE ON IT.
 		struct context_NO_WRITE_H
 		{
@@ -199,13 +204,6 @@ namespace rvs
 		};
 
 		extern context_NO_WRITE_H context_NO_WRITE;
-
-#if !defined NDEBUG && WITH_RENDERDOC
-#include <renderdoc_app.h>
-		extern RENDERDOC_API_1_1_2 *rdoc_api;
-#endif
-
-#endif
 
 		void context_init();
 		void setGLContext();
