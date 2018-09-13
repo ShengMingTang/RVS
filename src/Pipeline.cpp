@@ -104,22 +104,22 @@ namespace rvs
 
 	void Pipeline::saveColor(cv::Mat3f, int, int, Parameters const&)
 	{
-		throw std::logic_error( std::string( __FUNCTION__ ") + not implemented");
+		throw std::logic_error(std::string(__func__) + "not implemented");
 	}
 
 	void Pipeline::saveMaskedColor(cv::Mat3f, int, int, Parameters const&)
 	{
-		throw std::logic_error( std::string( __FUNCTION__) + " not implemented");
+		throw std::logic_error(std::string(__func__) + "not implemented");
 	}
 
 	void Pipeline::saveMask(cv::Mat1b, int, int, Parameters const&)
 	{
-		throw std::logic_error( std::string( __FUNCTION__) + " not implemented");
+		throw std::logic_error(std::string(__func__) + " not implemented");
 	}
 
 	void Pipeline::saveDepth(cv::Mat1f, int, int, Parameters const&)
 	{
-		throw std::logic_error( std::string( __FUNCTION__) + " not implemented");
+		throw std::logic_error(std::string(__func__) + " not implemented");
 	}
 
 	void Pipeline::onIntermediateSynthesisResult(int, int, int, int, SynthesizedView const&) {}
