@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 				return 1;
 			}
 		}
-		
+
 		if (filename.empty()) {
 			throw std::runtime_error("Usage: RVS CONFIGURATION_FILE [--noopengl] [--analyzer]");
 		}

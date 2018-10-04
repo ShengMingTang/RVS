@@ -119,6 +119,11 @@ namespace rvs
 		virtual bool wantDepth();
 
 		/**
+		\brief does the derived class want to save the masked depth map?
+		*/
+		virtual bool wantMaskedDepth();
+
+		/**
 		\brief Interface for saving a regular (inpainted) synthesis result. Implemented by Application
 		*/
 		virtual void saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters);
@@ -137,6 +142,11 @@ namespace rvs
 		\brief Interface for saving the synthesized depth map. Implemented by Application
 		*/
 		virtual void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters);
+
+		/**
+		\brief Interface for saving the synthesized depth map. Implemented by Application
+		*/
+		virtual void saveMaskedDepth(cv::Mat1f depth, cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters);
 
 		/**
 		\brief Interface for making intermediate result available for pruning or analysis

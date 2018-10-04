@@ -142,8 +142,11 @@ namespace rvs
 		/** Name of the output masks */
 		std::vector<std::string> outmaskfilenames;
 
-		/**	Name of the output masked files	*/
+		/**	Name of the output depth files	*/
 		std::vector<std::string> outdepthfilenames;
+
+		/**	Name of the output masked depth files	*/
+		std::vector<std::string> outmaskdepthfilenames;
 
 		/** Threshold for valid pixels */
 		float validity_threshold = 5000.f;

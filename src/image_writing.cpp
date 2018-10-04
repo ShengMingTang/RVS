@@ -168,10 +168,13 @@ namespace rvs
 	{
 		auto bit_depth = parameters.getDepthBitDepth();
 
+		cv::Mat1f depth_tmp = depth.clone(); //clone to avoid modifying the input depth
+
 		cv::Mat image;
 		if (bit_depth == 32) {
 			// Do not manipulate floating-point depth maps (e.g. OpenEXR)
-			image = depth;
+			image = depth_tmp;
+			std::cout << "### open exr   ###" << std::endl;
 		}
 		else {
 			auto near = parameters.getDepthRange()[0];
@@ -179,13 +182,59 @@ namespace rvs
 
 			// 1000 is for 'infinitly far'
 			if (far >= 1000.f) {
-				depth = near / depth;
+				depth_tmp = near / depth_tmp;
 			}
 			else {
-				depth = (far * near / depth - near) / (far - near);
+				depth_tmp = (far * near / depth_tmp - near) / (far - near);
 			}
-			depth.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
+			depth_tmp.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
 		}
+
+		// Pad image
+		if (parameters.getPaddedSize() != parameters.getSize()) {
+			auto padded = cv::Mat(parameters.getPaddedSize(), image.type(), cv::Scalar::all(0.));
+			padded(parameters.getCropRegion()) = image;
+			image = padded;
+		}
+
+		// Save the image
+		if (filepath.substr(filepath.size() - 4, 4) == ".yuv") {
+			write_depth_YUV(filepath, image, frame, parameters);
+		}
+		else if (frame == 0) {
+			cv::imwrite(filepath, image);
+		}
+		else {
+			throw std::runtime_error("Writing  multiple frames not (yet) supported for image files");
+		}
+	}
+
+	void write_maskedDepth(std::string filepath, cv::Mat1f depth, cv::Mat1b mask, int frame, Parameters const& parameters)
+	{
+		auto bit_depth = parameters.getDepthBitDepth();
+
+		cv::Mat1f depth_tmp = depth.clone(); //clone to avoid modifying the input depth
+
+		cv::Mat image;
+		if (bit_depth == 32) {
+			// Do not manipulate floating-point depth maps (e.g. OpenEXR)
+			image = depth_tmp;
+		}
+		else {
+			auto near = parameters.getDepthRange()[0];
+			auto far = parameters.getDepthRange()[1];
+
+			// 1000 is for 'infinitly far'
+			if (far >= 1000.f) {
+				depth_tmp = near / depth_tmp;
+			}
+			else {
+				depth_tmp = (far * near / depth_tmp - near) / (far - near);
+			}
+			depth_tmp.setTo(0.f, mask);
+			depth_tmp.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
+		}
+
 
 		// Pad image
 		if (parameters.getPaddedSize() != parameters.getSize()) {

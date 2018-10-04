@@ -102,6 +102,11 @@ namespace rvs
 		return false;
 	}
 
+	bool Pipeline::wantMaskedDepth()
+	{
+		return false;
+	}
+
 	void Pipeline::saveColor(cv::Mat3f, int, int, Parameters const&)
 	{
 		throw std::logic_error(__FUNCTION__ " not implemented");
@@ -118,6 +123,11 @@ namespace rvs
 	}
 
 	void Pipeline::saveDepth(cv::Mat1f, int, int, Parameters const&)
+	{
+		throw std::logic_error(__FUNCTION__ " not implemented");
+	}
+
+	void Pipeline::saveMaskedDepth(cv::Mat1f, cv::Mat1b, int, int, Parameters const&)
 	{
 		throw std::logic_error(__FUNCTION__ " not implemented");
 	}
@@ -214,9 +224,9 @@ namespace rvs
 			saveColor(color, virtualFrame, virtualView, params_virtual);
 		}
 
-		// Compute mask (activated by OutputMasks or MaskedOutputFiles)
+		// Compute mask (activated by OutputMasks or MaskedOutputFiles or MaskedDepthOutputFiles)
 		cv::Mat1b mask;
-		if (wantMask() || wantMaskedColor()) {
+		if (wantMask() || wantMaskedColor() || wantMaskedDepth()) {
 			mask = blender->get_validity_mask(getConfig().validity_threshold);
 			resize(mask, mask, params_virtual.getSize(), cv::INTER_NEAREST);
 		}
@@ -237,6 +247,13 @@ namespace rvs
 			auto depth = blender->get_depth();
 			resize(depth, depth, params_virtual.getSize());
 			saveDepth(depth, virtualFrame, virtualView, params_virtual);
+		}
+
+		// Write masked depth maps (activated by MaskedDepthOutputFiles)
+		if (wantMaskedDepth()) {
+			auto depth = blender->get_depth();
+			resize(depth, depth, params_virtual.getSize());
+			saveMaskedDepth(depth, mask, virtualFrame, virtualView, params_virtual);
 		}
 
 #if WITH_OPENGL
