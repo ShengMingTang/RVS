@@ -77,7 +77,29 @@ int main(int argc, char* argv[])
 			}
 		}
 		
+		std::cout
+			<< " - -------------------------------------------------------------------------------------- -\n"
+			<< "|    Reference View Synthesizer (RVS), branch: v2.0-dev                                    |\n"
+			<< "|                                                                                          |\n"
+			<< "|    MPEG2018/N17759 Reference View Synthesizer (RVS) manual                               |\n"
+			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
+
 		if (filename.empty()) {
+			std::cout
+				<< "\n"
+				<< " - -------------------------------------------------------------------------------------- -\n"
+				<< "|    Original authors:                                                                     |\n"
+				<< "|                                                                                          |\n"
+				<< "|    Universite Libre de Bruxelles, Brussels, Belgium:                                     |\n"
+				<< "|      Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be                              |\n"
+				<< "|      Daniele Bonatto, Daniele.Bonatto@ulb.ac.be                                          |\n"
+				<< "|      Arnaud Schenkel, arnaud.schenkel@ulb.ac.be                                          |\n"
+				<< "|                                                                                          |\n"
+				<< "|    Koninklijke Philips N.V., Eindhoven, The Netherlands:                                 |\n"
+				<< "|      Bart Kroon, bart.kroon@philips.com                                                  |\n"
+				<< "|      Bart Sonneveldt, bart.sonneveldt@philips.com                                        |\n"
+				<< " - -------------------------------------------------------------------------------------- -\n\n";
+
 			throw std::runtime_error("Usage: RVS CONFIGURATION_FILE [--noopengl] [--analyzer]");
 		}
 
@@ -89,13 +111,6 @@ int main(int argc, char* argv[])
 		rvs::g_with_opengl = false;
 #endif
 		
-		std::cout
-			<< " - -------------------------------------------------------------------------------------- -\n"
-			<< "|    Reference View Synthesizer (RVS), branch: v2.0-dev                                    |\n"
-			<< "|                                                                                          |\n"
-			<< "|    MPEG2018/N17759 Reference View Synthesizer (RVS) manual                               |\n"
-			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
-
 		std::unique_ptr<rvs::Application> application;
 
 		if (with_analyzer) {
