@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 		
 		std::cout
 			<< " - -------------------------------------------------------------------------------------- -\n"
-			<< "|    Reference View Synthesizer (RVS), branch: v2.0-dev                                    |\n"
+			<< "|    Reference View Synthesizer (RVS), branch: v3.0-dev                                    |\n"
 			<< "|                                                                                          |\n"
 			<< "|    MPEG2018/N17759 Reference View Synthesizer (RVS) manual                               |\n"
 			<< " - -------------------------------------------------------------------------------------- -" << std::endl;
