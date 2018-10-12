@@ -322,8 +322,8 @@ namespace rvs
 		if (colorFormat == "YUV420") {
 			m_colorFormat = ColorFormat::YUV420;
 		}
-
-		throw std::runtime_error("This version of RVS only supports YUV420 color space for texture");
+		else
+			throw std::runtime_error("This version of RVS only supports YUV420 color space for texture");
 	}
 
 	void Parameters::setDepthColorFormatFrom(json::Node root)
@@ -336,8 +336,8 @@ namespace rvs
 		else if (depthColorFormat == "YUV400") {
 			m_depthColorFormat = ColorFormat::YUV400;
 		}
-
-		throw std::runtime_error("This version of RVS only supports YUV420 and YUV400 color space for depth");
+		else 
+			throw std::runtime_error("This version of RVS only supports YUV420 and YUV400 color space for depth");
 	}
 
 	void Parameters::setHorRangeFrom(json::Node root)

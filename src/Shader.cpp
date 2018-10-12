@@ -191,7 +191,8 @@ namespace rvs
 			return R"(
 		#version 420 core
 
-		layout(location = 0) in float d;
+		layout(location = 0) in float empty_value;
+		uniform sampler2D depth_texture;
 
 		out VS_OUT {
 			vec2 uv;
@@ -229,6 +230,8 @@ namespace rvs
 		uniform float du_dphi;
 		uniform float dv_dtheta;
 
+		uniform float max_depth;
+
 		vec2 get_position_from_Vertex_ID(int id, float width) {
 			int y = id / int(width);
 			int x = id - y * int(width);
@@ -238,6 +241,7 @@ namespace rvs
 		vec3 unproject_equirectangular() {
 			// Image coordinates
 			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
+			float d = texture(depth_texture, vec2(xy.x/w, xy.y/h)).x*max_depth;
 
 			// Spherical coordinates
 			float phi = phi0 + xy.x * dphi_du;
@@ -252,6 +256,7 @@ namespace rvs
 		vec3 unproject_perspective() {
 			// Image coordinates
 			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
+			float d = texture(depth_texture, vec2(xy.x/w, xy.y/h)).x*max_depth;
 
 			// World coordinates
 			return vec3(
@@ -320,6 +325,7 @@ namespace rvs
 		#version 420 core
 
 		uniform sampler2D image_texture;
+		uniform sampler2D depth_texture;
 
 		in vec2 gs_uv;
 		in float gs_quality;

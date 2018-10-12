@@ -35,7 +35,9 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
+  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
+  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Kroon, bart.kroon@philips.com
@@ -110,13 +112,14 @@ namespace rvs
 			GLuint EBO;
 			size_t number_of_elements;
 
-			VAO_VBO_EBO(const cv::Mat& depth, cv::Size size)
+			VAO_VBO_EBO(cv::Size size) 
 			{
+				cv::Mat1f empty_value = cv::Mat1f::zeros(size);
 				//use fast 4-byte alignment (default anyway) if possible
-				glPixelStorei(GL_UNPACK_ALIGNMENT, (depth.step & 3) ? 1 : 4);
+				glPixelStorei(GL_UNPACK_ALIGNMENT, (empty_value.step & 3) ? 1 : 4);
 
 				//set length of one complete row in data (doesn't need to equal image.cols)
-				glPixelStorei(GL_UNPACK_ROW_LENGTH, GLint(depth.step / depth.elemSize()));
+				glPixelStorei(GL_UNPACK_ROW_LENGTH, GLint(empty_value.step / empty_value.elemSize()));
 
 				glGenVertexArrays(1, &VAO);
 				glBindVertexArray(VAO);
@@ -124,7 +127,7 @@ namespace rvs
 				glGenBuffers(1, &VBO);
 				glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-				glBufferData(GL_ARRAY_BUFFER, depth.rows*depth.cols*depth.elemSize(), depth.ptr(), GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, empty_value.rows*empty_value.cols*empty_value.elemSize(), empty_value.ptr(), GL_STATIC_DRAW);
 
 				generate_picture_EBO(size, number_of_elements);
 
