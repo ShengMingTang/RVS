@@ -63,6 +63,11 @@ namespace rvs
 		auto const equirectangular = "Equirectangular";
 	};
 
+	enum class ColorFormat {
+		YUV420,
+		YUV400
+	};
+
 	/** Camera and video parameters */
 	class Parameters {
 	public:
@@ -116,6 +121,12 @@ namespace rvs
 		/** Depth map bit depth */
 		int getDepthBitDepth() const;
 
+		/** Color space */
+		ColorFormat getColorFormat() const;
+
+		/** Depth color space */
+		ColorFormat getDepthColorFormat() const;
+
 		/** Horizontal angular range (degrees) */
 		cv::Vec2f getHorRange() const;
 
@@ -146,6 +157,8 @@ namespace rvs
 		void setResolutionFrom(json::Node root);
 		void setBitDepthColorFrom(json::Node root);
 		void setBitDepthDepthFrom(json::Node root);
+		void setColorFormatFrom(json::Node root);
+		void setDepthColorFormatFrom(json::Node root);
 		void setHorRangeFrom(json::Node root);
 		void setVerRangeFrom(json::Node root);
 		void setCropRegionFrom(json::Node root);
@@ -163,6 +176,8 @@ namespace rvs
 		cv::Size m_resolution;
 		int m_bitDepthColor;
 		int m_bitDepthDepth;
+		ColorFormat m_colorFormat;
+		ColorFormat m_depthColorFormat;
 		cv::Vec2f m_horRange;
 		cv::Vec2f m_verRange;
 		bool m_isFullHorRange;

@@ -99,11 +99,14 @@ namespace rvs
 			auto neutral = bit_depth == 32
 				? 0.5
 				: 0.5 * (1 + max_level(bit_depth));
-			auto chroma = cv::Mat(image.size() / 2, image.type(), cv::Scalar::all(neutral));
 
 			write_raw(stream, image);
-			write_raw(stream, chroma);
-			write_raw(stream, chroma);
+
+			if (parameters.getDepthColorFormat() == ColorFormat::YUV420) {
+				auto chroma = cv::Mat(image.size() / 2, image.type(), cv::Scalar::all(neutral));
+				write_raw(stream, chroma);
+				write_raw(stream, chroma);
+			}
 		}
 
 		void write_mask_YUV(std::string filepath, cv::Mat1b image, int frame)

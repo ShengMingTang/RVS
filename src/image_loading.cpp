@@ -100,7 +100,18 @@ namespace rvs
 			std::ifstream stream(filepath, std::ios_base::binary);
 			if (!stream.good())
 				throw std::runtime_error("Failed to read raw YUV depth file");
-			stream.seekg(size.area() * image.elemSize() * 3 / 2 * frame); // YUV 4:2:0 also for raw depth streams
+			
+			switch (parameters.getDepthColorFormat()) {
+			case ColorFormat::YUV420:
+				stream.seekg(size.area() * image.elemSize() * 3 / 2 * frame);
+				break;
+			case ColorFormat::YUV400:
+				stream.seekg(size.area() * image.elemSize() * frame);
+				break;
+			default:
+				throw std::logic_error("Unknown depth map color format");
+			}
+
 			read_raw(stream, image);
 			return image;
 		}

@@ -103,6 +103,8 @@ namespace rvs
 		parameters.setResolutionFrom(root);
 		parameters.setBitDepthColorFrom(root);
 		parameters.setBitDepthDepthFrom(root);
+		parameters.setColorFormatFrom(root);
+		parameters.setDepthColorFormatFrom(root);
 		parameters.setHorRangeFrom(root);
 		parameters.setVerRangeFrom(root);
 		parameters.setCropRegionFrom(root);
@@ -179,6 +181,16 @@ namespace rvs
 		return m_bitDepthDepth;
 	}
 
+	ColorFormat Parameters::getColorFormat() const
+	{
+		return m_colorFormat;
+	}
+
+	ColorFormat Parameters::getDepthColorFormat() const
+	{
+		return m_depthColorFormat;
+	}
+
 	cv::Vec2f Parameters::getHorRange() const
 	{
 		assert(m_projectionType == ProjectionType::equirectangular);
@@ -231,10 +243,6 @@ namespace rvs
 
 	void Parameters::validateUnused(json::Node root)
 	{
-		if (root.require("ColorSpace").asString() != "YUV420" || root.require("DepthColorSpace").asString() != "YUV420") {
-			throw std::runtime_error("This version of RVS only supports YUV420 color space for depth and texture");
-		}
-
 		if (root.require("Depthmap").asInt() != 1) {
 			throw std::runtime_error("This version of RVS only supports Depthmap 1");
 		}
@@ -305,6 +313,31 @@ namespace rvs
 	void Parameters::setBitDepthDepthFrom(json::Node root)
 	{
 		m_bitDepthDepth = root.require("BitDepthDepth").asInt();
+	}
+
+	void Parameters::setColorFormatFrom(json::Node root)
+	{
+		auto colorFormat = root.require("ColorSpace").asString();
+
+		if (colorFormat == "YUV420") {
+			m_colorFormat = ColorFormat::YUV420;
+		}
+
+		throw std::runtime_error("This version of RVS only supports YUV420 color space for texture");
+	}
+
+	void Parameters::setDepthColorFormatFrom(json::Node root)
+	{
+		auto depthColorFormat = root.require("DepthColorSpace").asString();
+
+		if (depthColorFormat == "YUV420") {
+			m_depthColorFormat = ColorFormat::YUV420;
+		}
+		else if (depthColorFormat == "YUV400") {
+			m_depthColorFormat = ColorFormat::YUV400;
+		}
+
+		throw std::runtime_error("This version of RVS only supports YUV420 and YUV400 color space for depth");
 	}
 
 	void Parameters::setHorRangeFrom(json::Node root)
