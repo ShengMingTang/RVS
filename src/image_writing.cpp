@@ -166,6 +166,14 @@ namespace rvs
 
 	void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters const& parameters)
 	{
+		write_maskedDepth(filepath, depth, cv::Mat1b(), frame, parameters);
+	}
+
+	void write_maskedDepth(std::string filepath, cv::Mat1f depth, cv::Mat1b mask, int frame, Parameters const& parameters)
+	{
+		// Clone to avoid modifying the input depth
+		depth = depth.clone();
+
 		auto bit_depth = parameters.getDepthBitDepth();
 
 		cv::Mat image;
@@ -184,6 +192,8 @@ namespace rvs
 			else {
 				depth = (far * near / depth - near) / (far - near);
 			}
+
+			depth.setTo(0.f, mask);
 			depth.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
 		}
 

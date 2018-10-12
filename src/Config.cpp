@@ -51,8 +51,11 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <iostream>
 #include <map>
 
+
 namespace rvs
 {
+	bool g_verbose = false;
+
 	namespace detail
 	{
 		float const defaultPrecision = 1.f;
@@ -66,7 +69,8 @@ namespace rvs
 
 	Config Config::loadFromFile(std::string const& filename)
 	{
-		std::cout << '\n';
+		if(g_verbose)
+			std::cout << '\n';
 		std::ifstream stream(filename);
 		auto root = json::Node::readFrom(stream);
 
@@ -83,6 +87,7 @@ namespace rvs
 		config.setOutputFilepaths(root, "MaskedOutputFiles", config.outmaskedfilenames);
 		config.setOutputFilepaths(root, "OutputMasks", config.outmaskfilenames);
 		config.setOutputFilepaths(root, "DepthOutputFiles", config.outdepthfilenames);
+		config.setOutputFilepaths(root, "MaskedDepthOutputFiles", config.outmaskdepthfilenames);
 		config.setValidityThreshold(root);
 		config.setSynthesisMethod(root);
 		config.setBlendingMethod(root);
@@ -98,7 +103,8 @@ namespace rvs
 		auto node = root.optional("VirtualPoseTraceName");
 		if (node) {
 			auto filepath = node.asString();
-			std::cout << "VirtualPoseTraceName: " << filepath << '\n';
+			if(g_verbose)
+				std::cout << "VirtualPoseTraceName: " << filepath << '\n';
 			config.loadPoseTraceFromFile(filepath);
 		}
 
@@ -136,9 +142,12 @@ namespace rvs
 		std::vector<Parameters> parameters;
 		for (auto name : names) {
 			try {
-				std::cout << "  * " << name << ": ";
-				index.at(name).printTo(std::cout);
-				std::cout << '\n';
+				if (g_verbose) 
+				{
+					std::cout << "  * " << name << ": ";
+					index.at(name).printTo(std::cout);
+					std::cout << '\n';
+				}
 				parameters.push_back(index.at(name));
 			}
 			catch (std::out_of_range&) {
@@ -157,7 +166,8 @@ namespace rvs
 			if (static_cast<unsigned>(start_frame + number_of_frames) > pose_trace.size()) {
 				throw std::runtime_error("Error: Number of frames to process is larger then number of entries in pose trace file");
 			}
-			std::cout << std::endl << "Using pose trace with " << pose_trace.size() << " entries" << std::endl;
+			if (g_verbose)
+				std::cout << std::endl << "Using pose trace with " << pose_trace.size() << " entries" << std::endl;
 		}
 	}
 
@@ -167,7 +177,8 @@ namespace rvs
 		if (version.substr(0, 2) != "2.") {
 			throw std::runtime_error("Configuration file does not match the RVS version");
 		}
-		std::cout << "Version: " << version << '\n';
+		if (g_verbose)
+			std::cout << "Version: " << version << '\n';
 	}
 
 	void Config::setInputCameraNamesFrom(json::Node root)
@@ -176,11 +187,14 @@ namespace rvs
 		for (auto i = 0u; i != node.size(); ++i) {
 			InputCameraNames.push_back(node.at(i).asString());
 		}
-		std::cout << "InputCameraNames:";
-		for (auto x : InputCameraNames) {
-			std::cout << ' ' << x;
+		if (g_verbose)
+		{
+			std::cout << "InputCameraNames:";
+			for (auto x : InputCameraNames) {
+				std::cout << ' ' << x;
+			}
+			std::cout << '\n';
 		}
-		std::cout << '\n';
 	}
 
 	void Config::setVirtualCameraNamesFrom(json::Node root)
@@ -189,20 +203,25 @@ namespace rvs
 		for (auto i = 0u; i != node.size(); ++i) {
 			VirtualCameraNames.push_back(node.at(i).asString());
 		}
-		std::cout << "VirtualCameraNames:";
-		for (auto x : VirtualCameraNames) {
-			std::cout << ' ' << x;
+		if (g_verbose)
+		{
+			std::cout << "VirtualCameraNames:";
+			for (auto x : VirtualCameraNames) {
+				std::cout << ' ' << x;
+			}
+			std::cout << '\n';
 		}
-		std::cout << '\n';
 	}
 
 	void Config::setInputCameraParameters(json::Node root)
 	{
 		auto filepath = root.require("InputCameraParameterFile").asString();
-		std::cout << "InputCameraParameterFile: " << filepath << '\n';
+		if (g_verbose)
+			std::cout << "InputCameraParameterFile: " << filepath << '\n';
 		auto overrides = root.optional("InputOverrides");
 		if (overrides) {
-			std::cout << "InputOverrides: " << overrides.size() << " keys\n";
+			if (g_verbose)
+				std::cout << "InputOverrides: " << overrides.size() << " keys\n";
 		}
 		params_real = loadCamerasParametersFromFile(filepath, InputCameraNames, overrides);
 	}
@@ -210,10 +229,12 @@ namespace rvs
 	void Config::setVirtualCameraParameters(json::Node root)
 	{
 		auto filepath = root.require("VirtualCameraParameterFile").asString();
-		std::cout << "VirtualCameraParameterFile: " << filepath << '\n';
+		if (g_verbose)
+			std::cout << "VirtualCameraParameterFile: " << filepath << '\n';
 		auto overrides = root.optional("VirtualOverrides");
 		if (overrides) {
-			std::cout << "VirtualOverrides: " << overrides.size() << " keys\n";
+			if (g_verbose)
+				std::cout << "VirtualOverrides: " << overrides.size() << " keys\n";
 		}
 		params_virtual = loadCamerasParametersFromFile(filepath, VirtualCameraNames, overrides);
 	}
@@ -229,11 +250,14 @@ namespace rvs
 		for (auto i = 0u; i != node.size(); ++i) {
 			filepaths.push_back(node.at(i).asString());
 		}
-		std::cout << name << ':';
-		for (auto x : filepaths) {
-			std::cout << "\n  * " << x;
+		if (g_verbose)
+		{
+			std::cout << name << ':';
+			for (auto x : filepaths) {
+				std::cout << "\n  * " << x;
+			}
+			std::cout << '\n';
 		}
-		std::cout << '\n';
 	}
 
 	void Config::setOutputFilepaths(json::Node root, char const *name, std::vector<std::string>& filepaths)
@@ -248,11 +272,14 @@ namespace rvs
 			for (auto i = 0u; i != node.size(); ++i) {
 				filepaths.push_back(node.at(i).asString());
 			}
-			std::cout << name << ':';
-			for (auto x : filepaths) {
-				std::cout << "\n  * " << x;
+			if (g_verbose)
+			{
+				std::cout << name << ':';
+				for (auto x : filepaths) {
+					std::cout << "\n  * " << x;
+				}
+				std::cout << '\n';
 			}
-			std::cout << '\n';
 		}
 	}
 
@@ -261,7 +288,8 @@ namespace rvs
 		auto node = root.optional("ValidityThreshold");
 		if (node) {
 			validity_threshold = static_cast<float>(node.asDouble());
-			std::cout << "ValidityThreshold: " << validity_threshold << '\n';
+			if (g_verbose)
+				std::cout << "ValidityThreshold: " << validity_threshold << '\n';
 		}
 	}
 
@@ -286,7 +314,8 @@ namespace rvs
 		auto node = root.optional("BlendingFactor");
 		if (node) {
 			blending_factor = static_cast<float>(node.asDouble());
-			std::cout << "BlendingFactor: " << blending_factor << '\n';
+			if (g_verbose)
+				std::cout << "BlendingFactor: " << blending_factor << '\n';
 		}
 	}
 
@@ -294,7 +323,8 @@ namespace rvs
 	{
 		if (blending_method == BlendingMethod::multispectral) {
 			blending_low_freq_factor = static_cast<float>(root.require("BlendingLowFreqFactor").asDouble());
-			std::cout << "BlendingLowFreqFactor: " << blending_low_freq_factor << '\n';
+			if (g_verbose)
+				std::cout << "BlendingLowFreqFactor: " << blending_low_freq_factor << '\n';
 		}
 	}
 
@@ -302,7 +332,8 @@ namespace rvs
 	{
 		if (blending_method == BlendingMethod::multispectral) {
 			blending_high_freq_factor = static_cast<float>(root.require("BlendingHighFreqFactor").asDouble());
-			std::cout << "BlendingHighFreqFactor: " << blending_high_freq_factor << '\n';
+			if (g_verbose)
+				std::cout << "BlendingHighFreqFactor: " << blending_high_freq_factor << '\n';
 		}
 	}
 
@@ -311,7 +342,8 @@ namespace rvs
 		auto node = root.optional("StartFrame");
 		if (node) {
 			start_frame = node.asInt();
-			std::cout << "StartFrame: " << start_frame << '\n';
+			if (g_verbose)
+				std::cout << "StartFrame: " << start_frame << '\n';
 		}
 	}
 
@@ -320,7 +352,8 @@ namespace rvs
 		auto node = root.optional("NumberOfFrames");
 		if (node) {
 			number_of_frames = node.asInt();
-			std::cout << "NumberOfFrames: " << number_of_frames << '\n';
+			if (g_verbose)
+				std::cout << "NumberOfFrames: " << number_of_frames << '\n';
 		}
 	}
 
@@ -329,7 +362,8 @@ namespace rvs
 		auto node = root.optional("Precision");
 		if (node) {
 			detail::g_rescale = static_cast<float>(node.asDouble());
-			std::cout << "Precision: " << detail::g_rescale << '\n';
+			if (g_verbose)
+				std::cout << "Precision: " << detail::g_rescale << '\n';
 		}
 		else {
 			detail::g_rescale = detail::defaultPrecision;
@@ -342,11 +376,13 @@ namespace rvs
 		if (node) {
 			if (node.asString() == "YUV") {
 				detail::g_color_space = detail::ColorSpace::YUV;
-				std::cout << "ColorSpace: YUV\n";
+				if (g_verbose)
+					std::cout << "ColorSpace: YUV\n";
 			}
 			else if (node.asString() == "RGB") {
 				detail::g_color_space = detail::ColorSpace::RGB;
-				std::cout << "ColorSpace: RGB\n";
+				if (g_verbose)
+					std::cout << "ColorSpace: RGB\n";
 			}
 			else {
 				throw std::runtime_error("Unknown color space");

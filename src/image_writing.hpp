@@ -75,6 +75,17 @@ namespace rvs
 	void write_depth(std::string filepath, cv::Mat1f depth, int frame, Parameters const& parameters);
 
 	/**
+	\brief Write a masked depth map in RGB or YUV 4:2:0 fileformat.
+
+	@param filepath Name of the image file to write
+	@param depth Image to write
+	@param mask Binary mask to apply before writing
+	@param frame Frame number (for YUV)
+	@param parameters Camera and video parameters
+	*/
+	void write_maskedDepth(std::string filepath, cv::Mat1f depth, cv::Mat1b mask, int frame, Parameters const& parameters);
+
+	/**
 	\brief Write a mask in RGB or YUV 4:2:0 fileformat.
 
 	@param filepath Name of the image file to write

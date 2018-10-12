@@ -54,10 +54,16 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include <stdexcept>
 #include <string>
 
+namespace rvs
+{
+	extern bool g_verbose;
+}
+
 int main(int argc, char* argv[])
 {
 	try
 	{
+		rvs::g_verbose = true;
 		bool with_analyzer = false;
 		std::string filename;
 
