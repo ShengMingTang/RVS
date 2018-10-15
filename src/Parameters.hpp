@@ -103,6 +103,9 @@ namespace rvs
 		equirectangular: [Rmin, Rmax] */
 		cv::Vec2f getDepthRange() const;
 
+		/** Has invalid depth flag */
+		bool hasInvalidDepth() const;
+
 		/** Padded image size (before cropping) */
 		cv::Size getPaddedSize() const;
 
@@ -154,6 +157,7 @@ namespace rvs
 		void setPositionFrom(json::Node root);
 		void setRotationFrom(json::Node root);
 		void setDepthRangeFrom(json::Node root);
+		void setHasInvalidDepth(json::Node root);
 		void setResolutionFrom(json::Node root);
 		void setBitDepthColorFrom(json::Node root);
 		void setBitDepthDepthFrom(json::Node root);
@@ -173,6 +177,7 @@ namespace rvs
 		cv::Vec3f m_position;
 		cv::Vec3f m_rotation;
 		cv::Vec2f m_depthRange;
+		bool m_hasInvalidDepth;
 		cv::Size m_resolution;
 		int m_bitDepthColor;
 		int m_bitDepthDepth;

@@ -100,6 +100,7 @@ namespace rvs
 		parameters.setPositionFrom(root);
 		parameters.setRotationFrom(root);
 		parameters.setDepthRangeFrom(root);
+		parameters.setHasInvalidDepth(root);
 		parameters.setResolutionFrom(root);
 		parameters.setBitDepthColorFrom(root);
 		parameters.setBitDepthDepthFrom(root);
@@ -154,6 +155,11 @@ namespace rvs
 	cv::Vec2f Parameters::getDepthRange() const
 	{
 		return m_depthRange;
+	}
+
+	bool Parameters::hasInvalidDepth() const
+	{
+		return m_hasInvalidDepth;
 	}
 
 	cv::Size Parameters::getPaddedSize() const
@@ -297,6 +303,17 @@ namespace rvs
 		}
 		if (m_depthRange[1] > 1000.f) {
 			throw std::runtime_error("Invalid depth range: [near, far] with far > 1000 is not allowed because 1000 stands for infinity. Please restrict depth range or change world units.");
+		}
+	}
+
+	void Parameters::setHasInvalidDepth(json::Node root)
+	{
+		// Backwards compatible with RVS 2
+		m_hasInvalidDepth = true;
+
+		auto node = root.optional("HasInvalidDepth");
+		if (node) {
+			m_hasInvalidDepth = node.asBool();
 		}
 	}
 

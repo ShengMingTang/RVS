@@ -244,10 +244,13 @@ namespace rvs
 			depth = far * near / (near + depth * (far - near));
 		}
 
-		// Level 0 is for 'invalid'
-		// Mark invalid pixels as NaN
-		auto const NaN = std::numeric_limits<float>::quiet_NaN();
-		depth.setTo(NaN, image == 0);
+		if (parameters.hasInvalidDepth()) {
+			// Level 0 is for 'invalid'
+			// Mark invalid pixels as NaN
+			auto const NaN = std::numeric_limits<float>::quiet_NaN();
+			depth.setTo(NaN, image == 0);
+		}
+
 		return depth;
 	}
 }
