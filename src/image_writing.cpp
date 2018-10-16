@@ -196,7 +196,9 @@ namespace rvs
 				depth = (far * near / depth - near) / (far - near);
 			}
 
-			depth.setTo(0.f, mask);
+			if (!mask.empty()) {
+				depth.setTo(0.f, mask);
+			}
 			depth.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
 		}
 

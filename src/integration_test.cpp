@@ -164,6 +164,11 @@ namespace testing
 	}
 }
 
+namespace rvs
+{
+	extern bool g_verbose;
+}
+
 FUNC(ULB_Unicorn_Example)
 {
 	rvs::g_with_opengl = false;
@@ -438,6 +443,7 @@ FUNC(TechnicolorMuseum_PoseTrace)
 
 int main(int argc, const char* argv[])
 {
+	rvs::g_verbose = true;
 	cv::setBreakOnError(true);
 	return yaffut::main(argc, argv);
 }

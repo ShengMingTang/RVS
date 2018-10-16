@@ -44,7 +44,6 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Sonneveldt, bart.sonneveldt@philips.com
 */
 
-#define YAFFUT_MAIN
 #include "yaffut.hpp"
 
 #include "PerspectiveProjector.hpp"
@@ -123,6 +122,11 @@ namespace testing
 			return referenceWorldPos;
 		}
 	}
+}
+
+namespace rvs
+{
+	extern bool g_verbose;
 }
 
 FUNC(Test_EquirectangularUnprojector_generateImagePos)
@@ -381,4 +385,11 @@ FUNC(Test_PoseTrace_loadFrom)
 	EQUAL(poseTrace[1].rotation[0], -1337.f);
 	EQUAL(poseTrace[2].rotation[1], 42.f);
 	EQUAL(poseTrace[3].rotation[2], 16.5f);
+}
+
+int main(int argc, const char* argv[])
+{
+	rvs::g_verbose = true;
+	cv::setBreakOnError(true);
+	return yaffut::main(argc, argv);
 }
