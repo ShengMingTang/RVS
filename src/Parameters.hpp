@@ -61,7 +61,7 @@ namespace rvs
 	namespace ProjectionType {
 		auto const perspective = "Perspective";
 		auto const equirectangular = "Equirectangular";
-	};
+	}
 
 	enum class ColorFormat {
 		YUV420,

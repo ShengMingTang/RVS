@@ -9,7 +9,7 @@
 	"OutputFiles": ["TechnicolorMuseum_v0vs_from_v0_2048_2048_420_10b.yuv"],
 	"StartFrame": 0,
 	"NumberOfFrames": 1,
-	"Precision": 2.0,
+	"Precision": 1.0,
 	"ColorSpace": "YUV",
 	"ViewSynthesisMethod": "Triangles",
 	"BlendingMethod": "Simple",

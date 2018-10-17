@@ -16,7 +16,7 @@
 		"TechnicolorMuseum_PoseTrace_Viewport.yuv"],
 	"StartFrame": 0,
 	"NumberOfFrames": 1,
-	"Precision": 2.0,
+	"Precision": 1.0,
 	"ColorSpace": "YUV",
 	"ViewSynthesisMethod": "Triangles",
 	"BlendingMethod": "Simple",

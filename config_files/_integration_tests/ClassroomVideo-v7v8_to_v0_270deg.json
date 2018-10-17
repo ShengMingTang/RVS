@@ -13,7 +13,7 @@
 	"OutputFiles": ["v0_270deg_from_v7v8_2304_1536_420_10b.yuv"],
 	"StartFrame": 0,
 	"NumberOfFrames": 1,
-	"Precision": 2.0,
+	"Precision": 1.0,
 	"ColorSpace": "YUV",
 	"ViewSynthesisMethod": "Triangles",
 	"BlendingMethod": "Simple",

@@ -63,6 +63,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "helpersGL.hpp"
 #endif
 
+const std::string sourcePath = "";
+
 namespace testing
 {
 	template<typename T> std::array<cv::Mat_<T>, 3> readYUV420(char const *filepath, cv::Size size)
@@ -159,7 +161,12 @@ namespace testing
 	{
 		std::cout << "Comparing \"" << filepath_actual << "\" " << size << " with \"" << filepath_reference << "\" " << size << std::endl;
 		auto actual = readYUV420<T>(filepath_actual, size);
-		auto reference = readYUV420<T>(filepath_reference, size);
+		
+		std::string filepath_reference_mod = sourcePath.empty()
+			? filepath_reference
+			: sourcePath + "/" + filepath_reference;
+        
+        auto reference = readYUV420<T>(filepath_reference_mod.c_str(), size);
 		compareWithReferenceView(actual, reference, bits, threshold0, threshold1);
 	}
 }
@@ -172,7 +179,7 @@ namespace rvs
 FUNC(ULB_Unicorn_Example)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/example_config_file.json");
+	rvs::Application p("./config_files/example_config_file.json", sourcePath);
 	p.execute();
 	// No reference
 }
@@ -180,7 +187,7 @@ FUNC(ULB_Unicorn_Example)
 FUNC(ULB_Unicorn_Triangles_Simple)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/Unicorn_Triangles_Simple.json");
+	rvs::Application p("./config_files/_integration_tests/Unicorn_Triangles_Simple.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
@@ -212,7 +219,7 @@ FUNC(ULB_Unicorn_Triangles_Simple)
 FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json");
+	rvs::Application p("./config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
@@ -225,7 +232,7 @@ FUNC(ULB_Unicorn_Triangles_MultiSpectral)
 FUNC(ULB_Unicorn_Same_View)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/Unicorn_Same_View.json");
+	rvs::Application p("./config_files/_integration_tests/Unicorn_Same_View.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
@@ -238,7 +245,7 @@ FUNC(ULB_Unicorn_Same_View)
 FUNC(ClassroomVideo_v0_to_v0)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v0_to_v0.json");
+	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v0_to_v0.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference: texture
@@ -251,20 +258,20 @@ FUNC(ClassroomVideo_v0_to_v0)
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_4096_2048_0_8_1000_0_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_0_8_1000_0_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 45.17, 100.); // VC15 + OpenCV 3.4.1: 45.2363, inf
+		cv::Size(4096, 2048), 10, 100., 100.); // VC15 + OpenCV 3.4.1: inf, inf
 }
 
 FUNC(ClassroomVideo_v7v8_to_v0)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0.json");
+	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
 	testing::compareWithReferenceView<std::uint16_t>(
 		"v0vs_from_v7v8_4096_2048_420_10b.yuv",
 		"ClassroomVideo/v0_4096_2048_420_10b.yuv",
-		cv::Size(4096, 2048), 10, 35.54, 36.05); // VC15 + OpenCV 3.4.1: 35.5953, 36.1051
+		cv::Size(4096, 2048), 10, 35.37, 36.27); // VC15 + OpenCV 3.4.1: 35.3846, 36.2868
 
 #if WITH_OPENGL
 	rvs::g_with_opengl = true;
@@ -289,12 +296,13 @@ FUNC(ClassroomVideo_v7v8_to_v0)
 FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_270deg.json");
+	rvs::Application p("./config_files/_integration_tests/ClassroomVideo-v7v8_to_v0_270deg.json", sourcePath);
 	p.execute();
 
 	auto actual = testing::readYUV420<std::uint16_t>("v0_270deg_from_v7v8_2304_1536_420_10b.yuv", cv::Size(2304, 1536));
 
-	auto reference = testing::readYUV420<std::uint16_t>("ClassroomVideo/v0_4096_2048_420_10b.yuv", cv::Size(4096, 2048));
+    std::string filepath_reference = sourcePath + "ClassroomVideo/v0_4096_2048_420_10b.yuv";
+	auto reference = testing::readYUV420<std::uint16_t>( filepath_reference.c_str(), cv::Size(4096, 2048));
 	cv::resize(reference[0], reference[0], cv::Size(3072, 1536));
 	cv::resize(reference[1], reference[1], cv::Size(1536, 768));
 	cv::resize(reference[2], reference[2], cv::Size(1536, 768));
@@ -303,20 +311,20 @@ FUNC(ClassroomVideo_v7v8_to_v0_270deg)
 	reference[2] = reference[2].colRange(192, 1344);
 
 	// No OpenGL vs reference
-	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 38.02, 38.36); // VC15 + OpenCV 3.4.1: 38.0794, 38.4171
+	testing::compareWithReferenceView<std::uint16_t>(actual, reference, 10, 37.44, 37.86); // VC15 + OpenCV 3.4.1: 37.4546, 37.8746
 }
 
 FUNC(TechnicolorHijack_v1v4_to_v9)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9.json");
+	rvs::Application p("./config_files/_integration_tests/TechnicolorHijack-v1v4_to_v9.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference: texture
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorHijack_v9vs_from_v1v4_4096_4096_420_10b.yuv",
 		"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
-		cv::Size(4096, 4096), 10, 43.71, 35.88); // VC15 + OpenCV 3.4.1: 43.7695, 35.9382
+		cv::Size(4096, 4096), 10, 43.50, 35.71); // VC15 + OpenCV 3.4.1:  43.5123, 35.7278
 	
 	// No OpenGL vs reference: depth
 	testing::compareWithReferenceView<std::uint16_t>(
@@ -347,27 +355,27 @@ FUNC(TechnicolorHijack_v1v4_to_v9)
 FUNC(TechnicolorHijack_BlendByMax)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/TechnicolorHijack-BlendByMax.json");
+	rvs::Application p("./config_files/_integration_tests/TechnicolorHijack-BlendByMax.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorHijack_BlendByMax.yuv",
 		"TechnicolorHijack/v9_4096_4096_420_10b.yuv",
-		cv::Size(4096, 4096), 10, 43.19, 35.28); // VC15 + OpenCV 3.4.1: 43.2489, 35.3325
+		cv::Size(4096, 4096), 10, 42.86, 35.00); // VC15 + OpenCV 3.4.1:  42.8731, 35.0181
 }
 
 FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1.json");
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v0v2v13v17v19_to_v1.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v1vs_from_v0v2v13v17v19_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v1_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 31.76, 38.15); // VC15 + OpenCV 3.4.1: 31.8139, 38.2091
+		cv::Size(2048, 2048), 10, 31.88, 38.42); // VC15 + OpenCV 3.4.1:   31.8979, 38.4389
 
 #if WITH_OPENGL
 	rvs::g_with_opengl = true;
@@ -392,53 +400,53 @@ FUNC(TechnicolorMuseum_v0v2v13v17v19_to_v1)
 FUNC(TechnicolorMuseum_v0_to_v0)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v0_to_v0.json");
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v0_to_v0.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v0vs_from_v0_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v0_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 38.30, 38.96); // VC15 + OpenCV 3.4.1: 38.3575, 39.0146 
+		cv::Size(2048, 2048), 10, 64.65, 73.57); // VC15 + OpenCV 3.4.1: 64.6653, 73.5891
 }
 
 FUNC(TechnicolorMuseum_v5_to_v5)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v5.json");
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v5.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v5vs_from_v5_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v5_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 58.44, 73.73); // VC15 + OpenCV 3.4.1: 58.4967, 73.7879
+		cv::Size(2048, 2048), 10, 58.37, 73.77); // VC15 + OpenCV 3.4.1:   58.3812, 73.7879
 }
 
 FUNC(TechnicolorMuseum_v5_to_v6)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v6.json");
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-v5_to_v6.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_v6vs_from_v5_2048_2048_420_10b.yuv",
 		"TechnicolorMuseum/v6_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 22.37, 26.54); // VC15 + OpenCV 3.4.1: 22.4218, 26.5975
+		cv::Size(2048, 2048), 10, 21.83, 26.50); // VC15 + OpenCV 3.4.1:  21.8415, 26.5167
 }
 
 FUNC(TechnicolorMuseum_PoseTrace)
 {
 	rvs::g_with_opengl = false;
-	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-PoseTrace.json");
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-PoseTrace.json", sourcePath);
 	p.execute();
 
 	// No OpenGL vs reference
 	testing::compareWithReferenceView<std::uint16_t>(
 		"TechnicolorMuseum_PoseTrace.yuv",
 		"TechnicolorMuseum/v6_2048_2048_420_10b.yuv",
-		cv::Size(2048, 2048), 10, 22.37, 26.54); // VC15 + OpenCV 3.4.1: 22.422, 26.5975
+		cv::Size(2048, 2048), 10, 21.83, 26.50); // VC15 + OpenCV 3.4.1:   21.8415, 26.5167
 }
 
 int main(int argc, const char* argv[])

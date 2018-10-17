@@ -77,7 +77,7 @@ namespace rvs
 
 		@param filepath Configuration file (JSON format)
 		*/
-		Application(std::string const& filepath);
+		Application(std::string const& filepath, std::string const& sourcepath = "");
 
 	protected:
 		Config const& getConfig() const override;
