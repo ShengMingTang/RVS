@@ -115,6 +115,11 @@ namespace rvs
 	{
 		// Load the camera parameters
 		std::ifstream stream(filepath);
+		if (!stream.good()) {
+			std::ostringstream what;
+			what << "Failed to open camera parameters file \"" << filepath << "\" for reading";
+			throw std::runtime_error(what.str());
+		}
 		auto root = json::Node::readFrom(stream);
 		auto version_ = root.require("Version").asString();
 		if (version_.substr(0, 2) != "2." &&
