@@ -1,5 +1,5 @@
 {
-	"Version": "2.0",
+	"Version": "3.0",
 	"InputCameraParameterFile": "config_files/ClassroomVideo.json",
 	"VirtualCameraParameterFile": "config_files/ClassroomVideo.json",
 	"InputCameraNames": ["v0"],

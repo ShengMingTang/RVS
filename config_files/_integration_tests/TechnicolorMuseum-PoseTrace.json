@@ -1,7 +1,7 @@
 {
-	"_NOTE": "This test case reconstructs v6 using a pose trace and a modified center view",
-	"Version": "2.0",
-	"InputCameraParameterFile": "config_files/TechnicolorMuseum.json",
+    "_NOTE": "This test case reconstructs v6 using a pose trace and a modified center view",
+    "Version": "3.0",
+   "InputCameraParameterFile": "config_files/TechnicolorMuseum.json",
 	"VirtualCameraParameterFile": "config_files/TechnicolorMuseum.json",
 	"InputCameraNames": ["v5"],
 	"VirtualCameraNames": ["center", "viewport"],
@@ -11,14 +11,18 @@
 	"VirtualPoseTraceName": "config_files/_integration_tests/TechnicolorMuseum-PoseTrace.csv",
 	"ViewImageNames": ["TechnicolorMuseum/v5_2048_2048_420_10b.yuv"],
 	"DepthMapNames": ["TechnicolorMuseum/v5_2048_2048_0_5_25_0_420_10b.yuv"],
-	"OutputFiles": [
-		"TechnicolorMuseum_PoseTrace.yuv",
-		"TechnicolorMuseum_PoseTrace_Viewport.yuv"],
-	"StartFrame": 0,
-	"NumberOfFrames": 1,
-	"Precision": 1.0,
-	"ColorSpace": "YUV",
-	"ViewSynthesisMethod": "Triangles",
-	"BlendingMethod": "Simple",
-	"BlendingFactor": 5.0
+    "OutputFiles": [
+        "TechnicolorMuseum_PoseTrace.yuv",
+        "TechnicolorMuseum_PoseTrace_Viewport.yuv"
+    ],
+    "MaskedDepthOutputFiles": [
+        "TechnicolorMuseum_PoseTrace-masked_depth.yuv",
+        "TechnicolorMuseum_PoseTrace_Viewport-masked_depth.yuv"],
+    "StartFrame": 0,
+    "NumberOfFrames": 1,
+    "Precision": 1.0,
+    "ColorSpace": "YUV",
+    "ViewSynthesisMethod": "Triangles",
+    "BlendingMethod": "Simple",
+    "BlendingFactor": 5.0
 }

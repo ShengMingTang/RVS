@@ -202,6 +202,7 @@ set(CONFIGURATION_FILES
 	config_files/ClassroomVideo.json
 	config_files/TechnicolorMuseum.json
 	config_files/TechnicolorHijack.json
+	config_files/ULB_Unicorn.json
 	config_files/_integration_tests/Unicorn_Same_View.json
 	config_files/_integration_tests/Unicorn_Triangles_MultiSpectral.json
 	config_files/_integration_tests/Unicorn_Triangles_Simple.json

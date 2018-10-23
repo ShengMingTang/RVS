@@ -117,7 +117,8 @@ namespace rvs
 		std::ifstream stream(filepath);
 		auto root = json::Node::readFrom(stream);
 		auto version_ = root.require("Version").asString();
-		if (version_.substr(0, 2) != "2.") {
+		if (version_.substr(0, 2) != "2." &&
+			version_.substr(0, 2) != "3.") {
 			throw std::runtime_error("Version of the camera parameters file is not compatible with this version of RVS");
 		}
 
@@ -174,7 +175,8 @@ namespace rvs
 	void Config::setVersionFrom(json::Node root)
 	{
 		version = root.require("Version").asString();
-		if (version.substr(0, 2) != "2.") {
+		if (version.substr(0, 2) != "2." &&
+			version.substr(0, 2) != "3.") {
 			throw std::runtime_error("Configuration file does not match the RVS version");
 		}
 		if (g_verbose)
