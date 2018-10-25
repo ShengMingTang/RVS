@@ -49,9 +49,19 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 namespace rvs
 {
-	Application::Application(std::string const& filepath)
+	Application::Application(std::string const& filepath, std::string const& sourcepath )
 		: m_config(Config::loadFromFile(filepath))
-	{}
+	{
+        
+        if( !sourcepath.empty() )
+        {
+            for( auto& name : m_config.texture_names )
+                name = sourcepath + "/"+ name;
+                
+            for( auto& name : m_config.depth_names )
+                name = sourcepath + "/" + name;
+        }
+    }
 
 	Config const& Application::getConfig() const
 	{

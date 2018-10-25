@@ -77,8 +77,11 @@ namespace rvs
 			cv::Mat cr_channel(size / 2, type);
 
 			std::ifstream stream(filepath, std::ios::binary);
-			if (!stream.good())
-				throw std::runtime_error("Failed to read raw YUV color file");
+			if (!stream.good()) {
+				std::ostringstream what;
+				what << "Failed to read raw YUV color file \"" << filepath << "\"";
+				throw std::runtime_error(what.str());
+			}
 			stream.seekg(size.area() * y_channel.elemSize() * 3 / 2 * frame);
 			read_raw(stream, y_channel);
 			read_raw(stream, cb_channel);
@@ -98,8 +101,11 @@ namespace rvs
 			auto bit_depth = parameters.getDepthBitDepth();
 			cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1));
 			std::ifstream stream(filepath, std::ios_base::binary);
-			if (!stream.good())
-				throw std::runtime_error("Failed to read raw YUV depth file");
+			if (!stream.good()) {
+				std::ostringstream what;
+				what << "Failed to read raw YUV depth file \"" << filepath << "\"";
+				throw std::runtime_error(what.str());
+			}
 			
 			switch (parameters.getDepthColorFormat()) {
 			case ColorFormat::YUV420:
@@ -244,10 +250,13 @@ namespace rvs
 			depth = far * near / (near + depth * (far - near));
 		}
 
-		// Level 0 is for 'invalid'
-		// Mark invalid pixels as NaN
-		auto const NaN = std::numeric_limits<float>::quiet_NaN();
-		depth.setTo(NaN, image == 0);
+		if (parameters.hasInvalidDepth()) {
+			// Level 0 is for 'invalid'
+			// Mark invalid pixels as NaN
+			auto const NaN = std::numeric_limits<float>::quiet_NaN();
+			depth.setTo(NaN, image == 0);
+		}
+
 		return depth;
 	}
 }

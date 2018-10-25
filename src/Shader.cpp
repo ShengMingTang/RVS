@@ -292,12 +292,24 @@ namespace rvs
 				-n_f.y * r.z / r.x + n_p.y);
 
 			// Image coordinates (in [-1, 1])
-			gl_Position = vec4(
+			/*gl_Position = vec4(
 				 2. * uv.x / w - 1.,
 				-2. * uv.y / h + 1., 0., 1.);
 
 			vs_out.uv = vec2(xy.x / w, xy.y / h);
-			vs_out.depth = 1.;
+			vs_out.depth = 1.;*/
+
+			// Image coordinates (in [-1, 1])
+			if(r.x > 0){
+				gl_Position = vec4(2.0*uv.x/w-1.0, -2.0*uv.y/h+1.0, 1.f, 1.f);
+			}
+			else {
+				gl_Position = vec4(
+					 2. * uv.x / w - 1.,
+					-2. * uv.y / h + 1., -1.0, 1.);
+			}
+			vs_out.uv = vec2(xy.x / w, xy.y / h);
+			vs_out.depth = r.x;
 		}
 
 		void main(void)
@@ -335,13 +347,19 @@ namespace rvs
 		layout(location=1) out float depth;
 		layout(location=2) out float quality;
 
+		uniform float max_depth;
+
 		void main(void)
 		{
 			color = texture(image_texture, gs_uv).rgb;
-			depth = gs_depth;
-			quality = gs_quality;
-			gl_FragDepth = gs_depth / gs_quality;
+			depth = gs_depth/max_depth/10.0;//*100.0;
+			quality = gs_quality/10000.0;
+			if (depth*depth*depth/quality < 0.99)
+				gl_FragDepth = depth*depth*depth/quality;
+			else 
+				gl_FragDepth = 0.99;
 		}
+
 	)";
 		}
 
@@ -366,13 +384,13 @@ namespace rvs
 		uniform float h;
 
 		float valid_tri() {
-			vec2 A = (gl_in[0].gl_Position).xy * vec2(w, h);
+			vec2 A = (gl_in[0].gl_Position).xy * vec2(w, h); 
 			vec2 B = (gl_in[1].gl_Position).xy * vec2(w, h);
-			vec2 C = (gl_in[2].gl_Position).xy * vec2(w, h);
+			vec2 C = (gl_in[2].gl_Position).xy * vec2(w, h); //Coordinate in [-w,w]x[-h,h]
 
-			float dab = length(A - B);
-			float dac = length(A - C);
-			float dbc = length(B - C);
+			float dab = length(A - B)/2.0;
+			float dac = length(A - C)/2.0;
+			float dbc = length(B - C)/2.0;
 
 			float stretch = max(dbc, max(dab, dac));
 
@@ -393,6 +411,12 @@ namespace rvs
 
 		void main() {
 			float quality = valid_tri();
+			for(int idx = 0; idx<3; idx++) // pixel inside the picture
+				if(gl_in[idx].gl_Position.x < -1 || gl_in[idx].gl_Position.x > 1 || gl_in[idx].gl_Position.y < -1 || gl_in[idx].gl_Position.y > 1)
+					return;
+			for(int idx = 0; idx<3; idx++) // pixel before the image plane
+				if(gl_in[idx].gl_Position.z < 0 )
+					return;
 			gen_vertex(0, quality);
 			gen_vertex(1, quality);
 			gen_vertex(2, quality);
@@ -490,6 +514,7 @@ namespace rvs
 			else 
 				quality = 0.0f;
 		}
+
 	)";
 		}
 	}

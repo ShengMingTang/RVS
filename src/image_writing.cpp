@@ -141,7 +141,7 @@ namespace rvs
 		// Quantization
 		auto bit_depth = parameters.getColorBitDepth();
 		cv::Mat image;
-		if (bit_depth == 32) {
+		if (bit_depth == 32 || color_space != ColorSpace::YUV) {
 			image = color;
 		}
 		else {
@@ -160,6 +160,7 @@ namespace rvs
 			write_color_YUV(filepath, image, frame);
 		}
 		else if (frame == 0) {
+			image *= 255.0;
 			cv::imwrite(filepath, image);
 		}
 		else {
@@ -196,7 +197,9 @@ namespace rvs
 				depth = (far * near / depth - near) / (far - near);
 			}
 
-			depth.setTo(0.f, mask);
+			if (!mask.empty()) {
+				depth.setTo(0.f, mask);
+			}
 			depth.convertTo(image, cvdepth_from_bit_depth(bit_depth), max_level(bit_depth));
 		}
 

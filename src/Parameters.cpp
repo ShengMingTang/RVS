@@ -100,6 +100,7 @@ namespace rvs
 		parameters.setPositionFrom(root);
 		parameters.setRotationFrom(root);
 		parameters.setDepthRangeFrom(root);
+		parameters.setHasInvalidDepth(root);
 		parameters.setResolutionFrom(root);
 		parameters.setBitDepthColorFrom(root);
 		parameters.setBitDepthDepthFrom(root);
@@ -154,6 +155,11 @@ namespace rvs
 	cv::Vec2f Parameters::getDepthRange() const
 	{
 		return m_depthRange;
+	}
+
+	bool Parameters::hasInvalidDepth() const
+	{
+		return m_hasInvalidDepth;
 	}
 
 	cv::Size Parameters::getPaddedSize() const
@@ -300,6 +306,17 @@ namespace rvs
 		}
 	}
 
+	void Parameters::setHasInvalidDepth(json::Node root)
+	{
+		// Backwards compatible with RVS 2
+		m_hasInvalidDepth = true;
+
+		auto node = root.optional("HasInvalidDepth");
+		if (node) {
+			m_hasInvalidDepth = node.asBool();
+		}
+	}
+
 	void Parameters::setResolutionFrom(json::Node root)
 	{
 		m_resolution = cv::Size(asIntVec<2>(root.require("Resolution")));
@@ -336,7 +353,7 @@ namespace rvs
 		else if (depthColorFormat == "YUV400") {
 			m_depthColorFormat = ColorFormat::YUV400;
 		}
-		else 
+		else
 			throw std::runtime_error("This version of RVS only supports YUV420 and YUV400 color space for depth");
 	}
 

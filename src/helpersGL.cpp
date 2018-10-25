@@ -96,7 +96,7 @@ namespace rvs
 			if (img.channels() == 4) internalformat = GL_RGBA;
 			if (img.channels() == 3) internalformat = GL_RGB;
 			if (img.channels() == 2) internalformat = GL_RG;
-			if (img.channels() == 1) internalformat = GL_RED;
+			if (img.channels() == 1) internalformat = GL_R32F;
 
 			GLenum externalformat = GL_BGR;
 			if (img.channels() == 1) externalformat = GL_RED; // GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT32F, GL_R32F NOT WORKING!
