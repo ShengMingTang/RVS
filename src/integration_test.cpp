@@ -449,6 +449,23 @@ FUNC(TechnicolorMuseum_PoseTrace)
 		cv::Size(2048, 2048), 10, 21.83, 26.50); // VC15 + OpenCV 3.4.1:   21.8415, 26.5167
 }
 
+FUNC(TechnicolorMuseum_translucency)
+{
+	rvs::g_with_opengl = false;
+	rvs::Application p("./config_files/_integration_tests/TechnicolorMuseum-translucency.json", sourcePath);
+	p.execute();
+
+	testing::compareWithReferenceView<std::uint16_t>(
+		"TechnicolorMuseum_v8vs_from_v3v8_2048x2048_yuv420p10le.yuv",
+		"TechnicolorMuseum/v8_2048_2048_420_10b.yuv",
+		cv::Size(2048, 2048), 10, 43.23, 42.31); // GCC 4.9.2: 43.2881, 42.3646
+
+	testing::compareWithReferenceView<std::uint16_t>(
+		"TechnicolorMuseum_v5vs_from_v3v8_2048x2048_yuv420p10le.yuv",
+		"TechnicolorMuseum/v5_2048_2048_420_10b.yuv",
+		cv::Size(2048, 2048), 10, 29.29, 31.07); // GCC 4.9.2: 29.3411, 31.1295
+}
+
 int main(int argc, const char* argv[])
 {
 	rvs::g_verbose = true;

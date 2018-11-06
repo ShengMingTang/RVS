@@ -1,0 +1,17 @@
+{
+	"Version": "3.0",
+	"InputCameraParameterFile": "config_files/TechnicolorMuseum.json",
+	"VirtualCameraParameterFile": "config_files/TechnicolorMuseum.json",
+	"InputCameraNames": ["v3", "v8"],
+	"VirtualCameraNames": ["v5", "v8"],
+	"ViewImageNames": [
+		"TechnicolorMuseum/v3_2048_2048_420_10b.yuv",
+		"TechnicolorMuseum/v8_2048_2048_420_10b.yuv"],
+	"DepthMapNames": [
+		"TechnicolorMuseum/v3_2048_2048_0_5_25_0_420_10b.yuv",
+		"TechnicolorMuseum/v8_2048_2048_0_5_25_0_420_10b.yuv"],
+    "OutputFiles": [
+        "TechnicolorMuseum_v5vs_from_v3v8_2048x2048_yuv420p10le.yuv",
+        "TechnicolorMuseum_v8vs_from_v3v8_2048x2048_yuv420p10le.yuv"],
+	"NumberOfFrames": 1
+}
