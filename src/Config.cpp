@@ -313,6 +313,8 @@ namespace rvs
 		auto node = root.optional("BlendingMethod");
 		if (node) {
 			blending_method = node.asString();
+			if (g_verbose)
+				std::cout << "BlendingMethod: " << blending_method << '\n';
 		}
 	}
 
