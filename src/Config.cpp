@@ -49,6 +49,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <map>
 
 
@@ -72,6 +73,11 @@ namespace rvs
 		if(g_verbose)
 			std::cout << '\n';
 		std::ifstream stream(filename);
+		if (!stream.good()) {
+			std::ostringstream what;
+			what << "Failed to open configuration file \"" << filename << "\" for reading";
+			throw std::runtime_error(what.str());
+		}
 		auto root = json::Node::readFrom(stream);
 
 		Config config;

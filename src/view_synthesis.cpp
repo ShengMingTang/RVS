@@ -74,12 +74,15 @@ int main(int argc, char* argv[])
 			else if (strcmp(argv[i], "--analyzer") == 0) {
 				with_analyzer = true;
 			}
+			else if (strcmp(argv[i], "--help") == 0) {
+				filename.clear();
+				break;
+			}
 			else if (filename.empty()) {
 				filename = argv[i];
 			}
 			else {
-				throw std::runtime_error("Too many parameters");
-				return 1;
+				throw std::runtime_error("Too many parameters (try --help)");
 			}
 		}
 		
