@@ -141,7 +141,7 @@ namespace rvs
 		// Quantization
 		auto bit_depth = parameters.getColorBitDepth();
 		cv::Mat image;
-		if (bit_depth == 32) {
+		if (bit_depth == 32 || color_space != ColorSpace::YUV) {
 			image = color;
 		}
 		else {
@@ -160,6 +160,7 @@ namespace rvs
 			write_color_YUV(filepath, image, frame);
 		}
 		else if (frame == 0) {
+			image *= 255.0;
 			cv::imwrite(filepath, image);
 		}
 		else {

@@ -89,6 +89,7 @@ namespace rvs
 		if (g_with_opengl) {
 			auto ogl_transformer = static_cast<const OpenGLTransformer*>(m_space_transformer);
 			GLuint image_texture = opengl::cvMat2glTexture(input.get_color());
+			GLuint depth_texture = opengl::cvMat2glTexture(input.get_depth() / input.get_max_depth());
 
 			auto FBO = opengl::RFBO::getInstance();
 			auto& shaders = opengl::ShadersList::getInstance();
@@ -100,7 +101,7 @@ namespace rvs
 			glm::mat3x3 rotation(0);
 			opengl::fromCV2GLM<3, 3>(cv::Mat(R), &rotation);
 
-			const opengl::VAO_VBO_EBO vve(input.get_depth(), input.get_depth().size());
+			const opengl::VAO_VBO_EBO vve(input.get_depth().size());
 
 			GLuint program = shaders("synthesis").getProgramID();
 			assert(program != 0);
@@ -115,13 +116,19 @@ namespace rvs
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, image_texture);
 			glUniform1i(glGetUniformLocation(program, "image_texture"), 0);
-
+		
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, depth_texture);
+			glUniform1i(glGetUniformLocation(program, "depth_texture"), 1);
+	
+	
 			// parameters
 
 			glUniformMatrix3fv(glGetUniformLocation(program, "R"), 1, GL_FALSE, glm::value_ptr(rotation));
 			glUniform3fv(glGetUniformLocation(program, "t"), 1, glm::value_ptr(translation));
 			glUniform1f(glGetUniformLocation(program, "w"), w);
 			glUniform1f(glGetUniformLocation(program, "h"), h);
+			glUniform1f(glGetUniformLocation(program, "max_depth"), static_cast<InputView&>(input).get_max_depth());
 
 			auto input_projection_type = ogl_transformer->getInputParameters().getProjectionType();
 			auto output_projection_type = ogl_transformer->getVirtualParameters().getProjectionType();
@@ -179,6 +186,7 @@ namespace rvs
 			glDisable(GL_DEPTH_TEST);
 
 			glDeleteTextures(GLsizei(1), &image_texture);
+			glDeleteTextures(GLsizei(1), &depth_texture);
 		}
 #endif
 		if (!g_with_opengl) {

@@ -141,7 +141,8 @@ namespace rvs
 	}
 
 	// Load a color image and depth map
-	InputView::InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters)
+	InputView::InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters):
+		parameters(parameters)
 	{
 		assign(
 			read_color(filepath_color, frame, parameters),

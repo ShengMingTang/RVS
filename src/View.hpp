@@ -94,6 +94,9 @@ namespace rvs
 
 		/** @return a mask for invalid masking */
 		cv::Mat1b get_validity_mask(float threshold) const;
+	
+		virtual float get_max_depth() const { return 1.0; };
+		virtual float get_min_depth() const { return 0.0; };
 
 	private:
 		void validate() const;
@@ -115,6 +118,11 @@ namespace rvs
 		Loads an input view and its depth map.
 		*/
 		InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters);
+	
+		float get_max_depth() const { return parameters.getDepthRange()[1]; };
+		float get_min_depth() const { return parameters.getDepthRange()[0];	};
+		
+		Parameters parameters;
 	};
 }
 
