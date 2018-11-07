@@ -5,6 +5,7 @@ Plane_B'_Kinect.zip
 RVS
 *.yuv*
 *.png
+*.exr
 *.log
 Plane_B'
 RVS-o*
