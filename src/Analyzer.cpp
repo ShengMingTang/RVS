@@ -61,22 +61,18 @@ namespace rvs
 			cv::cvtColor(view.get_color(), rgb, cv::COLOR_YCrCb2BGR);
 			cv::Mat3b color;
 			rgb.convertTo(color, CV_8U, 255.);
-
-			cv::Mat1w quality;
-			view.get_quality().convertTo(quality, CV_16U, 4.);
 			std::ostringstream filepath;
-			filepath.str(""); filepath << basename << "-quality-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x4.png";
-			cv::imwrite(filepath.str(), quality);
+			filepath.str(""); filepath << basename << "-color-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << ".png";
+			cv::imwrite(filepath.str(), color);
 
-			cv::Mat1w depth;
-			view.get_depth().convertTo(depth, CV_16U, 2000.);
-			filepath.str(""); filepath << basename << "-depth-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x2000.png";
-			cv::imwrite(filepath.str(), depth);
+			filepath.str(""); filepath << basename << "-quality-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << ".exr";
+			cv::imwrite(filepath.str(), view.get_quality());
 
-			cv::Mat1w validity; // triangle shape
-			view.get_validity().convertTo(validity, CV_16U, 6.);
-			filepath.str(""); filepath << basename << "-validity-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << "_x6.png";
-			cv::imwrite(filepath.str(), validity);
+			filepath.str(""); filepath << basename << "-depth-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << ".exr";
+			cv::imwrite(filepath.str(), view.get_depth());
+
+			filepath.str(""); filepath << basename << "-validity-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << ".exr";
+			cv::imwrite(filepath.str(), view.get_validity());
 
 			filepath.str(""); filepath << basename << "-depth_mask-" << inputFrame << '.' << inputView << "to" << virtualFrame << '.' << virtualView << ".png";
 			cv::imwrite(filepath.str(), view.get_depth_mask());
