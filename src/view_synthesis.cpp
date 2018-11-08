@@ -51,6 +51,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "Analyzer.hpp"
 
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <string>
 
@@ -108,6 +109,9 @@ int main(int argc, char* argv[])
 
 			throw std::runtime_error("Usage: RVS CONFIGURATION_FILE [--noopengl] [--analyzer]");
 		}
+		/*Store clock time before application start
+		 */ 
+		clock_t lStartTime = clock();
 
 #if WITH_OPENGL
 		if (rvs::g_with_opengl) {
@@ -127,6 +131,23 @@ int main(int argc, char* argv[])
 		}
 
 		application->execute();
+    
+		/* Compute execution time
+		 */ 
+		double executeTime= (double)(clock()-lStartTime) / (double)CLOCKS_PER_SEC;
+    
+    if (rvs::g_with_opengl) {
+			std::cout  
+					<< std::endl
+					<< "Reported execution time is not accurate as GPU time is missing."
+					<< std::endl;
+    }
+        
+		std::cout  
+				<< std::endl
+				<< "Total Time: "<< std::fixed << std::setprecision (3) << executeTime
+				<< " sec."
+				<< std::endl;
 		return 0;
 	}
 	catch (std::exception& e)
