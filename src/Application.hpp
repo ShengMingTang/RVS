@@ -84,15 +84,17 @@ namespace rvs
 
 		std::shared_ptr<View> loadInputView(int inputFrame, int inputView, Parameters const& parameters) override;
 
-		virtual bool wantColor();
-		virtual bool wantMaskedColor();
-		virtual bool wantMask();
-		virtual bool wantDepth();
+		bool wantColor() override;
+		bool wantMaskedColor() override;
+		bool wantMask() override;
+		bool wantDepth() override;
+		bool wantMaskedDepth() override;
 
 		void saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
 		void saveMaskedColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters) override;
 		void saveMask(cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters) override;
 		void saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const& parameters) override;
+		void saveMaskedDepth(cv::Mat1f depth, cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const& parameters) override;
 
 	private:
 		Config m_config;

@@ -96,6 +96,11 @@ namespace rvs
 		return !getConfig().outdepthfilenames.empty();
 	}
 
+	bool Application::wantMaskedDepth()
+	{
+		return !getConfig().outmaskdepthfilenames.empty();
+	}
+
 	void Application::saveColor(cv::Mat3f color, int virtualFrame, int virtualView, Parameters const& parameters)
 	{
 		write_color(getConfig().outfilenames[virtualView], color, virtualFrame, parameters);
@@ -115,5 +120,10 @@ namespace rvs
 	void Application::saveDepth(cv::Mat1f depth, int virtualFrame, int virtualView, Parameters const & parameters)
 	{
 		write_depth(getConfig().outdepthfilenames[virtualView], depth, virtualFrame, parameters);
+	}
+
+	void Application::saveMaskedDepth(cv::Mat1f depth, cv::Mat1b mask, int virtualFrame, int virtualView, Parameters const & parameters)
+	{
+		write_maskedDepth(getConfig().outmaskdepthfilenames[virtualView], depth, mask, virtualFrame, parameters);
 	}
 }
