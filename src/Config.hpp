@@ -35,7 +35,9 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
+  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
+  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Kroon, bart.kroon@philips.com
@@ -175,6 +177,9 @@ namespace rvs
 		/** The loaded pose trace */
 		PoseTrace pose_trace;
 
+		/** Automatic view selection */
+		unsigned select_views = 0;
+
 	private:
 		Config() = default;
 
@@ -196,6 +201,7 @@ namespace rvs
 		void setBlendingHighFreqFactor(json::Node root);
 		void setStartFrame(json::Node root);
 		void setNumberOfFrames(json::Node root);
+		void setSelectViews(json::Node root);
 
 		static void setPrecision(json::Node root);
 		static void setColorSpace(json::Node root);

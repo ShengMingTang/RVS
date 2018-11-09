@@ -102,6 +102,7 @@ namespace rvs
 		config.setBlendingHighFreqFactor(root);
 		config.setStartFrame(root);
 		config.setNumberOfFrames(root);
+		config.setSelectViews(root);
 
 		setPrecision(root);
 		setColorSpace(root);
@@ -405,6 +406,17 @@ namespace rvs
 		}
 		else {
 			detail::g_color_space = detail::defaultColorSpace;
+		}
+	}
+
+	void Config::setSelectViews(json::Node root)
+	{
+		auto node = root.optional("SelectViews");
+		if (node) {
+			select_views = static_cast<unsigned>(node.asInt());
+			if (g_verbose) {
+				std::cout << "SelectViews: " << select_views << '\n';
+			}
 		}
 	}
 }

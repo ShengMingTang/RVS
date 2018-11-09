@@ -49,6 +49,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "SynthesizedView.hpp"
 #include "inpainting.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -160,6 +161,9 @@ namespace rvs
 		}
 #endif
 
+		// View selection
+		auto selection = selectViews(params_virtual.getPosition());
+
 		// Setup a view blender
 		auto blender = createBlender(virtualView);
 
@@ -169,6 +173,9 @@ namespace rvs
 
 		// For each input view
 		for (auto inputView = 0u; inputView != getConfig().InputCameraNames.size(); ++inputView) {
+			if (!selection[inputView]) {
+				continue;
+			}
 			std::cout << getConfig().InputCameraNames[inputView] << " => " << getConfig().VirtualCameraNames[virtualView] << std::endl;
 			auto const& params_real = getConfig().params_real[inputView];
 
@@ -298,5 +305,51 @@ namespace rvs
 		}
 #endif
 		return std::unique_ptr<SpaceTransformer>(new GenericTransformer);
+	}
+
+	std::vector<bool> Pipeline::selectViews(cv::Vec3f position)
+	{
+		auto& params = getConfig().params_real;
+		auto num_input_views = params.size();
+
+		// View selection disabled: select all (RVS 2.x and 3.0 behavior)
+		auto select_views = getConfig().select_views;
+		if (select_views == 0) {
+			return std::vector<bool>(num_input_views, true);
+		}
+		
+		// Not too many views: select all
+		if (2 * select_views > num_input_views) {
+			std::cout << "Selecting all views because there are not too many." << std::endl;
+			return std::vector<bool>(num_input_views, true);
+		}
+
+		// When cameras have rotations it gets too complicated: select all
+		for (auto input_view = 0u; input_view != num_input_views; ++input_view) {
+			auto rotation = params[input_view].getRotation();
+			if (cv::norm(rotation) > 5 /*degrees*/) {
+				std::cout << "Selecting all views because cameras are rotated." << std::endl;
+				return std::vector<bool>(num_input_views, true);
+			}
+		}
+
+		// Find nearest views
+		std::vector<std::pair<float, std::size_t>> index;
+		for (auto input_view = 0u; input_view != num_input_views; ++input_view) {
+			auto distance = cv::norm(params[input_view].getPosition() - position);
+			index.emplace_back(distance, input_view);
+		}
+		std::sort(std::begin(index), std::end(index));
+
+		// Extend the selection to include equidistant views
+		auto threshold = index[select_views - 1].first * 1.005;
+		std::cout << "Selecting all views closer than " << threshold << " m." << std::endl;
+		std::vector<bool> selection(num_input_views, false);
+		for (auto i = 0u; i < num_input_views; ++i) {
+			if (index[i].first < threshold) {
+				selection[index[i].second] = true;
+			}
+		}
+		return selection;
 	}
 }
