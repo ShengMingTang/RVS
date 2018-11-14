@@ -201,6 +201,8 @@ namespace rvs
 
 		uniform float w;
 		uniform float h;
+		uniform float n_w;
+		uniform float n_h;
 
 		// Rotation and translation
 		uniform mat3 R;
@@ -301,12 +303,12 @@ namespace rvs
 
 			// Image coordinates (in [-1, 1])
 			if(r.x > 0){
-				gl_Position = vec4(2.0*uv.x/w-1.0, -2.0*uv.y/h+1.0, 1.f, 1.f);
+				gl_Position = vec4(2.0*uv.x/n_w-1.0, -2.0*uv.y/n_h+1.0, 1.f, 1.f);
 			}
 			else {
 				gl_Position = vec4(
-					 2. * uv.x / w - 1.,
-					-2. * uv.y / h + 1., -1.0, 1.);
+					 2. * uv.x / n_w - 1.,
+					-2. * uv.y / n_h + 1., -1.0, 1.);
 			}
 			vs_out.uv = vec2(xy.x / w, xy.y / h);
 			vs_out.depth = r.x;

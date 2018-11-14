@@ -96,6 +96,8 @@ namespace rvs
 
 			float w = float(input.get_depth().cols);
 			float h = float(input.get_depth().rows);
+			float n_w = ogl_transformer->getVirtualParameters().getSize().width;
+			float n_h = ogl_transformer->getVirtualParameters().getSize().height;
 
 			glm::vec3 translation = glm::vec3(t[0], t[1], t[2]);
 			glm::mat3x3 rotation(0);
@@ -128,6 +130,8 @@ namespace rvs
 			glUniform3fv(glGetUniformLocation(program, "t"), 1, glm::value_ptr(translation));
 			glUniform1f(glGetUniformLocation(program, "w"), w);
 			glUniform1f(glGetUniformLocation(program, "h"), h);
+			glUniform1f(glGetUniformLocation(program, "n_w"), n_w);
+			glUniform1f(glGetUniformLocation(program, "n_h"), n_h);
 			glUniform1f(glGetUniformLocation(program, "max_depth"), static_cast<InputView&>(input).get_max_depth());
 
 			auto input_projection_type = ogl_transformer->getInputParameters().getProjectionType();
