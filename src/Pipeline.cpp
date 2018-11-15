@@ -319,7 +319,7 @@ namespace rvs
 		}
 		
 		// Not too many views: select all
-		if (2 * select_views > num_input_views) {
+		if (select_views > num_input_views) {
 			std::cout << "Selecting all views because there are not too many." << std::endl;
 			return std::vector<bool>(num_input_views, true);
 		}
@@ -334,7 +334,7 @@ namespace rvs
 		}
 
 		// Find nearest views
-		std::vector<std::pair<float, std::size_t>> index;
+		std::vector<std::pair<double, std::size_t>> index;
 		for (auto input_view = 0u; input_view != num_input_views; ++input_view) {
 			auto distance = cv::norm(params[input_view].getPosition() - position);
 			index.emplace_back(distance, input_view);
