@@ -96,8 +96,8 @@ namespace rvs
 
 			float w = float(input.get_depth().cols);
 			float h = float(input.get_depth().rows);
-			float n_w = ogl_transformer->getVirtualParameters().getSize().width;
-			float n_h = ogl_transformer->getVirtualParameters().getSize().height;
+			float n_w = float(ogl_transformer->getVirtualParameters().getSize().width);
+			float n_h = float(ogl_transformer->getVirtualParameters().getSize().height);
 
 			glm::vec3 translation = glm::vec3(t[0], t[1], t[2]);
 			glm::mat3x3 rotation(0);
