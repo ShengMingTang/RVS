@@ -186,11 +186,6 @@ namespace rvs
 		*/
 		virtual std::unique_ptr<SynthesizedView> createSynthesizer(int inputView, int virtualView);
 
-		/**
-		\brief Select input views based on current virtual camera position
-		*/
-		virtual std::vector<bool> selectViews(cv::Vec3f position);
-
 	private:
 		/**
 		\brief Computes one frame of a virtual view
