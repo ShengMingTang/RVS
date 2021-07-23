@@ -83,8 +83,8 @@ namespace rvs
 			cv::resize(dst[2], dst[2], cv::Size(), 0.5, 0.5, cv::INTER_CUBIC);
 
 			write_raw(stream, dst[0]);
-			write_raw(stream, dst[2]);
 			write_raw(stream, dst[1]);
+			write_raw(stream, dst[2]);
 		}
 
 		void write_depth_YUV(std::string filepath, cv::Mat image, int frame, Parameters const& parameters)
@@ -132,10 +132,10 @@ namespace rvs
 			? ColorSpace::YUV
 			: ColorSpace::RGB;
 		if (g_color_space == ColorSpace::YUV && color_space == ColorSpace::RGB) {
-			cv::cvtColor(color, color, cv::COLOR_YCrCb2BGR);
+			cv::cvtColor(color, color, cv::COLOR_YUV2BGR);
 		}
 		else if (g_color_space == ColorSpace::RGB && color_space == ColorSpace::YUV) {
-			cv::cvtColor(color, color, cv::COLOR_BGR2YCrCb);
+			cv::cvtColor(color, color, cv::COLOR_BGR2YUV);
 		}
 
 		// Quantization

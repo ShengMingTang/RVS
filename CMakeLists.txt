@@ -154,6 +154,7 @@ endif()
 
 set(PROJECT_SOURCES
 	src/BlendedView.cpp
+	src/PolynomialDepth.cpp
 	src/Config.cpp
 	src/Parameters.cpp
 	src/JsonParser.cpp
@@ -176,6 +177,7 @@ set(PROJECT_SOURCES
 
 set(PROJECT_HEADERS
 	src/BlendedView.hpp
+	src/PolynomialDepth.hpp
 	src/Config.hpp
 	src/JsonParser.hpp
 	src/Pipeline.hpp

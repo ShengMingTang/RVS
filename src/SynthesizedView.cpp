@@ -84,18 +84,73 @@ namespace rvs
 
 		auto R = m_space_transformer->get_rotation();
 		auto t = m_space_transformer->get_translation();
+		distance_from_origin = cv::max(0.01,cv::norm(t));
+		
+		GLuint nl_mask_idx;
+		if (input.get_displacementMethod() == DisplacementMethod::polynomial) {
+			cv::Mat1f newmask = cv::Mat1f::zeros(input.get_polynomial_depth().m_polynomial[19].size());
+			cv::Vec3f disp = R * t;
+			cv::Mat1f dispx = disp[1] * input.get_polynomial_depth().m_polynomial[9];
+			cv::Mat1f dispy = disp[2] * input.get_polynomial_depth().m_polynomial[9];
+			for (int y = 0; y < dispx.size().height; ++y) {
+				for (int x = 0; x < dispx.size().height; ++x) {
+					int dy = floor(y - dispy.at<float>(y, x));
+					int dx = floor(x - dispx.at<float>(y, x));
+					dy = cv::min(cv::max(0, dy), dispx.size().height - 1);
+					dx = cv::min(cv::max(0, dx), dispx.size().width - 1);
+					if (input.get_polynomial_depth().m_polynomial[19].at<float>(y, x) > 0.1)
+						newmask.at<float>(dy, dx) = 1.0;
+				}
+			}
+			cv::morphologyEx(newmask, newmask, cv::MORPH_CLOSE, cv::getStructuringElement(0, cv::Size(5, 5)), cv::Point(-1, -1), 2);
+			cv::morphologyEx(newmask, newmask, cv::MORPH_OPEN, cv::getStructuringElement(0, cv::Size(5, 5)));
+#if WITH_OPENGL
+			if (g_with_opengl) {
+				nl_mask_idx = opengl::cvMat2glTexture(newmask);
+			}
+#endif
+		}
 
 #if WITH_OPENGL
 		if (g_with_opengl) {
 			auto ogl_transformer = static_cast<const OpenGLTransformer*>(m_space_transformer);
 			GLuint image_texture = opengl::cvMat2glTexture(input.get_color());
-			GLuint depth_texture = opengl::cvMat2glTexture(input.get_depth() / input.get_max_depth());
+			GLuint depth_texture;
+			GLuint mask_texture;
+			GLuint polynomial1_texture;
+			GLuint polynomial2_texture;
+			GLuint polynomial3_texture;
+			GLuint polynomial4_texture;
+			GLuint polynomial5_texture;
+			if (input.get_displacementMethod() == DisplacementMethod::depth)
+				depth_texture = opengl::cvMat2glTexture(input.get_depth() / input.get_max_depth());
+			if (input.get_displacementMethod() == DisplacementMethod::polynomial) {
+				std::array<cv::Mat1f, 20> polynomial = input.get_polynomial_depth().m_polynomial;
+				std::vector<cv::Mat1f> pol1 = { polynomial[0],polynomial[1],polynomial[2],polynomial[3] };
+				std::vector<cv::Mat1f> pol2 = { polynomial[4],polynomial[5],polynomial[6],polynomial[7] };
+				std::vector<cv::Mat1f> pol3 = { polynomial[8],polynomial[9],polynomial[10],polynomial[11] };
+				std::vector<cv::Mat1f> pol4 = { polynomial[12],polynomial[13],polynomial[14],polynomial[15] };
+				std::vector<cv::Mat1f> pol5 = { polynomial[16],polynomial[17],polynomial[18],polynomial[19] };
+				cv::Mat4f p1, p2, p3, p4, p5;
+				cv::merge(pol1, p1);
+				cv::merge(pol2, p2);
+				cv::merge(pol3, p3);
+				cv::merge(pol4, p4);
+				cv::merge(pol5, p5);
+				depth_texture = opengl::cvMat2glTexture(polynomial[9]);
+				mask_texture = opengl::cvMat2glTexture(polynomial[19]);
+				polynomial1_texture = opengl::cvMat2glTexture(p1);
+				polynomial2_texture = opengl::cvMat2glTexture(p2);
+				polynomial3_texture = opengl::cvMat2glTexture(p3);
+				polynomial4_texture = opengl::cvMat2glTexture(p4);
+				polynomial5_texture = opengl::cvMat2glTexture(p5);
+			}
 
 			auto FBO = opengl::RFBO::getInstance();
 			auto& shaders = opengl::ShadersList::getInstance();
 
-			float w = float(input.get_depth().cols);
-			float h = float(input.get_depth().rows);
+			float w = float(input.get_size().width);//.get_depth().cols);
+			float h = float(input.get_size().height);//.get_depth().rows);
 			float n_w = float(ogl_transformer->getVirtualParameters().getSize().width);
 			float n_h = float(ogl_transformer->getVirtualParameters().getSize().height);
 
@@ -105,7 +160,11 @@ namespace rvs
 
 			const opengl::VAO_VBO_EBO vve(input.get_depth().size());
 
-			GLuint program = shaders("synthesis").getProgramID();
+			GLuint program;
+			if (input.get_displacementMethod() == DisplacementMethod::polynomial)
+				program = shaders("synthesis_polynomial").getProgramID();
+           		 else
+				program = shaders("synthesis").getProgramID();
 			assert(program != 0);
 
 			glEnable(GL_DEPTH_TEST);
@@ -118,14 +177,43 @@ namespace rvs
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, image_texture);
 			glUniform1i(glGetUniformLocation(program, "image_texture"), 0);
-		
+
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, depth_texture);
 			glUniform1i(glGetUniformLocation(program, "depth_texture"), 1);
 	
-	
-			// parameters
+			if (input.get_displacementMethod() == DisplacementMethod::polynomial){
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, mask_texture);
+				glUniform1i(glGetUniformLocation(program, "mask_texture"), 2);
 
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_2D, polynomial1_texture);
+				glUniform1i(glGetUniformLocation(program, "polynomial1_texture"), 3);
+
+				glActiveTexture(GL_TEXTURE4);
+				glBindTexture(GL_TEXTURE_2D, polynomial2_texture);
+				glUniform1i(glGetUniformLocation(program, "polynomial2_texture"), 4);
+
+				glActiveTexture(GL_TEXTURE5);
+				glBindTexture(GL_TEXTURE_2D, polynomial3_texture);
+				glUniform1i(glGetUniformLocation(program, "polynomial3_texture"), 5);
+
+				glActiveTexture(GL_TEXTURE6);
+				glBindTexture(GL_TEXTURE_2D, polynomial4_texture);
+				glUniform1i(glGetUniformLocation(program, "polynomial4_texture"), 6);
+
+				glActiveTexture(GL_TEXTURE7);
+				glBindTexture(GL_TEXTURE_2D, polynomial5_texture);
+				glUniform1i(glGetUniformLocation(program, "polynomial5_texture"), 7);
+
+				glActiveTexture(GL_TEXTURE8);
+				glBindTexture(GL_TEXTURE_2D, nl_mask_idx);
+				glUniform1i(glGetUniformLocation(program, "nl_output_mask"), 8);
+			}
+
+
+			// parameters
 			glUniformMatrix3fv(glGetUniformLocation(program, "R"), 1, GL_FALSE, glm::value_ptr(rotation));
 			glUniform3fv(glGetUniformLocation(program, "t"), 1, glm::value_ptr(translation));
 			glUniform1f(glGetUniformLocation(program, "w"), w);
@@ -188,15 +276,26 @@ namespace rvs
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			glDisable(GL_DEPTH_TEST);
-
+			
 			glDeleteTextures(GLsizei(1), &image_texture);
 			glDeleteTextures(GLsizei(1), &depth_texture);
+			if (input.get_displacementMethod() == DisplacementMethod::polynomial) {
+				glDeleteTextures(GLsizei(1), &mask_texture);
+				glDeleteTextures(GLsizei(1), &polynomial1_texture);
+				glDeleteTextures(GLsizei(1), &polynomial2_texture);
+				glDeleteTextures(GLsizei(1), &polynomial3_texture);
+				glDeleteTextures(GLsizei(1), &polynomial4_texture);
+				glDeleteTextures(GLsizei(1), &polynomial5_texture);
+				
+				glDeleteTextures(GLsizei(1), &nl_mask_idx);
+				
+			}
 		}
 #endif
 		if (!g_with_opengl) {
 			auto const& pu_transformer = static_cast<const GenericTransformer*>(m_space_transformer);
 
-			// Generate image coordinates 
+			// Generate image coordinates
 			auto input_uv = pu_transformer->generateImagePos();
 
 			// Unproject: input view image to input view world coordinates
@@ -206,7 +305,7 @@ namespace rvs
 			auto virtual_xyz = affine_transform(input_xyz, R, t);
 
 			// Project: output view world to output view image coordinates
-			cv::Mat1f virtual_depth; // Depth 
+			cv::Mat1f virtual_depth; // Depth
 			WrappingMethod wrapping_method;
 			auto virtual_uv = pu_transformer->project(virtual_xyz, /*out*/ virtual_depth, /*out*/ wrapping_method);
 

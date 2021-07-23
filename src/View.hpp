@@ -48,6 +48,8 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #define _VIEW_HPP_
 
 #include "Parameters.hpp"
+#include "helpersGL.hpp"
+#include "PolynomialDepth.hpp"
 
 /**
 @file View.hpp
@@ -70,12 +72,16 @@ namespace rvs
 
 		/** Assign all maps at once */
 		void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f);
+		void assign(cv::Mat3f, cv::Mat1f, cv::Mat1f, cv::Mat1f, rvs::PolynomialDepth);
 
 		/** @return the texture */
-		virtual cv::Mat3f get_color() const;
+		cv::Mat3f get_color() const;
 
 		/** @return the depth map (same size as texture) */
 		cv::Mat1f get_depth() const;
+		PolynomialDepth get_polynomial_depth() const;
+
+		bool has_linear_depth() const;
 
 		/** @return the quality map (same size as texture) */
 		cv::Mat1f get_quality() const;
@@ -94,9 +100,13 @@ namespace rvs
 
 		/** @return a mask for invalid masking */
 		cv::Mat1b get_validity_mask(float threshold) const;
-	
+
 		virtual float get_max_depth() const { return 1.0; };
 		virtual float get_min_depth() const { return 0.0; };
+		virtual DisplacementMethod get_displacementMethod() const {return DisplacementMethod::depth;};
+		float distance_from_origin = 1.0;
+
+		std::string g_filename = "";
 
 	private:
 		void validate() const;
@@ -105,6 +115,7 @@ namespace rvs
 		cv::Mat1f m_depth;
 		cv::Mat1f m_quality;
 		cv::Mat1f m_validity;
+		rvs::PolynomialDepth m_polynomial_depth;
 	};
 
 	/**
@@ -118,11 +129,26 @@ namespace rvs
 		Loads an input view and its depth map.
 		*/
 		InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters);
-	
+
+
+		/** @return the size of the texture and depth map */
+		cv::Size get_size() const {
+			return parameters.getSize();
+		};
+		void load();
+		void unload();
+		bool is_loaded() { return loaded; };
 		float get_max_depth() const { return parameters.getDepthRange()[1]; };
 		float get_min_depth() const { return parameters.getDepthRange()[0];	};
 		
-		Parameters parameters;
+		DisplacementMethod get_displacementMethod() const;
+
+	private:
+		const Parameters parameters;
+		std::string filepath_color;
+		std::string filepath_depth;
+		int frame;
+		bool loaded = false;
 	};
 }
 

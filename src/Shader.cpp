@@ -164,6 +164,11 @@ namespace rvs
 					getSynthesisFragmentShaderSource(),
 					getSynthesisGeometryShaderSource())
 				},
+				{ "synthesis_polynomial", Shader(
+					getSynthesisVertexShaderSourcePolynomial(),
+					getSynthesisFragmentShaderSource(),
+					getSynthesisGeometryShaderSource())
+				},
 				{ "blending1", Shader(
 					getBlendingVertexShaderSource(),
 					getBlendingFragmentShaderSource(1))
@@ -197,12 +202,16 @@ namespace rvs
 		out VS_OUT {
 			vec2 uv;
 			float depth;
+			vec3 pos_in; //for normal computation
+			vec3 pos_out; //for normal computation
 		} vs_out;
 
 		uniform float w;
 		uniform float h;
 		uniform float n_w;
 		uniform float n_h;
+		uniform float sensor;
+
 
 		// Rotation and translation
 		uniform mat3 R;
@@ -322,9 +331,11 @@ namespace rvs
 				eucl = unproject_equirectangular();
 			else
 				eucl = unproject_perspective();
-			
+			vs_out.pos_in = eucl;
+
 			eucl = R * eucl + t;
 
+			vs_out.pos_out = eucl;
 			if (erp_out == 1)
 				project_equirectangular(eucl);
 			else
@@ -354,12 +365,23 @@ namespace rvs
 		void main(void)
 		{
 			color = texture(image_texture, gs_uv).rgb;
-			depth = gs_depth/max_depth/10.0;//*100.0;
-			quality = gs_quality/10000.0;
-			if (depth*depth*depth/quality < 0.99)
-				gl_FragDepth = depth*depth*depth/quality;
-			else 
-				gl_FragDepth = 0.99;
+			//depth = gs_depth/max_depth/1000.0;//*100.0;
+			//quality = 0.01*gs_quality/depth/depth/depth; //version lambertien
+			depth = gs_depth/max_depth;
+			quality = gs_quality/15.0/depth/depth; 
+ 			//quality = 0.1*gs_quality; //version non-lambertien only
+
+            if(quality >0.0f){
+                gl_FragDepth = gs_depth/max_depth;
+                depth = 1.0/gs_quality;}
+                else
+                {
+                   gl_FragDepth = 0.99;
+				   depth = 1.0;
+				   quality = 0.00;
+                } //version non-lambertien only
+			return;
+			
 		}
 
 	)";
@@ -376,6 +398,8 @@ namespace rvs
 		in VS_OUT {
 			vec2 uv;
 			float depth;
+			vec3 pos_in; //for normal computation
+			vec3 pos_out; //for normal computation
 		} gs_in[];
 
 		out vec2 gs_uv;
@@ -384,9 +408,11 @@ namespace rvs
 
 		uniform float w;
 		uniform float h;
+		uniform float max_depth;
+		uniform float min_depth;
 
-		float valid_tri() {
-			vec2 A = (gl_in[0].gl_Position).xy * vec2(w, h); 
+		float get_quality() { 
+			vec2 A = (gl_in[0].gl_Position).xy * vec2(w, h);
 			vec2 B = (gl_in[1].gl_Position).xy * vec2(w, h);
 			vec2 C = (gl_in[2].gl_Position).xy * vec2(w, h); //Coordinate in [-w,w]x[-h,h]
 
@@ -396,23 +422,34 @@ namespace rvs
 
 			float stretch = max(dbc, max(dab, dac));
 
-			float quality = 10000. - 1000. * stretch;
-			quality = max(1., quality); // always > 0
-			quality = min(10000., quality);
-
+			float quality = max(0.0,15.0 - stretch);
 			return quality;
 		}
-
 		void gen_vertex(int index, float quality) {
 			gs_quality = quality;
-			gs_uv = gs_in[index].uv;
-			gs_depth = gs_in[index].depth;
+			if (quality > 000){
+				gs_uv = gs_in[index].uv;
+				gs_depth = gs_in[index].depth;
+				//gs_depth = max(gs_in[0].depth,max(gs_in[1].depth,gs_in[2].depth));
+			}
+			else{
+				vec2 uv_max = gs_in[0].uv;
+				float d_max = gs_in[0].pos_in.x;
+				for (int idx = 1; idx < 3; ++idx){
+					if (d_max < gs_in[idx].pos_in.x){
+						d_max = gs_in[idx].pos_in.x;
+						uv_max = gs_in[idx].uv;
+					}
+				}
+				gs_uv = uv_max;
+				gs_depth = d_max;
+			}
 			gl_Position = gl_in[index].gl_Position;
 			EmitVertex();
 		}
 
 		void main() {
-			float quality = valid_tri();
+			float quality = get_quality();//mix(get_quality_depthdiff(),get_quality_15px(),0.5);
 			for(int idx = 0; idx<3; idx++) // pixel inside the picture
 				if(gl_in[idx].gl_Position.x < -1 || gl_in[idx].gl_Position.x > 1 || gl_in[idx].gl_Position.y < -1 || gl_in[idx].gl_Position.y > 1)
 					return;
@@ -468,6 +505,7 @@ namespace rvs
 		uniform sampler2D new_depth;
 
 		uniform float blending_factor;
+		uniform float input_distance;
 
 		in vec2 vs_position;
 
@@ -486,7 +524,7 @@ namespace rvs
 			if(blending_factor > 0.5f)
 			{
 				accu_w = pow(accu_quality, blending_factor);
-				new_w = pow(n_triangle_quality/n_depth, blending_factor);
+				new_w = pow(n_triangle_quality/n_depth/input_distance, blending_factor);
 			}
 			else{
 				accu_w = 1.0;
@@ -517,6 +555,161 @@ namespace rvs
 				quality = 0.0f;
 		}
 
+	)";
+		}
+		std::string ShadersList::getSynthesisVertexShaderSourcePolynomial()
+		{
+			return R"(
+		#version 420 core
+
+		layout(location = 0) in float empty_value;
+		uniform sampler2D depth_texture;
+		uniform sampler2D mask_texture;
+		uniform sampler2D polynomial1_texture;
+		uniform sampler2D polynomial2_texture;
+		uniform sampler2D polynomial3_texture;
+		uniform sampler2D polynomial4_texture;
+		uniform sampler2D polynomial5_texture;
+		uniform sampler2D nl_output_mask;
+
+		out VS_OUT {
+			vec2 uv;
+			float depth;
+			vec3 pos_in; //for normal computation
+			vec3 pos_out; //for normal computation
+		} vs_out;
+
+		uniform float w;
+		uniform float h;
+		uniform float n_w;
+		uniform float n_h;
+		uniform float sensor;
+
+
+		// Rotation and translation
+		uniform mat3 R;
+		uniform vec3 t;
+
+		// Input/output projection types 0 perspective, 1 erp, 2 Xslit
+		uniform int erp_in;
+		uniform int erp_out;
+
+		// Perspective unprojection
+		uniform vec2 f;
+		uniform vec2 p;
+
+		// Perspective projection
+		uniform vec2 n_f;
+		uniform vec2 n_p;
+
+
+		uniform float max_depth;
+
+		vec2 get_position_from_Vertex_ID(int id, float width) {
+			int y = id / int(width);
+			int x = id - y * int(width);
+			return vec2(float(x), float(y));
+		}
+
+		vec2 get_pos_in_plane(){
+			vec3 transl = -transpose(R)*t;
+			vec2 uv = get_position_from_Vertex_ID(gl_VertexID, w);
+			vec4 d = texture(depth_texture, vec2(uv.x/w, uv.y/h)).xyzw;
+			mat2 m = mat2(d.x,0,0,d.x);//column major
+			mat2 A = -transl.x/f.x*m+(1.f)*mat2(1.f,0.f,0.f,1.f);
+			mat2 Ainv = inverse(A);
+			return Ainv*(transl.yz+(transl.x/f.x)*(uv-p));
+		}
+
+		vec2 polynomial(vec2 st, vec4 p1, vec4 p2, vec4 p3, vec4 p4, vec4 p5){
+		    float u =    st.x*st.x*st.x*p1.x
+                        +st.x*st.x*st.y*p1.y
+                        +st.x*st.y*st.y*p1.z
+                        +st.y*st.y*st.y*p1.w
+                        +st.x*st.x*p2.x
+                        +st.x*st.y*p2.y
+                        +st.y*st.y*p2.z
+                        +st.x*p2.w
+                        +st.y*p3.x;
+		    float v =    st.x*st.x*st.x*p3.z
+                        +st.x*st.x*st.y*p3.w
+                        +st.x*st.y*st.y*p4.x
+                        +st.y*st.y*st.y*p4.y
+                        +st.x*st.x*p4.z
+                        +st.x*st.y*p4.w
+                        +st.y*st.y*p5.x
+                        +st.x*p5.y
+                        +st.y*p5.z;
+            return vec2(u,v);
+		}
+
+		vec2 interpolate_polynomial(vec2 xy,vec2 st){
+			//vec3 transl = -transpose(R)*t;
+		    vec4 p1 = texture(polynomial1_texture, vec2(xy.x/w, xy.y/h)).xyzw;
+		    vec4 p2 = texture(polynomial2_texture, vec2(xy.x/w, xy.y/h)).xyzw;
+		    vec4 p3 = texture(polynomial3_texture, vec2(xy.x/w, xy.y/h)).xyzw;
+		    vec4 p4 = texture(polynomial4_texture, vec2(xy.x/w, xy.y/h)).xyzw;
+		    vec4 p5 = texture(polynomial5_texture, vec2(xy.x/w, xy.y/h)).xyzw;
+		   // vec2 st = transl.yz;
+		    return xy.xy+polynomial(st,p1,p2,p3,p4,p5) -p;
+		}
+
+		vec2 apply_matrix(vec2 t2){
+			vec2 xy = get_position_from_Vertex_ID(gl_VertexID, w);
+			float d = texture(depth_texture, vec2(xy.x/w, xy.y/h)).x;
+			float mask = texture(mask_texture, vec2(xy.x/w, xy.y/h)).x;
+
+			mat2 m = mat2(d,0,0.0,d);//column major
+			vec2 uv = (m*t2)+xy/*+n_p*/-p;
+			vs_out.uv = vec2(xy.x / w, xy.y / h);
+			float depth =abs(f.x/m[0][0]);//0.5;
+
+			vec3 transl = -transpose(R)*t;
+		    vec2 st = transl.yz;
+			if (mask < 0.1 ||
+                    texture(mask_texture, vec2(xy.x/w, (xy.y-1)/h)).x < 0.1 ||
+                    texture(mask_texture, vec2((xy.x-1)/w, xy.y/h)).x < 0.1 ||
+                    texture(mask_texture, vec2((xy.x+1)/w, xy.y/h)).x < 0.1 ||
+                    texture(mask_texture, vec2(xy.x/w, (xy.y+1)/h)).x < 0.1 ||
+                    texture(mask_texture, vec2((xy.x-1)/w, (xy.y-1)/h)).x < 0.1 ||
+                    texture(mask_texture, vec2((xy.x-1)/w, (xy.y+1)/h)).x < 0.1 ||
+                    texture(mask_texture, vec2((xy.x+1)/w, (xy.y-1)/h)).x < 0.1 ||
+                    texture(mask_texture, vec2((xy.x+1)/w, (xy.y+1)/h)).x < 0.1
+                )
+              {
+                //return vec2(uv.x, uv.y);
+                vs_out.depth = depth;
+                return (m*t2)+xy-p;
+              }
+            else
+              {
+                vs_out.depth = depth;
+                vec2 new_pos_uv = interpolate_polynomial(xy,t2);
+				vec2 new_pos_xy = vec2((new_pos_uv.x+p.x)/w, (new_pos_uv.y+p.y)/h);
+				float output_mask = texture(nl_output_mask, vec2(new_pos_xy.x, new_pos_xy.y)).x;
+				if ( output_mask > 0.1)
+					return new_pos_uv;
+				else 
+					return vec2(-w,-h);
+              }
+		}
+
+		void apply_rotation(vec2 uv){
+
+
+			vec3 dir = vec3(f.x,-uv.x,-uv.y);
+			vec3 n_dir = /*transpose*/(R)*dir;
+			float x = n_f.x/n_dir.x;
+			n_dir = (x*n_dir)+vec3(0,n_w-n_p.x,n_h-n_p.y);
+			gl_Position = vec4(-2.0*n_dir.y/n_w+1.0, 2.0*n_dir.z/n_h-1.0, 1., 1.);
+		}
+
+		void main(void)
+		{
+			vec2 t2 = get_pos_in_plane();
+			vec2 uv =  apply_matrix(t2);
+			apply_rotation(uv);
+		}
 	)";
 		}
 	}

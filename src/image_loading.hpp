@@ -35,7 +35,9 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
+  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
+  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Kroon, bart.kroon@philips.com
@@ -46,6 +48,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #define _IMAGE_LOADING_HPP_
 
 #include "Parameters.hpp"
+#include "PolynomialDepth.hpp"
 
 namespace rvs
 {
@@ -94,6 +97,7 @@ namespace rvs
 	Result may have NaN values to indicate missing depth values
 	*/
 	cv::Mat1f read_depth(std::string filepath, int frame, Parameters const& parameters);
+	rvs::PolynomialDepth read_polynomial_depth(std::string filepath, int frame, Parameters const& parameters);
 }
 
 #endif

@@ -60,14 +60,25 @@ namespace rvs
 	/**\brief Projection type
 
 	\see Projector*/
+	enum class ProjectionNumber {
+		perspective,
+		equirectangular
+	};
+
 	namespace ProjectionType {
 		auto const perspective = "Perspective";
 		auto const equirectangular = "Equirectangular";
+		int get_number(std::string proj);
 	}
 
 	enum class ColorFormat {
 		YUV420,
 		YUV400
+	};
+
+	enum class DisplacementMethod {
+		depth,
+		polynomial
 	};
 
 	/** Camera and video parameters */
@@ -104,6 +115,9 @@ namespace rvs
 		perspective: [znear, zfar]
 		equirectangular: [Rmin, Rmax] */
 		cv::Vec2f getDepthRange() const;
+
+		/** MultiDepth range */
+		cv::Vec2f getMultiDepthRange() const;
 
 		/** Has invalid depth flag */
 		bool hasInvalidDepth() const;
@@ -143,14 +157,18 @@ namespace rvs
 
 		/** Intrinsic parameter of focal length (perspective) */
 		cv::Vec2f getFocal() const;
+		void setFocal(cv::Vec2f f);
 
 		/** Intrinsic parameter of principle point (perspective)
 
 		The value returned is already adjusted to refer to the cropped region. */
 		cv::Vec2f getPrinciplePoint() const;
+		void setPrinciplePoint(cv::Vec2f p);
 
 		/** Print a description */
 		void printTo(std::ostream& stream) const;
+
+		DisplacementMethod getDisplacementMethod() const;
 
 	private:
 		Parameters(json::Node root);
@@ -159,6 +177,7 @@ namespace rvs
 		void setPositionFrom(json::Node root);
 		void setRotationFrom(json::Node root);
 		void setDepthRangeFrom(json::Node root);
+		void setMultiDepthRangeFrom(json::Node root);
 		void setHasInvalidDepth(json::Node root);
 		void setResolutionFrom(json::Node root);
 		void setBitDepthColorFrom(json::Node root);
@@ -170,6 +189,7 @@ namespace rvs
 		void setCropRegionFrom(json::Node root);
 		void setFocalFrom(json::Node root);
 		void setPrinciplePointFrom(json::Node root);
+		void setDisplacementMethodFrom(json::Node root);
 
 		/** Validate some fields of the JSON format that RVS is not effectively using */
 		static void validateUnused(json::Node root);
@@ -179,6 +199,7 @@ namespace rvs
 		cv::Vec3f m_position;
 		cv::Vec3f m_rotation;
 		cv::Vec2f m_depthRange;
+		cv::Vec2f m_multidepthRange;
 		bool m_hasInvalidDepth;
 		cv::Size m_resolution;
 		int m_bitDepthColor;
@@ -191,6 +212,7 @@ namespace rvs
 		cv::Rect m_cropRegion;
 		cv::Vec2f m_focal;
 		cv::Vec2f m_principlePoint;
+		DisplacementMethod m_displacementMethod;
 	};
 }
 

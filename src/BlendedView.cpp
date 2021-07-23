@@ -156,6 +156,7 @@ namespace rvs
 
 			// parameters
 			glUniform1f(glGetUniformLocation(program, "blending_factor"), m_blending_exp);
+			glUniform1f(glGetUniformLocation(program, "input_distance"), view.distance_from_origin);
 			// end parameters
 
 			glBindVertexArray(quadVAO);

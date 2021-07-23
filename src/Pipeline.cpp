@@ -72,9 +72,9 @@ namespace rvs
 
 	void Pipeline::execute()
 	{
-		for (auto virtualFrame = 0; virtualFrame < getConfig().number_of_frames; ++virtualFrame) {
+		for (auto virtualFrame = 0; virtualFrame < getConfig().number_of_output_frames; ++virtualFrame) {
 			auto inputFrame = getConfig().start_frame + virtualFrame;
-			if (getConfig().number_of_frames > 1) {
+			if (getConfig().number_of_output_frames > 1) {
 				std::cout << std::string(5, '=') << " FRAME " << inputFrame << ' ' << std::string(80, '=') << std::endl;
 			}
 			for (auto virtualView = 0u; virtualView != getConfig().VirtualCameraNames.size(); ++virtualView) {
@@ -139,6 +139,18 @@ namespace rvs
 
 	void Pipeline::onFinalBlendingResult(int, int, int, BlendedView const&) {}
 
+	auto getExtendedIndex(int outputFrameIndex, int numberOfInputFrames) {
+
+		if (numberOfInputFrames <= 0) {
+			throw std::runtime_error("Cannot extend frame index with zero input frames");
+		}
+		const auto frameGroupIndex = outputFrameIndex / numberOfInputFrames;
+		const auto frameRelativeIndex = outputFrameIndex % numberOfInputFrames;
+		return frameGroupIndex % 2 != 0 ? numberOfInputFrames - frameRelativeIndex - 1
+			: frameRelativeIndex;
+
+	}
+
 	void Pipeline::computeView(int inputFrame, int virtualFrame, int virtualView)
 	{
 		// Virtual view parameters for this frame and view
@@ -180,8 +192,11 @@ namespace rvs
 			auto synthesizer = createSynthesizer(inputView, virtualView);
 			synthesizer->setSpaceTransformer(spaceTransformer.get());
 
+			//posetrace longer that input view: back and forwards in the input video
+			int frame_to_load = getExtendedIndex(inputFrame, getConfig().number_of_frames);
+			std::cout << "loading... " << frame_to_load << std::endl;
 			// Load the input image
-			auto inputImage = loadInputView(inputFrame, inputView, params_real);
+			auto inputImage = loadInputView(frame_to_load, inputView, params_real);
 
 			// Start OpenGL instrumentation (if any)
 #if WITH_OPENGL

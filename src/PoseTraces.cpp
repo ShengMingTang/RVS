@@ -97,6 +97,14 @@ namespace rvs
 		if (!stream.good()) {
 			throw std::runtime_error("Failed to load pose trace");
 		}
+		//TODO if pose trace if derivative of position
+		/*PoseTrace derivated = loadFrom(stream);
+		for (int i = 1; i < derivated.size(); ++i)
+		{
+			derivated[i].position += derivated[i - 1].position;
+		}
+		return derivated;*/
+		//TODO if pose trace is position
 		return loadFrom(stream);
 	}
 }

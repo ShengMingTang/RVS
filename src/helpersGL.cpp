@@ -93,13 +93,14 @@ namespace rvs
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, static_cast<GLint>(img.step / img.elemSize()));
 
 			GLenum internalformat = GL_RGB32F;
-			if (img.channels() == 4) internalformat = GL_RGBA;
+			if (img.channels() == 4) internalformat = GL_RGBA32F;
 			if (img.channels() == 3) internalformat = GL_RGB;
 			if (img.channels() == 2) internalformat = GL_RG;
 			if (img.channels() == 1) internalformat = GL_R32F;
 
 			GLenum externalformat = GL_BGR;
 			if (img.channels() == 1) externalformat = GL_RED; // GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT32F, GL_R32F NOT WORKING!
+			if (img.channels() == 4) externalformat = GL_RGBA; // GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT32F, GL_R32F NOT WORKING!
 
 			GLuint texture;
 			glGenTextures(1, &texture);
@@ -141,7 +142,7 @@ namespace rvs
 		// We need to declare this global variable to make it available everywhere
 		context_NO_WRITE_H context_NO_WRITE;
 
-#if !defined NDEBUG && WITH_RENDERDOC
+#if  /*!defined NDEBUG &&*/  WITH_RENDERDOC
 		RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 #endif
 
@@ -465,7 +466,7 @@ namespace rvs
 			if (context_NO_WRITE.initialized)
 				return;
 
-#if !defined NDEBUG && WITH_RENDERDOC
+#if  /*!defined NDEBUG &&*/  WITH_RENDERDOC
 			// At init, on windows
 #if _WIN32
 			HMODULE mod = GetModuleHandleA("renderdoc.dll");
@@ -509,13 +510,14 @@ namespace rvs
 #if _WIN32
 			wglMakeCurrent(context_NO_WRITE.gldc, context_NO_WRITE.glrc);
 #else // linux
-			glXMakeCurrent(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
+			//glXMakeCurrent(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.ctx);
+			glXMakeContextCurrent(context_NO_WRITE.disp, context_NO_WRITE.win, context_NO_WRITE.win, context_NO_WRITE.ctx);
 #endif
 		}
 
 
 		void rd_start_capture_frame() {
-#if !defined NDEBUG && WITH_RENDERDOC
+#if /*!defined NDEBUG &&*/ WITH_RENDERDOC
 			if (rdoc_api && rdoc_api->IsTargetControlConnected()) {
 				//rdoc_api->TriggerCapture();
 				rdoc_api->StartFrameCapture(NULL, NULL);
@@ -524,7 +526,7 @@ namespace rvs
 		}
 
 		void rd_end_capture_frame() {
-#if !defined NDEBUG && WITH_RENDERDOC
+#if /*!defined NDEBUG &&*/ WITH_RENDERDOC
 			static int frame_number = 0;
 			if (rdoc_api && rdoc_api->IsTargetControlConnected()) {
 				//rdoc_api->TriggerCapture();

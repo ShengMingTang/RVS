@@ -73,8 +73,8 @@ namespace rvs
 			auto bit_depth = parameters.getColorBitDepth();
 			auto type = CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 1);
 			cv::Mat y_channel(size, type);
-			cv::Mat cb_channel(size / 2, type);
-			cv::Mat cr_channel(size / 2, type);
+			cv::Mat u_channel(size / 2, type);
+			cv::Mat v_channel(size / 2, type);
 
 			std::ifstream stream(filepath, std::ios::binary);
 			if (!stream.good()) {
@@ -82,16 +82,17 @@ namespace rvs
 				what << "Failed to read raw YUV color file \"" << filepath << "\"";
 				throw std::runtime_error(what.str());
 			}
+
 			stream.seekg(size.area() * y_channel.elemSize() * 3 / 2 * frame);
 			read_raw(stream, y_channel);
-			read_raw(stream, cb_channel);
-			read_raw(stream, cr_channel);
+			read_raw(stream, u_channel);
+			read_raw(stream, v_channel);
 
-			cv::resize(cb_channel, cb_channel, size, 0, 0, cv::INTER_CUBIC);
-			cv::resize(cr_channel, cr_channel, size, 0, 0, cv::INTER_CUBIC);
+			cv::resize(u_channel, u_channel, size, 0, 0, cv::INTER_CUBIC);
+			cv::resize(v_channel, v_channel, size, 0, 0, cv::INTER_CUBIC);
 
 			cv::Mat image(size, CV_MAKETYPE(cvdepth_from_bit_depth(bit_depth), 3));
-			cv::Mat src[] = { y_channel, cr_channel, cb_channel };
+			cv::Mat src[] = { y_channel, u_channel, v_channel };
 			cv::merge(src, 3, image);
 			return image;
 		}
@@ -128,11 +129,27 @@ namespace rvs
 			if (image.empty())
 				throw std::runtime_error("Failed to read color file");
 			if (image.size() != parameters.getPaddedSize())
-				throw std::runtime_error("Color file does not have the expected size");
+			{
+				//throw std::runtime_error("Color file does not have the expected size");
+				std::cout << "Color file does not have the expected size" <<std::endl;
+				cv::resize(image, image, parameters.getPaddedSize());
+			}
 			if (image.depth() != cvdepth_from_bit_depth(parameters.getColorBitDepth()))
+			{
+				std::cout << image.depth() << std::endl;
 				throw std::runtime_error("Color file has wrong bit depth");
+			}
 			if (image.channels() != 3)
-				throw std::runtime_error("Color file has wrong number of channels");
+			{
+				if (image.channels() == 4)
+				{
+					cv::Mat dst[4];
+					cv::split(image, dst);
+					cv::merge(dst, 3, image);
+				}
+				else
+					throw std::runtime_error("Color file has wrong number of channels");
+			}
 
 			return image;
 		}
@@ -143,12 +160,17 @@ namespace rvs
 			if (image.empty())
 				throw std::runtime_error("Failed to read depth file");
 			if (image.size() != parameters.getPaddedSize())
-				throw std::runtime_error("Depth file does not have the expected size");
-			if (image.depth() != cvdepth_from_bit_depth(parameters.getDepthBitDepth()))
-				throw std::runtime_error("Depth file has the wrong bit depth");
+				//throw std::runtime_error("Depth file does not have the expected size");
+				cv::resize(image, image, parameters.getPaddedSize(),0.0,0.0,cv::INTER_NEAREST);
+			//if (image.depth() != cvdepth_from_bit_depth(parameters.getDepthBitDepth()))
+			//	throw std::runtime_error("Depth file has the wrong bit depth");
 			if (image.channels() != 1)
-				throw std::runtime_error("Depth file has the wrong number of channels");
-
+			{
+				std::cout << "Depth file has the wrong number of channels" <<std::endl;
+				cv::Mat dst[3];
+				cv::split(image, dst);
+				image = dst[2];
+			}
 			return image;
 		}
 	}
@@ -203,10 +225,10 @@ namespace rvs
 
 		// Color space conversion
 		if (color_space == ColorSpace::YUV && g_color_space == ColorSpace::RGB) {
-			cv::cvtColor(color, color, cv::COLOR_YCrCb2BGR);
+			cv::cvtColor(color, color, cv::COLOR_YUV2BGR);
 		}
 		else if (color_space == ColorSpace::RGB && g_color_space == ColorSpace::YUV) {
-			cv::cvtColor(color, color, cv::COLOR_BGR2YCrCb);
+			cv::cvtColor(color, color, cv::COLOR_BGR2YUV);
 		}
 
 		return color;
@@ -223,7 +245,9 @@ namespace rvs
 			image = read_depth_RGB(filepath, parameters);
 		}
 		else {
-			throw std::runtime_error("Readig multiple frames not (yet) supported for image files");
+			//throw std::runtime_error("Readig multiple frames not (yet) supported for image files");
+			std::cout << "Reading multiple frames not (yet) supported for image files. Reading first frame" << std::endl;
+			image = read_depth_RGB(filepath, parameters);
 		}
 
 		// Crop out padded regions
@@ -258,5 +282,48 @@ namespace rvs
 		}
 
 		return depth;
+	}
+	PolynomialDepth read_polynomial_depth(std::string filepath, int frame, Parameters const& parameters)
+	{
+		// Load the image
+		cv::Mat image;
+		PolynomialDepth pd;
+		std::string ext = filepath.substr(filepath.size() - 4, 4);
+		if (frame == 0 && ext == ".exr") {
+			std::array<cv::Mat1f,20> polynomial;
+			for (int i = 0; i < 20; ++i) {
+				std::stringstream ss;
+				ss << i;
+				size_t pos = filepath.find('*');
+				std::string f = filepath.substr(0, pos) + ss.str() + filepath.substr(pos+1, filepath.size());
+				cv::Mat1f p = cv::imread(f, cv::IMREAD_UNCHANGED);
+			//	cv::GaussianBlur(p1,p1,cv::Size(11,11),3);
+                polynomial[i] = p;
+			}
+			pd = PolynomialDepth(polynomial);
+		}
+		else if (ext == ".yuv") {
+			std::array<cv::Mat1f, 20> polynomial;
+			for (int i = 0; i < 20; ++i) {
+				std::stringstream ss;
+				ss << i;
+				size_t pos = filepath.find('*');
+				std::string f = filepath.substr(0, pos) + ss.str() + filepath.substr(pos + 1, filepath.size());
+				cv::Mat depth = read_depth_YUV(f, frame, parameters);
+				cv::Mat1f p;
+				depth.convertTo(p, CV_32F, 1. / max_level(parameters.getDepthBitDepth()));
+				if (i != 9 && i != 19)
+					p = (parameters.getMultiDepthRange()[1] - parameters.getMultiDepthRange()[0]) * p + parameters.getMultiDepthRange()[0];
+				else if (i == 9)
+					p = (parameters.getDepthRange()[0] + (parameters.getDepthRange()[1] - parameters.getDepthRange()[0]) * p) * parameters.getFocal()[0] / (parameters.getDepthRange()[1] * parameters.getDepthRange()[0]);
+				polynomial[i] = p;
+			}
+			pd = PolynomialDepth(polynomial);
+		}
+		else {
+			throw std::runtime_error("Readig multiple frames not (yet) supported for image files");
+		}
+
+		return pd;
 	}
 }

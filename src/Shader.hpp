@@ -35,7 +35,9 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
+  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
+  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Kroon, bart.kroon@philips.com
@@ -86,6 +88,7 @@ namespace rvs
 			ShadersList();
 
 			std::string getSynthesisVertexShaderSource();
+			std::string getSynthesisVertexShaderSourcePolynomial();
 			std::string getSynthesisFragmentShaderSource();
 			std::string getSynthesisGeometryShaderSource();
 			std::string getBlendingVertexShaderSource();

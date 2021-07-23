@@ -48,6 +48,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #define _BLENDED_VIEW_HPP_
 
 #include "SynthesizedView.hpp"
+#include "View.hpp"
 
 #include <opencv2/core.hpp>
 
@@ -57,6 +58,7 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 namespace rvs
 {
+	class View;
 	/**
 	\brief Blending class: blends synthetised views one by one as they are generated.
 

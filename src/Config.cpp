@@ -102,6 +102,7 @@ namespace rvs
 		config.setBlendingHighFreqFactor(root);
 		config.setStartFrame(root);
 		config.setNumberOfFrames(root);
+		config.setNumberOfOutputFrames(root);
 
 		setPrecision(root);
 		setColorSpace(root);
@@ -129,7 +130,8 @@ namespace rvs
 		auto root = json::Node::readFrom(stream);
 		auto version_ = root.require("Version").asString();
 		if (version_.substr(0, 2) != "2." &&
-			version_.substr(0, 2) != "3.") {
+			version_.substr(0, 2) != "3." &&
+			version_.substr(0, 2) != "4.") {
 			throw std::runtime_error("Version of the camera parameters file is not compatible with this version of RVS");
 		}
 
@@ -370,6 +372,17 @@ namespace rvs
 			if (g_verbose)
 				std::cout << "NumberOfFrames: " << number_of_frames << '\n';
 		}
+	}
+	void Config::setNumberOfOutputFrames(json::Node root)
+	{
+		auto node = root.optional("NumberOfOutputFrames");
+		if (node) {
+			number_of_output_frames = node.asInt();
+			if (g_verbose)
+				std::cout << "NumberOfOutputFrames: " << number_of_output_frames << '\n';
+		}
+		else 
+			number_of_output_frames = number_of_frames;
 	}
 
 	void Config::setPrecision(json::Node root)

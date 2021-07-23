@@ -35,7 +35,9 @@
 Original authors:
 
 Universite Libre de Bruxelles, Brussels, Belgium:
-  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
+  Sarah Fachada, Sarah.Fernandes.Pinto.Fachada@ulb.ac.be
+  Daniele Bonatto, Daniele.Bonatto@ulb.ac.be
+  Arnaud Schenkel, arnaud.schenkel@ulb.ac.be
 
 Koninklijke Philips N.V., Eindhoven, The Netherlands:
   Bart Kroon, bart.kroon@philips.com
@@ -73,6 +75,8 @@ namespace rvs
 		virtual void set_targetPosition(Parameters const *params_virtual);
 		virtual void set_inputPosition(Parameters const *params_real);
 
+		float get_sensor_size() const { return m_input_parameters->getSize().width; };
+		cv::Size get_size() const { return m_output_parameters->getSize(); };
 	private:
 		Parameters const *m_input_parameters;
 		Parameters const *m_output_parameters;

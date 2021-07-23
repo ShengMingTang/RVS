@@ -173,6 +173,7 @@ namespace rvs
 
 		/** Number of frames to process */
 		int number_of_frames = 1;
+		int number_of_output_frames = 1;
 
 		/** The loaded pose trace */
 		PoseTrace pose_trace;
@@ -198,6 +199,7 @@ namespace rvs
 		void setBlendingHighFreqFactor(json::Node root);
 		void setStartFrame(json::Node root);
 		void setNumberOfFrames(json::Node root);
+		void setNumberOfOutputFrames(json::Node root);
 
 		static void setPrecision(json::Node root);
 		static void setColorSpace(json::Node root);

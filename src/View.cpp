@@ -70,6 +70,15 @@ namespace rvs
 		m_validity = validity;
 		validate();
 	}
+	void View::assign(cv::Mat3f color, cv::Mat1f depth, cv::Mat1f quality, cv::Mat1f validity, PolynomialDepth polynomial_depth)
+	{
+		m_color = color;
+		m_depth = depth;
+		m_quality = quality;
+		m_validity = validity;
+		m_polynomial_depth = polynomial_depth;
+		validate();
+	}
 
 	// Return the texture
 	cv::Mat3f View::get_color() const
@@ -85,6 +94,17 @@ namespace rvs
 		validate();
 		CV_Assert(!m_depth.empty());
 		return m_depth;
+	}
+
+	PolynomialDepth View::get_polynomial_depth() const
+	{
+		validate();
+		return m_polynomial_depth;
+	}
+
+	DisplacementMethod InputView::get_displacementMethod() const
+	{
+		return parameters.getDisplacementMethod();
 	}
 
 	// Return the quality map (same size as texture)
@@ -141,13 +161,44 @@ namespace rvs
 	}
 
 	// Load a color image and depth map
-	InputView::InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters):
+	InputView::InputView(std::string const& filepath_color, std::string const& filepath_depth, int frame, Parameters const& parameters)
+		:
+		filepath_color(filepath_color),
+		filepath_depth(filepath_depth),
+		frame(frame),
 		parameters(parameters)
 	{
-		assign(
-			read_color(filepath_color, frame, parameters),
-			read_depth(filepath_depth, frame, parameters),
-			cv::Mat1f(),
-			cv::Mat1f());
+		load();
+	}
+
+	// Load a color image and depth map
+	void InputView::load()
+	{
+		if (parameters.getDisplacementMethod() == DisplacementMethod::depth) {
+			cv::Mat3f a = read_color(filepath_color, frame, parameters);
+			assign(
+				a,
+				read_depth(filepath_depth, frame, parameters),
+				cv::Mat1f(),
+				cv::Mat1f());
+		}
+		else
+		{
+		        if (parameters.getDisplacementMethod()==DisplacementMethod::polynomial){
+                        assign(
+                            read_color(filepath_color, frame, parameters),
+                            cv::Mat1f::zeros(parameters.getSize()),
+                            cv::Mat1f(),
+                            cv::Mat1f(),
+                            read_polynomial_depth(filepath_depth, frame, parameters));
+			}
+		}
+		loaded = true;
+	}
+
+	void InputView::unload()
+	{
+		assign(cv::Mat3f(), cv::Mat1f(), cv::Mat1f(), cv::Mat1f());
+		loaded = false;
 	}
 }

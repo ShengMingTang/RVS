@@ -53,6 +53,15 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 namespace rvs
 {
+	namespace ProjectionType {
+		int get_number(std::string proj) {
+			if (proj == ProjectionType::perspective)
+				return (int)ProjectionNumber::perspective;
+			if (proj == ProjectionType::equirectangular)
+				return (int)ProjectionNumber::equirectangular;
+			return -1;
+		}
+	}
 	namespace
 	{
 		cv::Matx33f rotationMatrixFromRotationAroundX(float rx)
@@ -111,7 +120,10 @@ namespace rvs
 		parameters.setCropRegionFrom(root);
 		parameters.setFocalFrom(root);
 		parameters.setPrinciplePointFrom(root);
+		parameters.setDisplacementMethodFrom(root);
+		parameters.setMultiDepthRangeFrom(root);
 		Parameters::validateUnused(root);
+
 
 		return parameters;
 	}
@@ -155,6 +167,11 @@ namespace rvs
 	cv::Vec2f Parameters::getDepthRange() const
 	{
 		return m_depthRange;
+	}
+
+	cv::Vec2f Parameters::getMultiDepthRange() const
+	{
+		return m_multidepthRange;
 	}
 
 	bool Parameters::hasInvalidDepth() const
@@ -220,11 +237,26 @@ namespace rvs
 		return m_focal;
 	}
 
+	void Parameters::setFocal(cv::Vec2f f)
+	{
+		m_focal = f;
+	}
+
 	cv::Vec2f Parameters::getPrinciplePoint() const
 	{
 		assert(m_projectionType == ProjectionType::perspective);
 		return m_principlePoint - cv::Vec2f(cv::Point2f(m_cropRegion.tl()));
 	}
+
+	void Parameters::setPrinciplePoint(cv::Vec2f p)
+	{
+		m_principlePoint = p;
+	}
+
+    DisplacementMethod Parameters::getDisplacementMethod() const
+    {
+        return m_displacementMethod;
+    }
 
 	void Parameters::printTo(std::ostream& stream) const
 	{
@@ -303,6 +335,18 @@ namespace rvs
 		}
 		if (m_depthRange[1] > 1000.f) {
 			throw std::runtime_error("Invalid depth range: [near, far] with far > 1000 is not allowed because 1000 stands for infinity. Please restrict depth range or change world units.");
+		}
+	}
+	void Parameters::setMultiDepthRangeFrom(json::Node root)
+	{
+		auto node = root.optional("Multi_depth_range");
+
+		if (node)
+			m_multidepthRange = asFloatVec<2>(node);
+		else
+			m_multidepthRange = m_depthRange;
+		if (!(m_multidepthRange[0] < m_multidepthRange[1])) {
+			throw std::runtime_error("Inverted depth range: [near, far] with near > far is not allowed");
 		}
 	}
 
@@ -402,4 +446,20 @@ namespace rvs
 			m_principlePoint = asFloatVec<2>(root.require("Principle_point"));
 		}
 	}
+
+
+	void Parameters::setDisplacementMethodFrom(json::Node root){
+	    auto node = root.optional("DisplacementMethod");
+		if (node) {
+        		if (node.asString()=="Depth")
+                m_displacementMethod = DisplacementMethod::depth;
+			if (node.asString()=="Polynomial")
+                m_displacementMethod = DisplacementMethod::polynomial;
+		}
+		else {
+        //        std::cout << "DisplacementMethod: " << "Depth (default)" << std::endl;
+                m_displacementMethod = DisplacementMethod::depth;
+		}
+	}
+
 }
