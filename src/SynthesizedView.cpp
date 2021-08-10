@@ -85,8 +85,11 @@ namespace rvs
 		auto R = m_space_transformer->get_rotation();
 		auto t = m_space_transformer->get_translation();
 		distance_from_origin = cv::max(0.01,cv::norm(t));
+
+#if WITH_OPENGL
+		GLuint nl_mask_idx = 0;
+#endif
 		
-		GLuint nl_mask_idx;
 		if (input.get_displacementMethod() == DisplacementMethod::polynomial) {
 			cv::Mat1f newmask = cv::Mat1f::zeros(input.get_polynomial_depth().m_polynomial[19].size());
 			cv::Vec3f disp = R * t;

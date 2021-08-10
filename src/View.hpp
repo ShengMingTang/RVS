@@ -47,8 +47,10 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #ifndef _VIEW_HPP_
 #define _VIEW_HPP_
 
-#include "Parameters.hpp"
+#if WITH_OPENGL
 #include "helpersGL.hpp"
+#endif
+#include "Parameters.hpp"
 #include "PolynomialDepth.hpp"
 
 /**
