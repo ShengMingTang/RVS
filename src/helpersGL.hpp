@@ -186,7 +186,10 @@ namespace rvs
 				// ititialize index buffer, allocate memory, fill it with data
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_number * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
-				printf("Real number of elements %i\n", int(elements_number));
+				// [SM] from //
+				// printf("Real number of elements %i\n", int(elements_number));
+				// [SM] to //
+				// [SM] end //
 			}
 
 		};

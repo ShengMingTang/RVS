@@ -49,6 +49,9 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 
 #include "View.hpp"
 #include "Config.hpp"
+// [SM] begin //
+#include <vector>
+// [SM] end //
 
 namespace rvs 
 {
@@ -196,6 +199,10 @@ namespace rvs
 		@param virtualView Index of the virtual view to compute
 		*/
 		void computeView(int inputFrame, int virtualFrame, int virtualView);
+
+		// [SM] begin //
+		std::vector< std::shared_ptr<View> > m_lastInputImages;
+		// [SM] end //
 	};
 }
 

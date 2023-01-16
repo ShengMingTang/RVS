@@ -271,7 +271,10 @@ namespace rvs
 			// end parameters
 
 			glBindVertexArray(vve.VAO);
-			printf("Number of elements %i\n", int(vve.number_of_elements));
+			// [SM] from //
+			// printf("Number of elements %i\n", int(vve.number_of_elements));
+			// [SM] to //
+			// [SM] end //
 			glDrawElements(GL_TRIANGLES, int(vve.number_of_elements), GL_UNSIGNED_INT, nullptr);
 			glUseProgram(0);
 			glBindVertexArray(0);

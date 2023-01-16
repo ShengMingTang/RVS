@@ -61,6 +61,14 @@ Koninklijke Philips N.V., Eindhoven, The Netherlands:
 #include "RFBO.hpp"
 #endif
 
+// [SM] begin //
+#if WITH_OPENGL
+bool is_opengl = true;
+#else
+bool is_opengl = false;
+#endif
+// [SM] end //
+
 namespace rvs
 {
 	Pipeline::Pipeline()
@@ -72,6 +80,12 @@ namespace rvs
 
 	void Pipeline::execute()
 	{
+		// [SM] begin //
+		if(!is_opengl) {
+			std::cout << "not using OpenGL" << std::endl;
+			exit(-1);
+		}
+		// [SM] end //
 		for (auto virtualFrame = 0; virtualFrame < getConfig().number_of_output_frames; ++virtualFrame) {
 			auto inputFrame = getConfig().start_frame + virtualFrame;
 			if (getConfig().number_of_output_frames > 1) {
@@ -182,7 +196,10 @@ namespace rvs
 
 		// For each input view
 		for (auto inputView = 0u; inputView != getConfig().InputCameraNames.size(); ++inputView) {
-			std::cout << getConfig().InputCameraNames[inputView] << " => " << getConfig().VirtualCameraNames[virtualView] << std::endl;
+			// [SM] from //
+			// std::cout << getConfig().InputCameraNames[inputView] << " => " << getConfig().VirtualCameraNames[virtualView] << std::endl;
+			// [SM] to //
+			// [SM] end //
 			auto const& params_real = getConfig().params_real[inputView];
 
 			// Complete setup of space transformer
@@ -194,9 +211,26 @@ namespace rvs
 
 			//posetrace longer that input view: back and forwards in the input video
 			int frame_to_load = getExtendedIndex(inputFrame, getConfig().number_of_frames);
-			std::cout << "loading... " << frame_to_load << std::endl;
+			// [SM] from //
+			// std::cout << "loading... " << frame_to_load << std::endl;
 			// Load the input image
-			auto inputImage = loadInputView(frame_to_load, inputView, params_real);
+			// auto inputImage = loadInputView(frame_to_load, inputView, params_real);
+			// [SM] to //
+			// first time, load
+			std::shared_ptr<View> inputImage = nullptr;
+			if(getConfig().number_of_frames != 1) {
+				std::cout << "exit because this version only supports number of input frame == 1" << std::endl;
+				exit(-1);
+			}
+			if(m_lastInputImages.size() != getConfig().InputCameraNames.size()) {
+				std::cout << "loading... " << frame_to_load << std::endl;
+				inputImage = loadInputView(frame_to_load, inputView, params_real);
+				m_lastInputImages.push_back(inputImage);
+			}
+			else {
+				inputImage = m_lastInputImages[inputView];
+			}
+			// [SM] end //
 
 			// Start OpenGL instrumentation (if any)
 #if WITH_OPENGL
