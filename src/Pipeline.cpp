@@ -88,9 +88,12 @@ namespace rvs
 		// [SM] end //
 		for (auto virtualFrame = 0; virtualFrame < getConfig().number_of_output_frames; ++virtualFrame) {
 			auto inputFrame = getConfig().start_frame + virtualFrame;
-			if (getConfig().number_of_output_frames > 1) {
-				std::cout << std::string(5, '=') << " FRAME " << inputFrame << ' ' << std::string(80, '=') << std::endl;
-			}
+			// [SM] from //
+			// if (getConfig().number_of_output_frames > 1) {
+			// 	std::cout << std::string(5, '=') << " FRAME " << inputFrame << ' ' << std::string(80, '=') << std::endl;
+			// }
+			// [SM] to //
+			// [SM] end //
 			for (auto virtualView = 0u; virtualView != getConfig().VirtualCameraNames.size(); ++virtualView) {
 				computeView(inputFrame, virtualFrame, virtualView);
 			}
@@ -173,7 +176,10 @@ namespace rvs
 			auto pose = getConfig().pose_trace[inputFrame];
 			params_virtual.setPosition(params_virtual.getPosition() + pose.position);
 			params_virtual.setRotation(pose.rotation);
-			std::cout << "Pose: " << params_virtual.getPosition() << ' ' << params_virtual.getRotation() << std::endl;
+			// [SM] from //
+			// std::cout << "Pose: " << params_virtual.getPosition() << ' ' << params_virtual.getRotation() << std::endl;
+			// [SM] to //
+			// [SM] end //
 		}
 
 		// Initialize OpenGL frame buffer objects
